@@ -12,6 +12,7 @@ test:
 .PHONY: qemu
 qemu:
 	cd qemu && git submodule update --init --recursive
+	cd qemu && git apply ../scripts/qemu.patch
 	mkdir -p build/qemu
 	cd build/qemu && ../../qemu/configure --target-list=riscv64-softmmu
 	cd build/qemu && make
