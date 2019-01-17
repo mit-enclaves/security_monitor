@@ -1,0 +1,380 @@
+diff --git a/disas/riscv.c b/disas/riscv.c
+index 7fd1019623..9003918e79 100644
+--- a/disas/riscv.c
++++ b/disas/riscv.c
+@@ -1245,6 +1245,17 @@ static const char *csr_name(int csrno)
+     case 0x07b0: return "dcsr";
+     case 0x07b1: return "dpc";
+     case 0x07b2: return "dscratch";
++    // <SANCTUM>
++      case 0x07c0: return "mevbase";
++      case 0x07c1: return "mevmask";
++      case 0x07c2: return "meatp";
++      case 0x07c3: return "mmrbm";
++      case 0x07c4: return "memrbm";
++      case 0x07c5: return "mparbase";
++      case 0x07c6: return "mparmask";
++      case 0x07c7: return "meparbase";
++      case 0x07c8: return "meparmask";
++    // </SANCTUM>
+     case 0x0b00: return "mcycle";
+     case 0x0b01: return "mtime";
+     case 0x0b02: return "minstret";
+@@ -1315,6 +1326,9 @@ static const char *csr_name(int csrno)
+     case 0x0c80: return "cycleh";
+     case 0x0c81: return "timeh";
+     case 0x0c82: return "instreth";
++    // <SANCTUM>
++      case 0x0cc0: return "trng";
++    // </SANCTUM>
+     case 0x0d00: return "scycle";
+     case 0x0d01: return "stime";
+     case 0x0d02: return "sinstret";
+diff --git a/hw/riscv/Makefile.objs b/hw/riscv/Makefile.objs
+index 1dde01d39d..3fcb28d80a 100644
+--- a/hw/riscv/Makefile.objs
++++ b/hw/riscv/Makefile.objs
+@@ -1,5 +1,6 @@
+ obj-y += riscv_htif.o
+ obj-y += riscv_hart.o
++obj-y += sanctum.o
+ obj-y += sifive_e.o
+ obj-y += sifive_clint.o
+ obj-y += sifive_prci.o
+@@ -7,5 +8,6 @@ obj-y += sifive_plic.o
+ obj-y += sifive_test.o
+ obj-y += sifive_u.o
+ obj-y += sifive_uart.o
++obj-y += puf.o
+ obj-y += spike.o
+ obj-y += virt.o
+diff --git a/roms/u-boot b/roms/u-boot
+--- a/roms/u-boot
++++ b/roms/u-boot
+@@ -1 +1 @@
+-Subproject commit d85ca029f257b53a96da6c2fb421e78a003a9943
++Subproject commit d85ca029f257b53a96da6c2fb421e78a003a9943-dirty
+diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+index 743f02c8b9..62bc90b41b 100644
+--- a/target/riscv/cpu.h
++++ b/target/riscv/cpu.h
+@@ -163,6 +163,42 @@ struct CPURISCVState {
+     target_ulong sscratch;
+     target_ulong mscratch;
+ 
++    // <SANCTUM>
++      // ## The core state referenced by various CSRs (registers) introduced by Sanctum is declared here.
++      // ### Enclave virtual base and mask
++      // (per-core) registers
++      // ( defines a virtual region for which enclave page tables are used in
++      //   place of OS-controlled page tables)
++      // (machine-mode non-standard read/write)
++      target_ulong mevbase;
++      target_ulong mevmask;
++
++      // ### Enclave page table base
++      // (per core) register
++      // ( pointer to a separate page table data structure used to translate enclave
++      //   virtual addresses)
++      // (machine-mode non-standard read/write)
++      target_ulong meatp;
++
++      // ### DRAM bitmap
++      // (per core) registers (OS and Enclave)
++      // ( white-lists the DRAM regions the core is allowed to access via OS and
++      //   enclave virtual addresses)
++      // (machine-mode non-standard read/write)
++      target_ulong mmrbm;
++      target_ulong memrbm;
++
++      // ### Protected region base and mask
++      // (per core) registers (OS and Enclave)
++      // ( these are used to prevent address translation into a specific range of
++      //   physical addresses, for example to protect the security monitor from all software)
++      // (machine-mode non-standard read/write)
++      target_ulong mparbase;
++      target_ulong mparmask;
++      target_ulong meparbase;
++      target_ulong meparmask;
++    // </SANCTUM>
++
+     /* temporary htif regs */
+     uint64_t mfromhost;
+     uint64_t mtohost;
+diff --git a/target/riscv/cpu_bits.h b/target/riscv/cpu_bits.h
+index 5439f4719e..58df6bac4c 100644
+--- a/target/riscv/cpu_bits.h
++++ b/target/riscv/cpu_bits.h
+@@ -111,6 +111,15 @@
+ #define CSR_HPMCOUNTER30H   0xc9e
+ #define CSR_HPMCOUNTER31H   0xc9f
+ 
++// <SANCTUM>
++  /*
++  // ### TRNG (random number generator)
++  // (user-mode non-standard read-only)
++  // (per core) register
++  */
++  #define CSR_TRNG 0xcc0
++// </SANCTUM>
++
+ /* Machine Timers and Counters */
+ #define CSR_MCYCLE          0xb00
+ #define CSR_MINSTRET        0xb02
+@@ -193,6 +202,43 @@
+ #define CSR_DPC             0x7b1
+ #define CSR_DSCRATCH        0x7b2
+ 
++// <SANCTUM>
++  // ## The addresses of various CSRs (registers) introduced by Sanctum are given here.
++
++  // ### Enclave virtual base and mask
++  // (per-core) registers
++  // ( defines a virtual region for which enclave page tables are used in
++  //   place of OS-controlled page tables)
++  // (machine-mode non-standard read/write)
++  #define CSR_MEVBASE 0x7c0
++  #define CSR_MEVMASK 0x7c1
++
++  // ### Enclave page table base
++  // (per core) register
++  // ( pointer to a separate page table data structure used to translate enclave
++  //   virtual addresses)
++  // (machine-mode non-standard read/write)
++  #define CSR_MEATP 0x7c2
++
++  // ### DRAM bitmap
++  // (per core) registers (OS and Enclave)
++  // ( white-lists the DRAM regions the core is allowed to access via OS and
++  //   enclave virtual addresses)
++  // (machine-mode non-standard read/write)
++  #define CSR_MMRBM 0x7c3
++  #define CSR_MEMRBM 0x7c4
++
++  // ### Protected region base and mask
++  // (per core) registers (OS and Enclave)
++  // ( these are used to prevent address translation into a specific range of
++  //   physical addresses, for example to protect the security monitor from all software)
++  // (machine-mode non-standard read/write)
++  #define CSR_MPARBASE 0x7c5
++  #define CSR_MPARMASK 0x7c6
++  #define CSR_MEPARBASE 0x7c7
++  #define CSR_MEPARMASK 0x7c8
++// </SANCTUM>
++
+ /* Performance Counters */
+ #define CSR_MHPMCOUNTER3    0xb03
+ #define CSR_MHPMCOUNTER4    0xb04
+diff --git a/target/riscv/cpu_helper.c b/target/riscv/cpu_helper.c
+index f257050f12..012952aaf3 100644
+--- a/target/riscv/cpu_helper.c
++++ b/target/riscv/cpu_helper.c
+@@ -141,8 +141,23 @@ static int get_physical_address(CPURISCVState *env, hwaddr *physical,
+     int levels, ptidxbits, ptesize, vm, sum;
+     int mxr = get_field(env->mstatus, MSTATUS_MXR);
+ 
++    // <SANCTUM>
++      target_ulong mrbm = 0xFFFFFFFFFFFFFFFF;
++      target_ulong parbase = 0xFFFFFFFFFFFFFFFF;
++      target_ulong parmask = 0x0000000000000000;
++    // </SANCTUM>
++
+     if (env->priv_ver >= PRIV_VERSION_1_10_0) {
+-        base = get_field(env->satp, SATP_PPN) << PGSHIFT;
++        // <SANCTUM>
++          //base = get_field(env->satp, SATP_PPN) << PGSHIFT;
++          bool is_enclave_walk = ((addr & env->mevmask) == env->mevbase);
++          base = is_enclave_walk ? ( get_field(env->meatp, SATP_PPN) << PGSHIFT )
++                                 : ( get_field(env->satp, SATP_PPN) << PGSHIFT );
++          mrbm = is_enclave_walk ? env->memrbm : env->mmrbm;
++          parbase = is_enclave_walk ? env->meparbase : env->mparbase;
++          parmask = is_enclave_walk ? env->meparmask : env->mparmask;
++        // </SANCTUM>
++
+         sum = get_field(env->mstatus, MSTATUS_SUM);
+         vm = get_field(env->satp, SATP_MODE);
+         switch (vm) {
+@@ -208,6 +223,17 @@ restart:
+ #endif
+         target_ulong ppn = pte >> PTE_PPN_SHIFT;
+ 
++        // <SANCTUM>
++          // Check protected address region
++          if ( ((ppn << PGSHIFT) & parmask) == parbase ) {
++            return TRANSLATE_FAIL;
++          }
++          // Check region permission
++          if ( ( (1<<(((ppn << PGSHIFT) >> 15)&0x3F)) & mrbm ) == 0) {
++            return TRANSLATE_FAIL;
++          }
++        // </SANCTUM>
++
+         if (!(pte & PTE_V)) {
+             /* Invalid PTE */
+             return TRANSLATE_FAIL;
+diff --git a/target/riscv/csr.c b/target/riscv/csr.c
+index 5e7e7d16b8..247b059f29 100644
+--- a/target/riscv/csr.c
++++ b/target/riscv/csr.c
+@@ -20,6 +20,7 @@
+ #include "qemu/osdep.h"
+ #include "qemu/log.h"
+ #include "cpu.h"
++#include "trng.h"
+ #include "qemu/main-loop.h"
+ #include "exec/exec-all.h"
+ 
+@@ -708,6 +709,126 @@ static int write_pmpaddr(CPURISCVState *env, int csrno, target_ulong val)
+ 
+ #endif
+ 
++// <SANCTUM>
++  /* Sanctum Core Configuration */
++
++  static int read_mevbase(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->mevbase;
++      return 0;
++  }
++
++  static int write_mevbase(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->mevbase = val;
++      return 0;
++  }
++
++  static int read_mevmask(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->mevmask;
++      return 0;
++  }
++
++  static int write_mevmask(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->mevmask = val;
++      return 0;
++  }
++
++  static int read_meatp(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->meatp;
++      return 0;
++  }
++
++  static int write_meatp(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      tlb_flush(CPU(riscv_env_get_cpu(env)));
++      env->meatp = val;
++      return 0;
++  }
++
++  static int read_mmrbm(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->mmrbm;
++      return 0;
++  }
++
++  static int write_mmrbm(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->mmrbm = val;
++      return 0;
++  }
++
++  static int read_memrbm(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->memrbm;
++      return 0;
++  }
++
++  static int write_memrbm(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->memrbm = val;
++      return 0;
++  }
++
++  static int read_mparbase(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->mparbase;
++      return 0;
++  }
++
++  static int write_mparbase(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->mparbase = val;
++      return 0;
++  }
++
++  static int read_mparmask(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->mparmask;
++      return 0;
++  }
++
++  static int write_mparmask(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->mparmask = val;
++      return 0;
++  }
++
++  static int read_meparbase(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->meparbase;
++      return 0;
++  }
++
++  static int write_meparbase(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->meparbase = val;
++      return 0;
++  }
++
++  static int read_meparmask(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++      *val = env->meparmask;
++      return 0;
++  }
++
++  static int write_meparmask(CPURISCVState *env, int csrno, target_ulong val)
++  {
++      env->meparmask = val;
++      return 0;
++  }
++
++  /* TRNG */
++  static int read_trng(CPURISCVState *env, int csrno, target_ulong *val)
++  {
++     *val = trng();
++     return 0;
++  }
++// <SANCTUM>
++
+ /*
+  * riscv_csrrw - read and/or update control and status register
+  *
+@@ -851,6 +972,17 @@ static riscv_csr_operations csr_ops[CSR_TABLE_SIZE] = {
+     [CSR_PMPCFG0  ... CSR_PMPADDR9] =  { pmp,   read_pmpcfg,  write_pmpcfg   },
+     [CSR_PMPADDR0 ... CSR_PMPADDR15] = { pmp,   read_pmpaddr, write_pmpaddr  },
+ 
++    /* Sanctum Core Configuration */
++    [CSR_MEVBASE] =             { any,  read_mevbase,     write_mevbase      },
++    [CSR_MEVMASK] =             { any,  read_mevmask,     write_mevmask      },
++    [CSR_MEATP] =               { any,  read_meatp,       write_meatp        },
++    [CSR_MMRBM] =               { any,  read_mmrbm,       write_mmrbm        },
++    [CSR_MEMRBM] =              { any,  read_memrbm,      write_memrbm       },
++    [CSR_MPARBASE] =            { any,  read_mparbase,    write_mparbase     },
++    [CSR_MPARMASK] =            { any,  read_mparmask,    write_mparmask     },
++    [CSR_MEPARBASE] =           { any,  read_meparbase,   write_meparbase    },
++    [CSR_MEPARMASK] =           { any,  read_meparmask,   write_meparmask    },
++
+     /* Performance Counters */
+     [CSR_HPMCOUNTER3   ... CSR_HPMCOUNTER31] =    { ctr,  read_zero          },
+     [CSR_MHPMCOUNTER3  ... CSR_MHPMCOUNTER31] =   { any,  read_zero          },
+@@ -859,5 +991,8 @@ static riscv_csr_operations csr_ops[CSR_TABLE_SIZE] = {
+     [CSR_HPMCOUNTER3H  ... CSR_HPMCOUNTER31H] =   { ctr,  read_zero          },
+     [CSR_MHPMCOUNTER3H ... CSR_MHPMCOUNTER31H] =  { any,  read_zero          },
+ #endif
++    /* TRNG */
++    [CSR_TRNG] =                { any,   read_trng,                          },
++
+ #endif /* !CONFIG_USER_ONLY */
+ };
