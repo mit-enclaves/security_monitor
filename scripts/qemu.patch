@@ -427,7 +427,7 @@ index 0000000000..14d8ef69de
 +    uint32_t reset_vec_size = 0;
 +
 +    uint32_t default_reset_vec[1] = {
-+        0xFFFFF06F,                  /* 1:  j  x0, -2 # Loop forever; next time, specify a bootloader binary */
++        0x0000006F,                  /* 1:  j  x0, -2 # Loop forever; next time, specify a bootloader binary */
 +    };
 +
 +    /* the reset vector is in little_endian byte order */
