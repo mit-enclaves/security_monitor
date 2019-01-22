@@ -48,7 +48,7 @@ Make sure stack never grows above 4KB
   csrw mscratch, zero
 
   # ## 2). Set the trap vector to the untrusted trap handler address, make sure this succeeds
-  la t0, untrusted_trap_vector
+  la t0, trap_vector_from_untrusted
   csrw mtvec, t0
   csrr t1, mtvec
 .init.repeat_set_trap_vector:
