@@ -44,7 +44,7 @@ untrusted_interrupt_table:
 # Untrusted trap handler
 # ======================
   .untrusted_trap.entry
-  .globl untrusted_trap_vector
+  .globl trap_vector_from_untrusted
 trap_vector_from_untrusted:
 
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
