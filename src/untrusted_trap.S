@@ -52,7 +52,7 @@ trap_vector_from_untrusted:
   beqz sp, .recursive_trap_from_machine_mode
   # TODO: the above is problematic. Make sure recurison does not blow the stack.
 
-  # Save t0, load the trap cause (mcause)
+  # Save t0 and former SP, load the trap cause (mcause)
   STORE t0, 5*REGBYTES(sp)
   csrr t0, mscratch
   STORE t0, 2*REGBYTES(sp) # separately handled
