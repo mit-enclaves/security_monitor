@@ -45,7 +45,7 @@ untrusted_interrupt_table:
 # ======================
   .untrusted_trap.entry
   .globl untrusted_trap_vector
-untrusted_trap_vector:
+trap_vector_from_untrusted:
 
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
@@ -54,6 +54,8 @@ untrusted_trap_vector:
 
   # Save t0, load the trap cause (mcause)
   STORE t0, 5*REGBYTES(sp)
+  csrr t0, mscratch
+  STORE t0, 2*REGBYTES(sp) # separately handled
   csrr t0, mcause
 
   # -- Is this untrusted event an interrupt?
