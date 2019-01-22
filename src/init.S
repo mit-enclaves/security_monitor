@@ -51,8 +51,6 @@ Make sure stack never grows above 4KB
   la t0, trap_vector_from_untrusted
   csrw mtvec, t0
   csrr t1, mtvec
-.init.repeat_set_trap_vector:
-  bne t0, t1, .init.repeat_set_trap_vector # TODO: is this the right way to make sure "it sticks", as BBL tries to do?
 
   # ## 3). Set the stack pointer to memory reserved for the SM stack on each hart.
   # Each hart gets 1 page (4 KB) per hart for machine mode stack
