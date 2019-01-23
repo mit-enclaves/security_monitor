@@ -1,12 +1,10 @@
-#TODO:
+# TODO: Make sure stack never grows above 4KB !!
 
-Make sure stack never grows above 4KB
-
-# Trap vector (table) for untrusted software
-# ==========================================
-  .untrusted_trap
+# Trap vector (table) for events originating in untrusted software
+# ================================================================
+  .section .trap
   .align 6 # Align to a cache line (64B) boundary
-untrusted_trap_table:
+trap_table:
   # NOTE: only T0 are saved at this point
   .word .delegate_to_s          //  0: misaligned instruction address
   .word .pmp_trap               //  1: instruction access fault
@@ -26,7 +24,7 @@ untrusted_trap_table:
   .word .delegate_to_s          // 15: store/AMO page fault
 
   .align 6
-untrusted_interrupt_table:
+interrupt_table:
   # NOTE: only T0 are saved at this point
   .word .delegate_to_s          //  0: user software interrupt
   .word .delegate_to_s          //  1: supervisor software interrupt
@@ -41,15 +39,15 @@ untrusted_interrupt_table:
   .word .bad_event              // 10: (reserved)
   .word .bad_event              // 11: machine external interrupt
 
-# Untrusted trap handler
-# ======================
-  .untrusted_trap.entry
+# Handler for events originating in untrusted software
+# ====================================================
+  .trap.entry
   .globl trap_vector_from_untrusted
 trap_vector_from_untrusted:
 
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
-  beqz sp, .recursive_trap_from_machine_mode
+  beqz sp, .recursive_trap_from_untrusted
   # TODO: the above is problematic. Make sure recurison does not blow the stack.
 
   # Save t0 and former SP, load the trap cause (mcause)
@@ -58,15 +56,15 @@ trap_vector_from_untrusted:
   STORE t0, 2*REGBYTES(sp) # separately handled
   csrr t0, mcause
 
-  # -- Is this untrusted event an interrupt?
-  bgez t0, .route_untrusted_trap
-  # -- -- Yes! Untrusted interrupt
-  la ra, untrusted_interrupt_table
+  # -- Is this event an interrupt?
+  bgez t0, .route_trap
+  # -- -- Yes! Interrupt
+  la ra, interrupt_table
   j .route_all_events
 
   # -- -- No, this is an OS trap
-.route_untrusted_trap:
-  la ra, untrusted_trap_table
+.route_trap:
+  la ra, trap_table
 
 .route_all_events:
   # Look up the handler address in the relevant event table
@@ -83,18 +81,19 @@ trap_vector_from_untrusted:
 # ---------------------
 
 # Oh no! This trap came from within machine mode!
-.recursive_trap_from_machine_mode:
+.recursive_trap_from_untrusted:
   csrr sp, mscratch
   addi sp, sp, -INTEGER_CONTEXT_SIZE
   STORE a0,10*REGBYTES(sp)
   STORE a1,11*REGBYTES(sp)
   li a1, TRAP_FROM_MACHINE_MODE_VECTOR
-  j .route_untrusted_trap
+  j .route_trap
 TODO: can we guarantee this is indeed a trap? mcause needs to not be out of range
 
 # Calling convention helpers
 # --------------------------
 
+# TODO: turn this into a nice macro instead of a call maybe
 .save_regs_and_set_args:
   # Preserve the registers.
   STORE x0, (sp) # Zero x0's save slot.
@@ -135,6 +134,7 @@ TODO: can we guarantee this is indeed a trap? mcause needs to not be out of rang
   csrr a2, mepc    # a0 <- uintptr_t  mepc
   ret
 
+# TODO: turn this into a nice macro instead of a call maybe
 .restore_regs:
   # Restore all of the registers.
   # x0 need not be restored
@@ -171,10 +171,8 @@ TODO: can we guarantee this is indeed a trap? mcause needs to not be out of rang
   LOAD t6,31*REGBYTES(sp)
   ret
 
-# Event handlers
-# --------------
-
-# ### Generic events
+# Generic event handlers
+# ----------------------
 
 .delegate_to_s:
   # delegate trap/interrupt to S mode
@@ -229,68 +227,3 @@ TODO: can we guarantee this is indeed a trap? mcause needs to not be out of rang
 .bad_event:
   csrr a0, mcause
   call panic;
-
-# ### Untrusted traps
-
-.pmp_trap:
-  call .save_regs_and_set_args
-  call pmp_trap
-  call .restore_regs
-  j .perform_mret
-
-.illegal_insn_trap:
-  call .save_regs_and_set_args
-  call illegal_insn_trap
-  call .restore_regs
-  j .perform_mret
-
-.misaligned_load_trap:
-  call .save_regs_and_set_args
-  call misaligned_load_trap
-  call .restore_regs
-  j .perform_mret
-
-.misaligned_store_trap:
-  call .save_regs_and_set_args
-  call misaligned_store_trap
-  call .restore_regs
-  j .perform_mret
-
-.ecall_from_s_trap:
-  call .save_regs_and_set_args
-  call ecall_from_s_trap
-  call .restore_regs
-  j .perform_mret
-
-# ### Untrusted interrupts
-
-.handle_mipi:
-  LOAD t0, MENTRY_IPI_OFFSET(sp)
-  sw x0, (t0)
-  fence
-# Now, decode the cause(s).
-  STORE t1, 6*REGBYTES(sp)
-  addi t0, sp, MENTRY_IPI_PENDING_OFFSET
-  amoswap.w t0, x0, (t0)
-  and t1, t0, IPI_SOFT
-  beqz t1, 1f
-  csrs mip, MIP_SSIP
-1:
-  andi t1, t0, IPI_FENCE_I
-  beqz t1, 1f
-  fence.i
-1:
-  andi t1, t0, IPI_SFENCE_VMA
-  beqz t1, 1f
-  sfence.vma
-1:
-  LOAD t1, 6*REGBYTES(sp)
-  j .perform_mret
-
-.handle_mtimer_interrupt:
-  #Simply clear MTIE and raise STIP.
-  li t0, MIP_MTIP
-  csrc mie, t0
-  li t0, MIP_STIP
-  csrs mip, t0
-  j .perform_mret
