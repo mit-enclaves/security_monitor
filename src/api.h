@@ -40,7 +40,7 @@ typedef enum {
   //
   // This is a more specific version of monitor_invalid_value. The monitor does
   // its best to identify these cases, but may fail.
-  monitor_access_denied = 4,
+  monitor_access_denied = 5,
 
   // The current monitor implementation does not support the request.
   //
@@ -51,7 +51,7 @@ typedef enum {
   //
   // The documentation for API calls states the edge cases that result in a
   // monitor_unsupported response.
-  monitor_unsupported = 5,
+  monitor_unsupported = 6,
 } api_result_t;
 
 // Blocks a DRAM region that was previously owned by the caller.
