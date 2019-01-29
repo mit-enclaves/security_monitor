@@ -54,6 +54,7 @@ trap_vector_from_untrusted:
   STORE t0, 5*REGBYTES(sp)
   csrr t0, mscratch
   STORE t0, 2*REGBYTES(sp) # separately handled
+  csrw mscratch, zero # indicate we are inside a trap handler
   csrr t0, mcause
 
   # -- Is this event an interrupt?
