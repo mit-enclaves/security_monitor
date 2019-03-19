@@ -138,19 +138,7 @@ api_result_t dram_region_check_ownership(size_t dram_region);
 // belongs to the enclave.
 api_result_t get_attestation_key(uintptr_t phys_addr);
 
-// The size of enclave's measurement, in bytes.
-#define measurement_size 64
-
 //namespace os {  // sanctum::api::os
-
-// Per-DRAM region accounting information.
-typedef enum {
-  dram_region_invalid = 0,
-  dram_region_free = 1,
-  dram_region_blocked = 2,
-  dram_region_locked = 3,
-  dram_region_owned = 4,
-} dram_region_state_t;
 
 // Returns the state of the DRAM region with the given index.
 //
