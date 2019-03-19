@@ -107,6 +107,6 @@ typedef struct {
 	core_t cores[NUM_CORES];
 	region_t regions[NUM_REGIONS];
 
-}security_monitor_t
+}security_monitor_t;
 
 #endif // SECURITY_MONITOR_DATA_STRUCTURES_H
