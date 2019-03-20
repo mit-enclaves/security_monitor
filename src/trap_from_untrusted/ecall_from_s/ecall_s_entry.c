@@ -8,22 +8,22 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
 	switch(code) {
 		 
 		case SBI_SM_OS_BLOCK_DRAM_REGION:
-			(api_result_t) retval = monitor_unsupported;
+			retval = block_dram_region((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_SET_DMA_RANGE:
 			(api_result_t) retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_DRAM_REGION_STATE:
-			retval = dram_region_state((size_t) arg0);
+			retval = dram_region_state((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_DRAM_REGION_OWNER:
-			retval = dram_region_owner((size_t) arg0);
+			retval = dram_region_owner((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_ASSIGN_DRAM_REGION:
-			retval = assign_dram_region((size_t) arg0, (enclave_id_t) arg1);
+			retval = assign_dram_region((dram_region_id_t) arg0, (enclave_id_t) arg1);
 			break;
 		case SBI_SM_OS_FREE_DRAM_REGION:
-			retval = free_dram_region((size_t) arg0);
+			retval = free_dram_region((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS:
 			retval = flush_cached_dram_regions();

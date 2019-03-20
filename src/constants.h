@@ -1,6 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define XLENINT uint64_t
 #define SIZE_DRAM (0x80000000)
 #define SIZE_PAGE (0x1000)
 #define NUM_CORES 2

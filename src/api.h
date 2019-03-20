@@ -1,5 +1,6 @@
 #ifndef SECURITY_MONITOR_API_H
 #define SECURITY_MONITOR_API_H
+#include <data_structures.h>
 
 //ECALL codes for SM-calls
 
@@ -117,7 +118,7 @@ typedef enum {
 //
 // Before issuing this call, the OS is responsible for wiping its own
 // confidential information from the DRAM region.
-api_result_t block_dram_region(size_t dram_region);
+api_result_t block_dram_region(dram_region_id_t id);
 
 //namespace enclave {  // sanctum::api::enclave
 
@@ -126,7 +127,7 @@ api_result_t block_dram_region(size_t dram_region);
 // This is used by enclaves to confirm that they own a DRAM region when the OS
 // tells them that they do. The enclave should that assume something went wrong
 // if it sees any return value other than monitor_ok.
-api_result_t dram_region_check_ownership(size_t dram_region);
+api_result_t dram_region_check_ownership(dram_region_id_t id);
 
 // Reads the monitor's private attestation key.
 //
@@ -145,23 +146,23 @@ api_result_t get_attestation_key(uintptr_t phys_addr);
 // Returns dram_region_invalid if the given DRAM region index is invalid.
 // Returns dram_region_locked if the given DRAM region is currently locked by
 // another API call.
-dram_region_state_t dram_region_state(size_t dram_region);
+dram_region_state_t dram_region_state(dram_region_id_t id);
 
 // Returns the owner of the DRAM region with the given index.
 //
 // Returns null_enclave_id if the given DRAM region index is invalid, locked by
 // another operation, or if the region is not in the owned state.
-enclave_id_t dram_region_owner(size_t dram_region);
+enclave_id_t dram_region_owner(dram_region_id_t id);
 
 // Assigns a free DRAM region to an enclave or to the OS.
 //
 // `new_owner` is the enclave ID of the enclave that will own the DRAM region.
 // 0 means that the DRAM region will be assigned to the OS.
 //
-api_result_t assign_dram_region(size_t dram_region, enclave_id_t new_owner);
+api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner);
 
 // Frees a DRAM region that was previously locked.
-api_result_t free_dram_region(size_t dram_region);
+api_result_t free_dram_region(dram_region_id_t id);
 
 // Performs the TLB flushes needed to free a locked region.
 //

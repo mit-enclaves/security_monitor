@@ -79,6 +79,8 @@ typedef struct {
 
 // DRAM REGION
 
+typedef XLENINT dram_region_id_t;
+
 typedef enum {
 	dram_region_invalid = 0,
 	dram_region_free = 1,
