@@ -99,14 +99,14 @@ typedef struct {
 	dram_region_type_t type;
 	dram_region_state_t state;
 	atomic_flag_t lock;
-}region_t;
+}dram_region_t;
 
 // SECURITY MONITOR
 
 typedef struct {
 	core_t cores[NUM_CORES];
-	region_t regions[NUM_REGIONS];
-
+	dram_region_t regions[NUM_REGIONS];
+	const hash_t signing_enclave_measurement;
 }security_monitor_t;
 
 #endif // SECURITY_MONITOR_DATA_STRUCTURES_H
