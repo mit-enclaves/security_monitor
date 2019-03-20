@@ -71,7 +71,7 @@ typedef enum { // TODO must fit into 12 bits
 // CORE
 
 typedef struct {
-	enclave_t owner;
+	enclave_id_t owner;
 	bool has_enclave_schedule;
 	thread_t cur_thread;
 	atomic_flag_t lock;
@@ -97,7 +97,7 @@ typedef enum {
 }dram_region_type_t;
 
 typedef struct {
-	enclave_t owner;
+	enclave_id_t owner;
 	dram_region_type_t type;
 	dram_region_state_t state;
 	atomic_flag_t lock;

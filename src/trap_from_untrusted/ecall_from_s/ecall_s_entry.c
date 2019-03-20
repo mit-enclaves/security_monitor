@@ -8,7 +8,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
 	switch(code) {
 		 
 		case SBI_SM_OS_BLOCK_DRAM_REGION:
-			retval = block_dram_region((dram_region_id_t) arg0);
+			retval = os_block_dram_region((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_SET_DMA_RANGE:
 			(api_result_t) retval = monitor_unsupported;

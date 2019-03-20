@@ -9,10 +9,10 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) 
 	switch(code) {
 		
 		case UBI_SM_ENCLAVE_BLOCK_DRAM_REGION:
-			retval = block_dram_region((size_t) arg0);
+			retval = enclave_block_dram_region((dram_region_id_t) arg0);
 			break;
 		case UBI_SM_ENCLAVE_CHECK_OWNERSHIP:
-			retval = dram_region_check_ownership((size_t) arg0);
+			retval = dram_region_check_ownership((dram_region_id_t) arg0);
 			break;
 		case UBI_SM_ENCLAVE_ACCEPT_THREAD:
 			(api_result_t) retval = monitor_unsupported;

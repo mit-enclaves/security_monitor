@@ -59,6 +59,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 
 	// The DRAM region must be free	
 	if(r_ptr->state != dram_region_free) {
+		releaseLock(r_ptr->lock); // TODO: release lock
 		return monitor_invalid_state;
 	}
 
@@ -101,7 +102,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	return monitor_ok;
 }
 
-api_result_t block_dram_region(dram_region_id_t id) {
+api_result_t os_block_dram_region(dram_region_id_t id) {
 	// Check argument validity
 	if(id < NUM_REGIONS) {
 		return monitor_invalid_value;
@@ -116,11 +117,13 @@ api_result_t block_dram_region(dram_region_id_t id) {
 
 	// The DRAM region must be owned
 	if(r_ptr->state != dram_region_owned) {
+		releaseLock(r_ptr->lock); // TODO: release lock
 		return monitor_invalid_state;
 	}
 
 	// This handler only handle OS-owned regions
 	if((r_ptr->type != untrusted_region)) {
+		releaseLock(r_ptr->lock); // TODO: release lock
 		return monitor_access_denied;
 	}
 
@@ -147,6 +150,7 @@ api_result_t free_dram_region(dram_region_id_t id) {
 
 	// The DRAM region must be blocked
 	if(r_ptr->state != dram_region_blocked) {
+		releaseLock(r_ptr->lock); // TODO: release lock
 		return monitor_invalid_state;
 	}
 
