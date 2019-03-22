@@ -17,6 +17,13 @@ typedef struct {
 	uint64_t pad[7];
 }atomic_flag_t;
 
+#define aquireLock(lock) ({ unsigned long __tmp; \
+	asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1) :[address] "r"(&(lock.flag))); \
+	__tmp; })
+
+#define releaseLock(lock) ({ \
+	asm volatile ("amoswap.w.r1 x0, x0, (%[address])":::"r"(&(lock.flag))); })
+
 // MAILBOX
 typedef phys_ptr_t enclave_id_t;
 

@@ -13,11 +13,11 @@ dram_region_state_t dram_region_state(dram_region_id_t id) {
 	
 	if(!reclaimLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
-	} // TODO: reclaim lock
+	} // Acquire Lock
 
 	dram_region_type_s state = r_ptr->state;
 	
-	releaseLock(r_ptr->lock); // TODO: release lock
+	releaseLock(r_ptr->lock); // Release Lock
 	
 	return state; 
 }
@@ -33,11 +33,11 @@ enclave_id_t dram_region_owner(dram_region_id_t id) {
 	
 	if(!reclaimLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
-	} // TODO: reclaim lock
+	} // Acquire Lock
 
 	enclave_id_t owner = r_ptr->owner;
 	
-	releaseLock(r_ptr->lock); // TODO: release lock
+	releaseLock(r_ptr->lock); // Release Lock
 	
 	return owner; 
 }
@@ -55,11 +55,11 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	
 	if(!reclaimLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
-	} // TODO: reclaim lock
+	} // Acquire Lock
 
 	// The DRAM region must be free	
 	if(r_ptr->state != dram_region_free) {
-		releaseLock(r_ptr->lock); // TODO: release lock
+		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_invalid_state;
 	}
 
@@ -97,7 +97,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	// Update the DRAM region state
 	r->state = dram_region_owned;
 
-	releaseLock(r_ptr->lock); // TODO: release lock
+	releaseLock(r_ptr->lock); // Release Lock
 
 	return monitor_ok;
 }
@@ -113,24 +113,24 @@ api_result_t os_block_dram_region(dram_region_id_t id) {
 	
 	if(!reclaimLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
-	} // TODO: reclaim lock
+	} // Acquire Lock
 
 	// The DRAM region must be owned
 	if(r_ptr->state != dram_region_owned) {
-		releaseLock(r_ptr->lock); // TODO: release lock
+		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_invalid_state;
 	}
 
 	// This handler only handle OS-owned regions
 	if((r_ptr->type != untrusted_region)) {
-		releaseLock(r_ptr->lock); // TODO: release lock
+		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_access_denied;
 	}
 
 	// Update the DRAM region state
 	r_ptr->state = dram_region_blocked;
 
-	releaseLock(r_ptr->lock); // TODO: release lock
+	releaseLock(r_ptr->lock); // Release Lock
 
 	return monitor_ok;
 }
@@ -146,18 +146,18 @@ api_result_t free_dram_region(dram_region_id_t id) {
 	
 	if(!reclaimLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
-	} // TODO: reclaim lock
+	} // Acquire Lock
 
 	// The DRAM region must be blocked
 	if(r_ptr->state != dram_region_blocked) {
-		releaseLock(r_ptr->lock); // TODO: release lock
+		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_invalid_state;
 	}
 
 	// Update the DRAM region state
 	r_ptr->state = dram_region_free;
 
-	releaseLock(r_ptr->lock); // TODO: release lock
+	releaseLock(r_ptr->lock); // Release Lock
 
 	return monitor_ok;
 }
