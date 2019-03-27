@@ -24,17 +24,9 @@ typedef struct {
 #define releaseLock(lock) ({ \
 	asm volatile ("amoswap.w.r1 x0, x0, (%[address])":::"r"(&(lock.flag))); })
 
-// MAILBOX
-typedef phys_ptr_t enclave_id_t;
-
-typedef struct{
-	enclave_id_t expected_sender;
-	bool has_message;
-	uint8_t message[MAILBOX_SIZE];
-}mailbox_t;
-
 // ENCLAVE
 
+typedef phys_ptr_t enclave_id_t;
 
 typedef struct {
 	bool initialized;
@@ -43,8 +35,18 @@ typedef struct {
 	int64_t dram_bitmap;
 	hash_t measurement;
 	int64_t mailbox_count;
-	mailbox_t first_mailbox;
+	mailbox_t *mailbox_array;
 }enclave_t;
+
+// MAILBOX
+
+typedef phys_ptr_t mailbox_id_t;
+
+typedef struct{
+	enclave_id_t sender;
+	bool has_message;
+	uint8_t message[MAILBOX_SIZE];
+}mailbox_t;
 
 // THREAD
 

@@ -106,6 +106,8 @@ typedef enum {
   monitor_unsupported = 6,
 } api_result_t;
 
+//// DRAM
+
 // Blocks a DRAM region that was previously owned by the caller.
 //
 // After this call completes, the caller should not expect to be able to access
@@ -128,18 +130,6 @@ api_result_t block_dram_region(dram_region_id_t id);
 // tells them that they do. The enclave should that assume something went wrong
 // if it sees any return value other than monitor_ok.
 api_result_t dram_region_check_ownership(dram_region_id_t id);
-
-// Reads the monitor's private attestation key.
-//
-// This API call will only succeed if the calling enclave is the special
-// enclave designated by the security monitor to be the signing enclave.
-//
-// `phys_addr` must point into a buffer large enough to store the attestation
-// key. The entire buffer must be contained in a single DRAM region that
-// belongs to the enclave.
-api_result_t get_attestation_key(uintptr_t phys_addr);
-
-//namespace os {  // sanctum::api::os
 
 // Returns the state of the DRAM region with the given index.
 //
@@ -170,5 +160,72 @@ api_result_t free_dram_region(dram_region_id_t id);
 // as the monitor's state must be updated to reflect the fact that a TLB flush
 // has occurred.
 api_result_t flush_cached_dram_regions();
+
+//// MAILBOXES
+
+// Reads the monitor's private attestation key.
+//
+// This API call will only succeed if the calling enclave is the special
+// enclave designated by the security monitor to be the signing enclave.
+//
+// `phys_addr` must point into a buffer large enough to store the attestation
+// key. The entire buffer must be contained in a single DRAM region that
+// belongs to the enclave.
+api_result_t get_attestation_key(uintptr_t phys_addr);
+
+// Prepares a mailbox to receive a message from another enclave.
+//
+// The mailbox will discard any message that it might contain.
+api_result_t accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sender);
+
+// Attempts to read a message received in a mailbox.
+//
+// If the read succeeds, the mailbox will transition into the free state.
+//
+// `phys_addr` must point into a buffer large enough to store a
+// mailbox_identity_t structure. The entire buffer must be contained in a
+// single DRAM region that belongs to the enclave.
+api_result_t read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr);
+
+// Sends a message to another enclave's mailbox.
+//
+// `enclave_id` and `mailbox_id` identify the destination mailbox.
+//
+// `phys_addr` must point into a buffer large enough to store a
+// mailbox_identity_t structure. The entire buffer must be contained in a
+// single DRAM region that belongs to the enclave.
+//
+// The structure contains the destination enclave's expected identity. The
+// monitor will refuse to deliver the message
+api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id,
+    uintptr_t phys_addr);
+
+//// METADATA
+
+// Reserves a free DRAM region to hold enclave metadata.
+//
+// DRAM regions that hold enclave metadata can be freed directly by calling
+// free_dram_region(). Calling block_dram_region() on them will fail.
+api_result_t create_metadata_region(size_t dram_region);
+
+// Returns the number of addressable metadata pages in a DRAM metadata region.
+//
+// This may be smaller than the number of total pages in a DRAM region, if the
+// computer does not have continuous DRAM regions and the security monitor does
+// not support using non-continuous regions.
+size_t metadata_region_pages();
+
+// Returns the first usable metadata page in a DRAM metadata region.
+//
+// The beginning of each DRAM metadata region is reserved for the monitor's
+// use. This returns the first page number that can be used to store
+// enclave_info_t and thread_info_t structures.
+size_t metadata_region_start();
+
+// Returns the number of pages used by a thread metadata structure.
+size_t thread_metadata_pages();
+
+// Returns the number of pages used by an enclave metadata structure.
+size_t enclave_metadata_pages(size_t mailbox_count);
 
 #endif // SECURITY_MONITOR_API_H

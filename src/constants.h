@@ -1,6 +1,14 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+int log2(int n) {
+	int cnt = 0;
+	while(n >>= 1) {
+		cnt++;
+	}
+	return cnt;
+}
+
 #define XLENINT uint64_t
 #define SIZE_DRAM (0x80000000)
 #define SIZE_PAGE (0x1000)

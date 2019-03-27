@@ -3,7 +3,7 @@
 // SM CALLS FROM OS (these come from S-mode)
 
 void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
-	uintptr_t code = regs[17], arg0 = regs[10], arg1 = [11], retval;
+	uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], retval;
 
 	switch(code) {
 		 
