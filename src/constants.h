@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-int log2(int n) {
+int intlog2(int n) {
 	int cnt = 0;
 	while(n >>= 1) {
 		cnt++;

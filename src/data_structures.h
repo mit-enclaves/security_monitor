@@ -2,6 +2,8 @@
 #define SECURITY_MONITOR_DATA_STRUCTURES_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include "constants.h"
 
 typedef uint64_t phys_ptr_t;
@@ -12,21 +14,34 @@ typedef struct {
 }core_states_t;
 
 // ATOMIC FLAG
+
 typedef struct {
 	uint64_t flag;
 	uint64_t pad[7];
 }atomic_flag_t;
 
 #define aquireLock(lock) ({ unsigned long __tmp; \
-	asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1) :[address] "r"(&(lock.flag))); \
+	asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&(lock.flag))); \
 	__tmp; })
 
 #define releaseLock(lock) ({ \
-	asm volatile ("amoswap.w.r1 x0, x0, (%[address])":::"r"(&(lock.flag))); })
+	asm volatile ("amoswap.w.r1 x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
 
 // ENCLAVE
 
 typedef phys_ptr_t enclave_id_t;
+
+// MAILBOX
+
+typedef int64_t mailbox_id_t;
+
+typedef struct{
+	enclave_id_t sender;
+	bool has_message;
+	uint8_t message[MAILBOX_SIZE];
+}mailbox_t;
+
+// ENCLAVE
 
 typedef struct {
 	bool initialized;
@@ -37,16 +52,6 @@ typedef struct {
 	int64_t mailbox_count;
 	mailbox_t *mailbox_array;
 }enclave_t;
-
-// MAILBOX
-
-typedef phys_ptr_t mailbox_id_t;
-
-typedef struct{
-	enclave_id_t sender;
-	bool has_message;
-	uint8_t message[MAILBOX_SIZE];
-}mailbox_t;
 
 // THREAD
 

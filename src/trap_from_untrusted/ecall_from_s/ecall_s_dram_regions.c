@@ -1,6 +1,6 @@
 #include <api.h>
 #include <sm.h>
-#include <csr.h>
+#include <csr/csr.h>
 
 dram_region_state_t dram_region_state(dram_region_id_t id) {
 	// Check argument validity
@@ -11,11 +11,11 @@ dram_region_state_t dram_region_state(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
-	dram_region_type_s state = r_ptr->state;
+	dram_region_type_t state = r_ptr->state;
 	
 	releaseLock(r_ptr->lock); // Release Lock
 	
@@ -31,7 +31,7 @@ enclave_id_t dram_region_owner(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
@@ -53,7 +53,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
@@ -73,29 +73,29 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	// If the DRAM region belongs to an enclave
 	// remove it from the enclave bitmap
 	else if(r_ptr->type == enclave_region) {
-		XLENINT memrbm = r_ptr->owner->dram_bitmap;
+		XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
 		memrbm &= ~(1u << id);
-		r_ptr->owner->dram_bitmap = memrbm;
+		((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
 	}
 
 	// Set the new owner and update the owner's bitmap
 	if(new_owner == 0) {
-		r->owner = 0;
-		r->type  = untrusted_region;
+		r_ptr->owner = 0;
+		r_ptr->type  = untrusted_region;
 		XLENINT mmrbm = read_csr(CSR_MMRBM);
 		mmrbm |= (1u << id);
 		write_csr(CSR_MMRBM, mmrbm);
 	}
 	else {
-		r->owner = new_owner;
-		r->type  = enclave_region; 
-		XLENINT memrbm = r_ptr->owner->dram_bitmap;
+		r_ptr->owner = new_owner;
+		r_ptr->type  = enclave_region; 
+		XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
 		memrbm |= (1u << id);
-		r_ptr->owner->dram_bitmap = memrbm;
+		((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
 	}
 	
 	// Update the DRAM region state
-	r->state = dram_region_owned;
+	r_ptr->state = dram_region_owned;
 
 	releaseLock(r_ptr->lock); // Release Lock
 
@@ -111,7 +111,7 @@ api_result_t os_block_dram_region(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
@@ -144,7 +144,7 @@ api_result_t free_dram_region(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 

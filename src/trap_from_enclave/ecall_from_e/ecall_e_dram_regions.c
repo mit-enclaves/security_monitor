@@ -1,6 +1,6 @@
 #include <api.h>
 #include <sm.h>
-#include <csr.h>
+#include <csr/csr.h>
 
 api_result_t enclave_block_dram_region(dram_region_id_t id) {
 	// Check argument validity
@@ -11,7 +11,7 @@ api_result_t enclave_block_dram_region(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
@@ -27,7 +27,7 @@ api_result_t enclave_block_dram_region(dram_region_id_t id) {
 		return monitor_access_denied;
 	}
 
-	enclave_id_t caller_id = sm_globals.cores[csr_read(mhartid)].owner
+	enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
 
 	if(caller_id != r_ptr->owner) {
 		releaseLock(r_ptr->lock); // Release Lock
@@ -52,7 +52,7 @@ api_result_t dram_region_check_ownership(dram_region_id_t id) {
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
 	
-	if(!reclaimLock(r_ptr->lock)) {
+	if(!aquireLock(r_ptr->lock)) {
 		return monitor_concurrent_call;
 	} // Acquire Lock
 
@@ -68,7 +68,7 @@ api_result_t dram_region_check_ownership(dram_region_id_t id) {
 		return monitor_access_denied;
 	}
 
-	enclave_id_t caller_id = sm_globals.cores[csr_read(mhartid)].owner
+	enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
 
 	if(caller_id != r_ptr->owner) {
 		releaseLock(r_ptr->lock); // Release Lock

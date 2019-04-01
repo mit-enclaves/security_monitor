@@ -1,8 +1,9 @@
+#include <errno.h> // TODO only include ENOSYS?
 #include <api.h>
 
 // SM CALLS FROM OS (these come from S-mode)
 
-void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
+void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
 	uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], retval;
 
 	switch(code) {
@@ -11,7 +12,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
 			retval = os_block_dram_region((dram_region_id_t) arg0);
 			break;
 		case SBI_SM_OS_SET_DMA_RANGE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_DRAM_REGION_STATE:
 			retval = dram_region_state((dram_region_id_t) arg0);
@@ -29,49 +30,49 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintprt_t mepc) {
 			retval = flush_cached_dram_regions();
 			break;
 		case SBI_SM_OS_METADATA_REGION_PAGES:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_METADATA_REGION_START:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_THREAD_METADATA_PAGES:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_ENCLAVE_METADATA_PAGES:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_CREATE_ENCLAVE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_LOAD_PAGE_TABLE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_LOAD_PAGE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_LOAD_THREAD:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_ASSIGN_THREAD:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_INIT_ENCLAVE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_ENTER_ENCLAVE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_DELETE_THREAD:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_DELETE_ENCLAVE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 		case SBI_SM_ENCLAVE_FETCH_FIELD:
-			(api_result_t) retval = monitor_unsupported;
+			retval = monitor_unsupported;
 			break;
 
 		default:
