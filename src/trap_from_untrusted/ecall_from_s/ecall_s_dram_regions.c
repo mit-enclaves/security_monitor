@@ -1,6 +1,7 @@
 #include <api.h>
 #include <sm.h>
 #include <csr/csr.h>
+#include <sm_util/sm_util.h>
 
 dram_region_state_t dram_region_state(dram_region_id_t id) {
 	// Check argument validity
@@ -48,7 +49,10 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 		return monitor_invalid_value;
 	}
 
-	// TODO: what is a valid argument for new owner
+	// Check new_owner is a valid enclave
+	if((new_owner != 0) && !is_valid_enclave(new_owner)){
+		return monitor_invalid_value;
+	}
 	
 	// Get a pointer to the DRAM region datastructure	
 	dram_region_t *r_ptr = &(sm_globals.regions[id]);
@@ -61,21 +65,6 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
 	if(r_ptr->state != dram_region_free) {
 		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_invalid_state;
-	}
-
-	// If the DRAM region belongs to the OS
-	// remove it from the OS bitmap
-	if(r_ptr->type == untrusted_region) {
-		XLENINT mmrbm = read_csr(CSR_MMRBM);
-		mmrbm &= ~(1u << id);
-		write_csr(CSR_MMRBM, mmrbm);
-	}
-	// If the DRAM region belongs to an enclave
-	// remove it from the enclave bitmap
-	else if(r_ptr->type == enclave_region) {
-		XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
-		memrbm &= ~(1u << id);
-		((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
 	}
 
 	// Set the new owner and update the owner's bitmap
@@ -152,6 +141,21 @@ api_result_t free_dram_region(dram_region_id_t id) {
 	if(r_ptr->state != dram_region_blocked) {
 		releaseLock(r_ptr->lock); // Release Lock
 		return monitor_invalid_state;
+	}
+	
+	// If the DRAM region belongs to the OS
+	// remove it from the OS bitmap
+	if(r_ptr->type == untrusted_region) {
+		XLENINT mmrbm = read_csr(CSR_MMRBM);
+		mmrbm &= ~(1u << id);
+		write_csr(CSR_MMRBM, mmrbm);
+	}
+	// If the DRAM region belongs to an enclave
+	// remove it from the enclave bitmap
+	else if(r_ptr->type == enclave_region) {
+		XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
+		memrbm &= ~(1u << id);
+		((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
 	}
 
 	// Update the DRAM region state

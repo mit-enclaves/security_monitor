@@ -2,31 +2,9 @@
 #include <sm.h>
 #include <csr/csr.h>
 #include <clib/clib.h> // TODO: only include memcpy?
+#include <sm_util/sm_util.h>
 
 #include <boot_api.h> //TODO: Is this the right way to do it?
-
-#define REGION_IDX(addr) ((1u<<(addr >> intlog2(SIZE_DRAM / NUM_REGIONS))) & (NUM_REGIONS - 1))
-
-inline bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
-
-	dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);	
-
-	// Check that dram region is an enclave region and is owned by the given enclave
-	if((dram_region_ptr->type != enclave_region) 
-			|| (dram_region_ptr->state != dram_region_owned) 
-			|| (dram_region_ptr->owner != enclave_id)) {
-		return false;
-	}
-
-	return true;
-}
-
-inline bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id) {
-	
-	// Check that the buffer is contained in a memory regions owned by the enclave.
-	return owned(buff_phys_addr, enclave_id) && owned(buff_phys_addr + size_buff * 8, enclave_id);
-}
-
 
 api_result_t get_attestation_key(uintptr_t phys_addr) {
 	// Check that the caller is an attestation enclave
@@ -60,18 +38,11 @@ api_result_t accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sende
 		return monitor_invalid_value;
 	}	
 	
-	// Check that expected_sender is page alligned
-	if((expected_sender & (SIZE_PAGE - 1)) != 0) {
+	// Check that expected_sender is a valid enclave
+	if(!is_valid_enclave(expected_sender)){
 		return monitor_invalid_value;
 	}
 
-	// Check that expected_sender corresponds to the given enclave
-	if(!owned((uintptr_t) expected_sender, expected_sender)){
-		return monitor_invalid_value;
-	}
-
-	// TODO :Check that expected_sender points to a metadata region
-	
 	mailbox_t *mailbox = &(((enclave_t *) caller_id)->mailbox_array[mailbox_id]);
 
 	for(int i = 0; i < MAILBOX_SIZE; i++) {
@@ -127,18 +98,11 @@ api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id, uint
 		return monitor_invalid_value;
 	}	
 
-	// Check that enclave_id is page alligned
-	if((enclave_id & (SIZE_PAGE - 1)) != 0) {
+	// Check that enclave_id corresponds to a valid enclave
+	if(!is_valid_enclave(enclave_id)){
 		return monitor_invalid_value;
 	}
 
-	// Check that enclave_id corresponds to the given enclave
-	if(!owned((uintptr_t) enclave_id, enclave_id)){
-		return monitor_invalid_value;
-	}
-
-	// TODO :Check that enclave_id points to a metadata region
-	
 	// Check that the buffer is contained in a memory regions owned by the enclave.
 	if(!check_buffer_ownership(phys_addr, sizeof(uint8_t) * MAILBOX_SIZE, caller_id)) {
 		return monitor_invalid_value;

@@ -207,26 +207,26 @@ api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id,
 //
 // DRAM regions that hold enclave metadata can be freed directly by calling
 // free_dram_region(). Calling block_dram_region() on them will fail.
-api_result_t create_metadata_region(size_t dram_region);
+api_result_t create_metadata_region(dram_region_id_t dram_region);
 
 // Returns the number of addressable metadata pages in a DRAM metadata region.
 //
 // This may be smaller than the number of total pages in a DRAM region, if the
 // computer does not have continuous DRAM regions and the security monitor does
 // not support using non-continuous regions.
-size_t metadata_region_pages();
+int64_t metadata_region_pages();
 
 // Returns the first usable metadata page in a DRAM metadata region.
 //
 // The beginning of each DRAM metadata region is reserved for the monitor's
 // use. This returns the first page number that can be used to store
 // enclave_info_t and thread_info_t structures.
-size_t metadata_region_start();
+int64_t metadata_region_start();
 
 // Returns the number of pages used by a thread metadata structure.
-size_t thread_metadata_pages();
+int64_t thread_metadata_pages();
 
 // Returns the number of pages used by an enclave metadata structure.
-size_t enclave_metadata_pages(size_t mailbox_count);
+int64_t enclave_metadata_pages(int64_t mailbox_count);
 
 #endif // SECURITY_MONITOR_API_H

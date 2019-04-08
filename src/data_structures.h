@@ -71,15 +71,17 @@ typedef struct {
 
 // METADATE PAGE MAP
 
-typedef uint64_t metadata_page_map_entry;
+typedef uint64_t metadata_page_map_entry_t;
 
-typedef metadata_page_map_entry metadata_page_map_t[NUM_PAGES_PER_REGION];
+#define ENTRY_OWNER_ID_OFFSET 12
+
+typedef metadata_page_map_entry_t *metadata_page_map_t; // Array of size NUM_METADATA_PAGES_PER_REGION
 
 typedef enum { // TODO must fit into 12 bits
-	invalid = 0,
-	free    = 1,
-	enclave = 2,
-	thread  = 3,
+	metadata_invalid = 0,
+	metadata_free    = 1,
+	metadata_enclave = 2,
+	metadata_thread  = 3,
 }metadata_page_t;
 
 // CORE

@@ -14,7 +14,9 @@ int intlog2(int n) {
 #define SIZE_PAGE (0x1000)
 #define NUM_CORES 2
 #define NUM_REGIONS 64
-#define NUM_PAGES_PER_REGION (0x2000)
+
+#define SIZE_REGION (SIZE_PAGE/NUM_REGIONS)
+#define NUM_METADATA_PAGES_PER_REGION (SIZE_REGION/(sizeof(metadata_page_map_entry_t) + SIZE_PAGE))
 
 #define MAILBOX_SIZE (128)
 

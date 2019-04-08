@@ -29,17 +29,20 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
 		case SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS:
 			retval = flush_cached_dram_regions();
 			break;
+		case SBI_SM_OS_CREATE_METADATA_REGION:
+			retval = create_metadata_region((dram_region_id_t) arg0);
+			break;
 		case SBI_SM_OS_METADATA_REGION_PAGES:
-			retval = monitor_unsupported;
+			retval = metadata_region_pages();
 			break;
 		case SBI_SM_OS_METADATA_REGION_START:
-			retval = monitor_unsupported;
+			retval = metadata_region_start();
 			break;
 		case SBI_SM_OS_THREAD_METADATA_PAGES:
-			retval = monitor_unsupported;
+			retval = thread_metadata_pages();
 			break;
 		case SBI_SM_OS_ENCLAVE_METADATA_PAGES:
-			retval = monitor_unsupported;
+			retval = enclave_metadata_pages((int64_t) arg0);
 			break;
 		case SBI_SM_OS_CREATE_ENCLAVE:
 			retval = monitor_unsupported;
