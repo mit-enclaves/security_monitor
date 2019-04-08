@@ -229,4 +229,61 @@ int64_t thread_metadata_pages();
 // Returns the number of pages used by an enclave metadata structure.
 int64_t enclave_metadata_pages(int64_t mailbox_count);
 
+//// ENCLAVE MANAGEMENT
+
+// Creates an enclave's metadata structure.
+//
+// `enclave_id` must be the physical address of the first page in a sequence of
+// free pages in the same DRAM metadata region stripe. It becomes the enclave's
+// ID used for subsequent API calls. The required number of free metadata pages
+// can be obtained by calling `enclave_metadata_pages`.
+//
+// `ev_base` and `ev_mask` indicate the range of enclave virtual addresses. The
+// addresses this range get translated using the enclave page tables, and must
+// point into enclave memory.
+//
+// `mailbox_count` is the number of mailboxes that the enclave will have. Valid
+// mailbox IDs for this enclave will range from 0 to mailbox_count - 1.
+//
+// `debug` is set for debug enclaves. A security monitor that supports
+// enclave debugging implements copy_debug_enclave_page, which can only be used
+// on debug enclaves.
+//
+// All arguments become a part of the enclave's measurement.
+api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
+    uintptr_t ev_mask, uint64_t mailbox_count, bool debug);
+
+// Allocates a page in the enclave's main DRAM region for page tables.
+//
+// `enclave_id` must be an enclave that has not yet been initialized.
+//
+// `phys_addr` must be higher than the last physical address passed to a
+// load_enclave_ function, must be page-aligned, and must point into a DRAM
+// region owned by the enclave.
+//
+// `virtual_addr` is the lowest virtual address mapped by the newly created
+// page table.
+//
+// `level` indicates the page table level (e.g., in x86, 0 for PT, 1 for PD, 2
+// for PDPT, 3 for PML).
+//
+// `virtual_addr`, `level` and `acl` become a part of the enclave's
+// measurement.
+api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
+    uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
+
+// Allocates and initializes a page in the enclave's main DRAM region.
+//
+// `enclave_id` must be an enclave that has not yet been initialized.
+//
+// `phys_addr` must be higher than the last physical address passed to a
+// load_enclave_ function, must be page-aligned, and must point into a DRAM
+// region owned by the enclave.
+//
+// `virtual_addr`, `acl`, and the contents of the page at `os_addr` become a
+// part of the enclave's measurement.
+api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
+    uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
+
+
 #endif // SECURITY_MONITOR_API_H
