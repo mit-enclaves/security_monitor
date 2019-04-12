@@ -2,11 +2,11 @@
 #define CONSTANTS_H
 
 int intlog2(int n) {
-	int cnt = 0;
-	while(n >>= 1) {
-		cnt++;
-	}
-	return cnt;
+   int cnt = 0;
+   while(n >>= 1) {
+      cnt++;
+   }
+   return cnt;
 }
 
 #define XLENINT uint64_t
@@ -15,9 +15,9 @@ int intlog2(int n) {
 #define NUM_CORES 2
 #define NUM_REGIONS 64
 
-#define SIZE_REGION (SIZE_PAGE/NUM_REGIONS)
+#define SIZE_REGION (SIZE_DRAM / NUM_REGIONS)
 #define NUM_METADATA_PAGES_PER_REGION (SIZE_REGION/(sizeof(metadata_page_map_entry_t) + SIZE_PAGE))
 
-#define MAILBOX_SIZE (128)
+#define MAILBOX_SIZE 128
 
 #endif // CONSTANTS_H

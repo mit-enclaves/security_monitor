@@ -55,55 +55,55 @@
 
 // Error codes returned from monitor API calls.
 typedef enum {
-  // API call succeeded.
-  monitor_ok = 0,
+   // API call succeeded.
+   monitor_ok = 0,
 
-  // A parameter given to the API call was invalid.
-  //
-  // This most likely reflects a bug in the caller code.
-  monitor_invalid_value = 1,
+   // A parameter given to the API call was invalid.
+   //
+   // This most likely reflects a bug in the caller code.
+   monitor_invalid_value = 1,
 
-  // A resource referenced by the API call is in an unsuitable state.
-  //
-  // The API call will not succeed if the caller simply retries it. However,
-  // the caller may be able to perform other API calls to get the resources in
-  // a state that will allow this call to succeed.
-  monitor_invalid_state = 2,
+   // A resource referenced by the API call is in an unsuitable state.
+   //
+   // The API call will not succeed if the caller simply retries it. However,
+   // the caller may be able to perform other API calls to get the resources in
+   // a state that will allow this call to succeed.
+   monitor_invalid_state = 2,
 
-  // Failed to acquire a lock. Retrying with the same arguments might succeed.
-  //
-  // The monitor returns this instead of blocking a hardware thread when a
-  // resource lock is acquired by another thread. This approach eliminates any
-  // possibility of having the monitor deadlock. The caller is responsible for
-  // retrying the API call.
-  //
-  // This is also sometime returned instead of monitor_invalid_value, in the
-  // interest of reducing edge cases in monitor implementation.
-  monitor_concurrent_call = 3,
+   // Failed to acquire a lock. Retrying with the same arguments might succeed.
+   //
+   // The monitor returns this instead of blocking a hardware thread when a
+   // resource lock is acquired by another thread. This approach eliminates any
+   // possibility of having the monitor deadlock. The caller is responsible for
+   // retrying the API call.
+   //
+   // This is also sometime returned instead of monitor_invalid_value, in the
+   // interest of reducing edge cases in monitor implementation.
+   monitor_concurrent_call = 3,
 
-  // The call was interrupted due to an asynchronous enclave exit (AEX).
-  //
-  // This is only returned by enter_enclave, and can be considered a more
-  // specific case of monitor_concurrent_call. The caller should retry the
-  // enclave_enter call, so the enclave thread can make progress.
-  monitor_async_exit = 4,
+   // The call was interrupted due to an asynchronous enclave exit (AEX).
+   //
+   // This is only returned by enter_enclave, and can be considered a more
+   // specific case of monitor_concurrent_call. The caller should retry the
+   // enclave_enter call, so the enclave thread can make progress.
+   monitor_async_exit = 4,
 
-  // The caller is not allowed to access a resource referenced by the API call.
-  //
-  // This is a more specific version of monitor_invalid_value. The monitor does
-  // its best to identify these cases, but may fail.
-  monitor_access_denied = 5,
+   // The caller is not allowed to access a resource referenced by the API call.
+   //
+   // This is a more specific version of monitor_invalid_value. The monitor does
+   // its best to identify these cases, but may fail.
+   monitor_access_denied = 5,
 
-  // The current monitor implementation does not support the request.
-  //
-  // The caller made a reasonable API request that exercises an unhandled edge
-  // case in the monitor implementaiton. Some edge cases that would require
-  // complex or difficult-to-test implementations are detected and handled by
-  // returning monitor_unsupported.
-  //
-  // The documentation for API calls states the edge cases that result in a
-  // monitor_unsupported response.
-  monitor_unsupported = 6,
+   // The current monitor implementation does not support the request.
+   //
+   // The caller made a reasonable API request that exercises an unhandled edge
+   // case in the monitor implementaiton. Some edge cases that would require
+   // complex or difficult-to-test implementations are detected and handled by
+   // returning monitor_unsupported.
+   //
+   // The documentation for API calls states the edge cases that result in a
+   // monitor_unsupported response.
+   monitor_unsupported = 6,
 } api_result_t;
 
 //// DRAM
@@ -199,7 +199,7 @@ api_result_t read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr);
 // The structure contains the destination enclave's expected identity. The
 // monitor will refuse to deliver the message
 api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id,
-    uintptr_t phys_addr);
+      uintptr_t phys_addr);
 
 //// METADATA
 
@@ -251,7 +251,7 @@ int64_t enclave_metadata_pages(int64_t mailbox_count);
 //
 // All arguments become a part of the enclave's measurement.
 api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
-    uintptr_t ev_mask, uint64_t mailbox_count, bool debug);
+      uintptr_t ev_mask, uint64_t mailbox_count, bool debug);
 
 // Allocates a page in the enclave's main DRAM region for page tables.
 //
@@ -270,7 +270,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 // `virtual_addr`, `level` and `acl` become a part of the enclave's
 // measurement.
 api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
-    uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
+      uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
 
 // Allocates and initializes a page in the enclave's main DRAM region.
 //
@@ -283,7 +283,7 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
 // `virtual_addr`, `acl`, and the contents of the page at `os_addr` become a
 // part of the enclave's measurement.
 api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
-    uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
+      uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
 
 
 #endif // SECURITY_MONITOR_API_H

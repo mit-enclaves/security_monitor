@@ -3,7 +3,7 @@
 
 #include <data_structures.h>
 
-#define REGION_IDX(addr) ((1u<<(addr >> intlog2(SIZE_DRAM / NUM_REGIONS))) & (NUM_REGIONS - 1))
+#define REGION_IDX(addr) ((1u<<(addr >> intlog2(SIZE_REGION))) & ((1u << NUM_REGIONS) - 1))
 #define METADATA_IDX(addr) (((addr % SIZE_REGION) - (sizeof(metadata_mage_map_entry_t) * NUM_METADATA_PAGES_PER_REGION)) / NUM_METADATA_PAGES_PER_REGION)
 
 inline bool is_valid_enclave(enclave_id_t enclave_id);
