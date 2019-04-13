@@ -52,6 +52,9 @@ typedef struct {
    int64_t mailbox_count;
    mailbox_t *mailbox_array;
    uintptr_t last_phys_addr_loaded;
+   uintptr_t eptbr; 
+   uintptr_t evbase;
+   uintptr_t evmask;
 }enclave_t;
 
 // THREAD

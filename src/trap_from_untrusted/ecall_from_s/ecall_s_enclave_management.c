@@ -1,3 +1,4 @@
+#include <clib.h>
 #include <api.h>
 #include <sm.h>
 #include <csr/csr.h>
@@ -61,6 +62,8 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    enclave->thread_cout = 0;
    enclave->dram_bitmap = 0;
    enclave->last_phys_addr_loaded = 0;
+   enclave->evbase = evbase;
+   enclave->evmask = evmask;
 
    // Initialize mailboxes
    enclave->mailbox_count = mailbox_count;
@@ -81,8 +84,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    return monitor_ok;
 }
 
-
-api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
+api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    // Check that phys_addr is page alligned
@@ -90,11 +92,85 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
       return monitor_invalid_value;
    }
 
+   if(!is_valid_enclave(enclave_id)) {
+      return monitor_invalid_value;
+   }
+
+   (enclave_t *) enclave = enclave_id;
+
+   // Check that the enclave is not initialized.
+   if(enclave->initialized) {
+      return monitor_invalid_state;
+   }
+
+   // Check that phys_addr is higher than the last physical address
+   if(enclave->last_phys_addr_loaded <= phys_addr) {
+      return monitor_invalid_value;
+   }
+
+   // Check virtual addr validity
+   if(((virtual_addr & enclave->evmask) != enclave->evbase) ||
+         (((virtual_addr + PAGE_SIZE) & enclave->evmask) != enclave->evbase)) {
+      return monito_invalid_value;
+   }
+
+   // Check that phys_addr points into a DRAM region owned by the enclave
+   if(!owned(phys_addr, enclave_id)){
+      return monitor_invalid_state;
+   }
+
+   // Initialize page table entry
+   if(level == 3) {
+      enclave->eptbr = phys_addr;
+   }
+   else {
+      uintptr_t pte_base = enclave->eptbr;
+      if(!owned(pte_base, enclave_id)){
+         return monitor_invalid_state;
+      }
+
+      for(i = 2; i >= level; i--) {
+         uint64_t * pte_addr = pte_base +
+            ((v_addr >> (PAGE_OFFSET + (PN_OFFSET * i))) & PN_MASK);
+
+         if(i != level) {
+            uint64_t pte_acl = (*pte_addr) & ACL_MASK;
+            if((pte_acl & PTE_V == 0) ||
+                  ((pte_acl & PTE_R == 0) && (pte_acl & PTE_W == PTE_W)) || 
+                  (pte_acl & PTE_R == PTE_R) || (pte_acl & PTE_X == PTE_X)    ) {
+               return monitor_invalid_state;
+            }
+
+            pte_base = (((*pte_addr) >> PAGE_ENTRY_ACL_OFFSET) & PPNs_MASK) << PAGE_OFFSET;
+
+            if(!owned(pte_base, enclave_id)){
+               return monitor_invalid_state;
+            }
+         }
+         else {
+            *pte_addr = 0 |
+               ((phys_addr >> PAGE_OFFSET) & (PPNs_MASK) << PAGE_ENTRY_ACL_OFFSET) |
+               (acl & ACL_MASK);
+         }
+      }
+   }
+
+   enclave->last_phys_addr_loaded = phys_addr;
+
+   return monitor_ok;
+}
+
+api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
+      uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
+
    if(level > 3) {
       return monitor_invalid_value;
    }
 
-   if(!is_valid_enclave(enclave_id)) {
+   // Check that ACL is valid and is a leaf ACL
+   if((acl & PTE_V == 0) ||
+         ((acl & PTE_R == 0) && (acl & PTE_W == PTE_W)) || 
+         (acl & PTE_R == PTE_R) || (acl & PTE_X == PTE_X)    ) {
       return monitor_invalid_value;
    }
 
@@ -105,39 +181,53 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
       return monito_concurent_call;
    }
 
-   // Check that the enclave is not initialized.
-   if(((enclave_t *) enclave_id)->initialized) {
+   // Load page table entry in page table and check arguments
+   api_result_t ret = load_page_table_entry(enclave_id, phys_addr, virtual_addr, level, acl);
+
+   if(ret != monitor_ok) {
       releaseLock(er_ptr->lock);
-      return monitor_invalid_state;
+      return ret;
    }
 
-   // Check that phys_addr is higher than the last physical address
-   if(((enclave_t *) enclave_id)->last_phys_addr_loaded <= phys_addr) {
-      releaseLock(er_ptr->lock);
+   // TODO: Update measurement
+
+   releaseLock(er_ptr->lock);
+
+   return monitor_ok
+}
+
+api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
+      uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
+
+   // Check that ACL is valid anf is not a leaf ACL
+   if((acl & PTE_V == 0) ||
+         ((acl & PTE_R == 0) && (acl & PTE_W == PTE_W)) || 
+         ((acl & PTE_R == 0) && (acl & PTE_X == 0))         ) {
       return monitor_invalid_value;
    }
-   
-   // Check that phys_addr points into a DRAM region owned by the enclave
-   dram_region_t *r_ptr = &(sm_global.regions[REGION_IDX(phys_addr)]);
 
-   if(!aquireLock(r_ptr->lock)) {
-      releaseLock(er_ptr->lock);
+   // Get a pointer to the DRAM region datastructure of the enclave metadata
+   dram_region_t *er_ptr = &(sm_global.regions[REGION_IDX(enclave_id)]);
+
+   if(!aquireLock(er_ptr->lock)) {
       return monito_concurent_call;
    }
 
-   if((r_ptr->type != enclave_region) || (r_ptr->state != dram_region_owned) || (r_ptr->owner != enclave_id)) {
+   // Load page table entry in page table and check arguments
+   api_result_t ret = load_page_table_entry(enclave_id, phys_addr, virtual_addr, 0, acl); // TODO: Are loaded pages always kilo pages?
+
+   if(ret != monitor_ok) {
       releaseLock(er_ptr->lock);
-      releaseLock(r_ptr->lock);
-      return monitor_invalid_state;
+      return ret;
    }
 
-   // Check virtual addr validity
-   // Check acl validity
-   // Copy the page table
-   // Update the measurement
-      
+   // Load page
+   // TODO: Check os_addr
+   memcpy(phys_addr, os_addr, SIZE_PAGE);
+
+   // TODO: Update measurement
+
    releaseLock(er_ptr->lock);
-   releaseLock(r_ptr->lock);
-   
+
    return monitor_ok;
 }
