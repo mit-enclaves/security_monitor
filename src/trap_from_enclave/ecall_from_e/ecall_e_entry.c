@@ -15,7 +15,7 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
          retval = dram_region_check_ownership((dram_region_id_t) arg0);
          break;
       case UBI_SM_ENCLAVE_ACCEPT_THREAD:
-         retval = monitor_unsupported;
+         retval = accept_thread(arg0, arg1);
          break;
       case UBI_SM_ENCLAVE_EXIT_ENCLAVE:
          retval = monitor_unsupported;

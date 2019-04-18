@@ -285,6 +285,17 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
 api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
 
+// Marks the given enclave as initialized and ready to execute.
+//
+// `enclave_id` must identify an enclave that has not yet been initialized.
+api_result_t init_enclave(enclave_id_t enclave_id);
+
+// Frees up all DRAM regions and the metadata associated with an enclave.
+//
+// This can only be called when there is no thread metadata associated with the
+// enclave.
+api_result_t delete_enclave(enclave_id_t enclave_id);
+
 //// THREAD MANAGEMENT
 
 // Creates a hardware thread in an enclave.

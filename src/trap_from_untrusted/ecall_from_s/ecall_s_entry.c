@@ -4,7 +4,7 @@
 // SM CALLS FROM OS (these come from S-mode)
 
 void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
-   uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], retval;
+   uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], arg2 = regs[12], arg3 = regs[13], arg4 = regs[14], arg5 = regs[15], arg6 = regs[16], retval;
 
    switch(code) {
 
@@ -45,31 +45,31 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
          retval = enclave_metadata_pages((int64_t) arg0);
          break;
       case SBI_SM_OS_CREATE_ENCLAVE:
-         retval = create_enclave((enclave_id_t) arg0, arg1); // TODO: add other arguments
+         retval = create_enclave(arg0, arg1, arg2, arg3, (bool) arg4);
          break;
       case SBI_SM_OS_LOAD_PAGE_TABLE:
-         retval = monitor_unsupported;
+         retval = load_page_table(arg0, arg1, arg2, (uint64_t) arg3, arg4);
          break;
       case SBI_SM_OS_LOAD_PAGE:
-         retval = monitor_unsupported;
+         retval = load_page(arg0, arg1, arg2, arg3, arg4);
          break;
       case SBI_SM_OS_LOAD_THREAD:
-         retval = monitor_unsupported;
+         retval = load_thread(arg0, arg1, arg2, arg3, arg4, arg5);
          break;
       case SBI_SM_OS_ASSIGN_THREAD:
-         retval = monitor_unsupported;
+         retval = assign_thread(arg0, arg1);
          break;
       case SBI_SM_OS_INIT_ENCLAVE:
-         retval = monitor_unsupported;
+         retval = init_enclave(arg0);
          break;
       case SBI_SM_OS_ENTER_ENCLAVE:
          retval = monitor_unsupported;
          break;
       case SBI_SM_OS_DELETE_THREAD:
-         retval = monitor_unsupported;
+         retval = delete_thread(arg0);
          break;
       case SBI_SM_OS_DELETE_ENCLAVE:
-         retval = monitor_unsupported;
+         retval = delete_enclave(arg0);
          break;
       case SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE:
          retval = monitor_unsupported;
