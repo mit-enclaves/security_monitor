@@ -1,7 +1,7 @@
 #include <api.h>
 #include <sm.h>
 #include <csr/csr.h>
-#include <clib/clib.h> // TODO: only include memcpy?
+#include <clib/clib.h> 
 #include <sm_util/sm_util.h>
 
 #include <boot_api.h> //TODO: Is this the right way to do it?

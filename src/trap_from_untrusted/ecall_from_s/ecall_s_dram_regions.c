@@ -58,10 +58,10 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    // Check that new_owner is not initialized
    if(is_enclave) {
       // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(sm_global.regions[REGION_IDX(new_owner)]);
+      dram_region_t *n_ow_ptr = &(sm_globals.regions[REGION_IDX(new_owner)]);
 
       if(!aquireLock(n_ow_ptr->lock)) {
-         return monito_concurent_call;
+         return monitor_concurrent_call;
       }
       
       // Check that new_owner (if an enclave) is not initialized.
@@ -89,10 +89,10 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    // Set the new owner and update the owner's bitmap
    if(is_enclave){
       // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(sm_global.regions[REGION_IDX(new_owner)]);
+      dram_region_t *n_ow_ptr = &(sm_globals.regions[REGION_IDX(new_owner)]);
 
       if(!aquireLock(n_ow_ptr->lock)) {
-         return monito_concurent_call;
+         return monitor_concurrent_call;
       }
       
       ((enclave_t *) new_owner)->dram_bitmap |= (1u << id);

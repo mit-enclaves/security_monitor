@@ -9,9 +9,9 @@
 typedef uint64_t phys_ptr_t;
 typedef uint64_t hash_t[8];
 
-typedef struct {
-   uint64_t registers[32];
-}core_states_t;
+#define NUM_REGISTERS 32
+
+typedef uint64_t core_states_t[NUM_REGISTERS];
 
 // ATOMIC FLAG
 
@@ -27,9 +27,10 @@ typedef struct {
 #define releaseLock(lock) ({ \
       asm volatile ("amoswap.w.r1 x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
 
-// ENCLAVE
+// ENCLAVE AND THREAD IDs
 
 typedef phys_ptr_t enclave_id_t;
+typedef phys_ptr_t thread_id_t;
 
 // MAILBOX
 
@@ -46,7 +47,7 @@ typedef struct{
 typedef struct {
    bool initialized;
    bool debug;
-   int64_t thread_cout;
+   int64_t thread_count;
    int64_t dram_bitmap;
    hash_t measurement;
    int64_t mailbox_count;
@@ -62,13 +63,13 @@ typedef struct {
 typedef struct {
    atomic_flag_t is_scheduled;
    bool aes_present;
-   void *untrusted_pc;
-   void *untrusted_sp;
-   void *page_table_ptr;
-   void *entry_pc;
-   void *entry_sp;
-   void *fault_pc;
-   void *fault_sp;
+   uintptr_t untrusted_pc;
+   uintptr_t untrusted_sp;
+   uintptr_t page_table_ptr;
+   uintptr_t entry_pc;
+   uintptr_t entry_sp;
+   uintptr_t fault_pc;
+   uintptr_t fault_sp;
    core_states_t fault_state;
    core_states_t aex_state;
 }thread_t;

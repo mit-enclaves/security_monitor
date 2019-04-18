@@ -12,10 +12,10 @@ inline int intlog2(int n) {
 }
 
 #define SIZE_REGION (SIZE_DRAM / NUM_REGIONS)
-#define REGION_IDX(addr) ((1u<<(addr >> intlog2(SIZE_REGION))) & ((1u << NUM_REGIONS) - 1))
+#define REGION_IDX(addr) (1u<<(addr >> intlog2(SIZE_REGION))) 
 
 #define NUM_METADATA_PAGES_PER_REGION (SIZE_REGION/(sizeof(metadata_page_map_entry_t) + SIZE_PAGE))
-#define METADATA_IDX(addr) (((addr % SIZE_REGION) - (sizeof(metadata_mage_map_entry_t) * NUM_METADATA_PAGES_PER_REGION)) / NUM_METADATA_PAGES_PER_REGION)
+#define METADATA_IDX(addr) (((addr % SIZE_REGION) - (sizeof(metadata_page_map_entry_t) * NUM_METADATA_PAGES_PER_REGION)) / NUM_METADATA_PAGES_PER_REGION)
 
 inline bool is_valid_enclave(enclave_id_t enclave_id);
 inline bool owned(uintptr_t phys_addr, enclave_id_t enclave_id);

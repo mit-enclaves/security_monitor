@@ -214,20 +214,20 @@ api_result_t create_metadata_region(dram_region_id_t dram_region);
 // This may be smaller than the number of total pages in a DRAM region, if the
 // computer does not have continuous DRAM regions and the security monitor does
 // not support using non-continuous regions.
-int64_t metadata_region_pages();
+uint64_t metadata_region_pages();
 
 // Returns the first usable metadata page in a DRAM metadata region.
 //
 // The beginning of each DRAM metadata region is reserved for the monitor's
 // use. This returns the first page number that can be used to store
 // enclave_info_t and thread_info_t structures.
-int64_t metadata_region_start();
+uint64_t metadata_region_start();
 
 // Returns the number of pages used by a thread metadata structure.
-int64_t thread_metadata_pages();
+uint64_t thread_metadata_pages();
 
 // Returns the number of pages used by an enclave metadata structure.
-int64_t enclave_metadata_pages(int64_t mailbox_count);
+uint64_t enclave_metadata_pages(uint64_t mailbox_count);
 
 //// ENCLAVE MANAGEMENT
 
@@ -285,5 +285,54 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
 api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
 
+//// THREAD MANAGEMENT
+
+// Creates a hardware thread in an enclave.
+//
+// `enclave_id` must be an enclave that has not yet been initialized.
+//
+// `thread_id` must be the physical address of the first page in a sequence of
+// free pages in the same DRAM metadata region stripe. It becomes the thread's
+// ID used for subsequent API calls. The required number of free metadata pages
+// can be obtained by calling `thread_metadata_pages`.
+//
+// `entry_pc`, `entry_stack`, `fault_pc` and `fault_stack` are virtual
+// addresses in the enclave's address space. They are used to set the
+// corresponding fields in thread_init_info_t.
+//
+// This must be called after the enclave's root page table is set by a call to
+// load_page_table().
+api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
+    uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
+    uintptr_t fault_stack);
+
+// Allocates a thread metadata structure to be used by an enclave.
+//
+// `enclave_id` must be an enclave that has been initialized and has not yet
+// been killed.
+//
+// `thread_id` must be the physical address of the first page in a sequence of
+// free pages in the same DRAM metadata region. It becomes the thread's ID used
+// for subsequent API calls. The required number of free metadata pages can be
+// obtained by calling `thread_metadata_pages`.
+api_result_t assign_thread(enclave_id_t enclave_id, thread_id_t thread_id);
+
+// Creates a hardware thread using metadata pages assigned by the OS.
+//
+// `thread_id` is a thread ID used by the OS in an `assign_thread` call that
+// assigned metadata pages to this enclave. Enclaves can safely pass any value
+// supplied by the OS as a parameter to this call, but must be prepared to
+// handle an error code, which may occur if the OS supplies an incorrect value.
+//
+// `thread_info_addr` is the physical address of a thread_init_info_t structure
+// that will be used to initialize the thread's metadata. The address must be
+// page-aligned. The memory used for the thread_init_info_t structure can be
+// reused for other purposes once the API call returns.
+api_result_t accept_thread(thread_id_t thread_id, uintptr_t thread_info_addr);
+
+// Deallocates a thread info slot.
+//
+// The thread must not be running on any core.
+api_result_t delete_thread(thread_id_t thread_id);
 
 #endif // SECURITY_MONITOR_API_H
