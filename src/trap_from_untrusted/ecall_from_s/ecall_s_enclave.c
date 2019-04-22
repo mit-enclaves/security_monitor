@@ -3,6 +3,15 @@
 #include <sm.h>
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
+#include <sha3/sha3.h>
+
+struct inputs_create_t{
+   enclave_id_t enclave_id;
+   uintptr_t ev_base;
+   uintptr_t ev_mask;
+   uint64_t mailbox_count;
+   bool debug;
+};
 
 api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       uintptr_t ev_mask, uint64_t mailbox_count, bool debug) {
@@ -76,8 +85,17 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       }
    }
 
-   // TODO: Update measurement
-   enclave->measurement = {0};
+   // Update measurement
+   sha3_init(&(enclave->sha3_ctx), sizeof(hash_t));
+
+   struct inputs_create_t inputs = {0};
+   inputs.enclave_id = enclave_id;
+   inputs.ev_base = ev_base;
+   inputs.ev_mask = ev_mask;
+   inputs.mailbox_count = mailbox_count;
+   inputs.debug = debug;
+
+   sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_create_t));
 
    releaseLock(dram_region_ptr->lock); // Release Lock
 
@@ -156,9 +174,15 @@ api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr,
    }
 
    enclave->last_phys_addr_loaded = phys_addr;
-
+   
    return monitor_ok;
 }
+
+struct inputs_load_pt_t{
+   uintptr_t virtual_addr;
+   uint64_t level;
+   uintptr_t acl;
+};
 
 api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
@@ -189,12 +213,24 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
       return ret;
    }
 
-   // TODO: Update measurement
+   // Update measurement
+   struct inputs_load_pt_t inputs = {0};
+   inputs.virtual_addr = virtual_addr;
+   inputs.level = level;
+   inputs.acl = acl;
+ 
+   enclave_t *enclave = (enclave_t *) enclave_id;
+   sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
 
    releaseLock(er_ptr->lock);
 
    return monitor_ok;
 }
+
+struct inputs_load_page_t{
+   uintptr_t virtual_addr;
+   uintptr_t acl;
+};
 
 api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
@@ -225,7 +261,13 @@ api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
    // TODO: Check os_addr
    memcpy((void *) phys_addr, (void *) os_addr, SIZE_PAGE);
 
-   // TODO: Update measurement
+   // Update measurement
+   struct inputs_load_page_t inputs = {0};
+   inputs.virtual_addr = virtual_addr;
+   inputs.acl = acl;
+
+   sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
+   sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), (const void *) os_addr, SIZE_PAGE);
 
    releaseLock(er_ptr->lock);
 
@@ -253,7 +295,10 @@ api_result_t init_enclave(enclave_id_t enclave_id) {
       return monitor_invalid_state;
    }
 
-   ((enclave_t *) enclave_id)->initialized = true;
+   enclave->initialized = true;
+
+   // Output the measurement
+   sha3_final(&(enclave->measurement),&(enclave->sha3_ctx));
 
    releaseLock(er_ptr->lock);
 

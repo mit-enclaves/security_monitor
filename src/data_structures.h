@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "constants.h"
+#include <sha3/sha3.h>
+#include <constants.h>
 
 typedef uint64_t phys_ptr_t;
 typedef uint64_t hash_t[8];
@@ -49,6 +50,7 @@ typedef struct {
    bool debug;
    int64_t thread_count;
    int64_t dram_bitmap;
+   sha3_ctx_t sha3_ctx;
    hash_t measurement;
    int64_t mailbox_count;
    mailbox_t *mailbox_array;

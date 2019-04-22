@@ -1,4 +1,3 @@
-
 # Include makefile fragments
 
 # High-level targets

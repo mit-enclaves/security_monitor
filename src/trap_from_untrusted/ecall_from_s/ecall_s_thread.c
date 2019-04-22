@@ -95,8 +95,6 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
       thread->aex_state[i]   = 0;
    }
 
-   // TODO: update measurement?
-
    releaseLock(dram_region_ptr->lock); // Release Lock
 
    // Increase the enclave's thread_count
@@ -106,7 +104,9 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
       return monitor_concurrent_call;
    }
 
-   ((enclave_t *) enclave_id)->thread_count++;
+   enclave->thread_count++;
+
+   // TODO: Update measurement?
 
    releaseLock(er_ptr->lock);
 
