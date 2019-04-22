@@ -48,6 +48,13 @@ api_result_t allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
    return monitor_ok;
 }
 
+struct inputs_load_thread_t{
+   uintptr_t entry_pc;
+   uintptr_t entry_stack;
+   uintptr_t fault_pc;
+   uintptr_t fault_stack;
+};
+
 api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
     uintptr_t fault_stack) {
@@ -106,7 +113,14 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
 
    enclave->thread_count++;
 
-   // TODO: Update measurement?
+   // Update measurement
+   struct inputs_load_thread_t inputs = {0};
+   inputs.entry_pc = entry_pc;
+   inputs.entry_stack = entry_stack;
+   inputs.fault_pc = fault_pc;
+   inputs.fault_stack = fault_stack;
+
+   sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_load_thread_t));
 
    releaseLock(er_ptr->lock);
 

@@ -6,7 +6,6 @@
 #include <sha3/sha3.h>
 
 struct inputs_create_t{
-   enclave_id_t enclave_id;
    uintptr_t ev_base;
    uintptr_t ev_mask;
    uint64_t mailbox_count;
@@ -89,7 +88,6 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    sha3_init(&(enclave->sha3_ctx), sizeof(hash_t));
 
    struct inputs_create_t inputs = {0};
-   inputs.enclave_id = enclave_id;
    inputs.ev_base = ev_base;
    inputs.ev_mask = ev_mask;
    inputs.mailbox_count = mailbox_count;
