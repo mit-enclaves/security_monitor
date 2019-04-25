@@ -89,7 +89,7 @@ trap_vector_from_untrusted:
   STORE a1,11*REGBYTES(sp)
   li a1, TRAP_FROM_MACHINE_MODE_VECTOR
   j .route_trap
-TODO: can we guarantee this is indeed a trap? mcause needs to not be out of range
+# TODO: can we guarantee this is indeed a trap? mcause needs to not be out of range
 
 # Calling convention helpers
 # --------------------------

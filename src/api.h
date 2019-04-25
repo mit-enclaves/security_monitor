@@ -130,7 +130,7 @@ api_result_t enclave_block_dram_region(dram_region_id_t id);
 // This is used by enclaves to confirm that they own a DRAM region when the OS
 // tells them that they do. The enclave should that assume something went wrong
 // if it sees any return value other than monitor_ok.
-api_result_t dram_region_cheock_ownership(dram_region_id_t id);
+api_result_t dram_region_check_ownership(dram_region_id_t id);
 
 // Returns the state of the DRAM region with the given index.
 //
@@ -295,6 +295,21 @@ api_result_t init_enclave(enclave_id_t enclave_id);
 // This can only be called when there is no thread metadata associated with the
 // enclave.
 api_result_t delete_enclave(enclave_id_t enclave_id);
+
+// Starts executing enclave code on the current hardware thread.
+//
+// The application thread performing this system call will be suspended until
+// the enclave code executes an enclave exit, or is interrupted by an
+// asynchronous enclave exit.
+//
+// `enclave_id` must identify an enclave that has been initialized.
+//
+// `thread_id` must identify a hardware thread that was created but is not
+// executing on any core.
+api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id);
+
+// Ends the currently running enclave thread and returns control to the OS.
+api_result_t exit_enclave();
 
 //// THREAD MANAGEMENT
 

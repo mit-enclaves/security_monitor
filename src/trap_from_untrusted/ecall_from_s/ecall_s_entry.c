@@ -63,7 +63,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
          retval = init_enclave(arg0);
          break;
       case SBI_SM_OS_ENTER_ENCLAVE:
-         retval = monitor_unsupported;
+         retval = enter_enclave(arg0, arg1, regs);
          break;
       case SBI_SM_OS_DELETE_THREAD:
          retval = delete_thread(arg0);

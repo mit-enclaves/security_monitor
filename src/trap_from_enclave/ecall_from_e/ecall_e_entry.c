@@ -18,7 +18,7 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
          retval = accept_thread(arg0, arg1);
          break;
       case UBI_SM_ENCLAVE_EXIT_ENCLAVE:
-         retval = monitor_unsupported;
+         retval = exit_enclave(regs);
          break;
       case UBI_SM_ENCLAVE_GET_ATTESTATION_KEY:
          retval = get_attestation_key(arg0);

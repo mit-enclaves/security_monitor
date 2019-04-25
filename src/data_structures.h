@@ -64,7 +64,7 @@ typedef struct {
 
 typedef struct {
    atomic_flag_t is_scheduled;
-   bool aes_present;
+   bool aex_present;
    uintptr_t untrusted_pc;
    uintptr_t untrusted_sp;
    uintptr_t page_table_ptr;
@@ -72,6 +72,7 @@ typedef struct {
    uintptr_t entry_sp;
    uintptr_t fault_pc;
    uintptr_t fault_sp;
+   core_states_t untrusted_state;
    core_states_t fault_state;
    core_states_t aex_state;
 }thread_t;
@@ -96,7 +97,7 @@ typedef enum { // TODO must fit into 12 bits
 typedef struct {
    enclave_id_t owner;
    bool has_enclave_schedule;
-   thread_t cur_thread;
+   thread_id_t cur_thread;
    atomic_flag_t lock;
 }core_t;
 

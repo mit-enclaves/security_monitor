@@ -88,7 +88,7 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
    thread_t *thread = (thread_t *) thread_id;
 
    thread->is_scheduled   = false;
-   thread->aes_present    = 0; // TODO: What is this?
+   thread->aex_present    = false; // TODO: What is this?
    thread->untrusted_pc   = 0;
    thread->untrusted_sp   = 0;
    thread->page_table_ptr = 0;
@@ -157,54 +157,34 @@ api_result_t assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 api_result_t delete_thread(thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 
-   if(thread_id % SIZE_PAGE) {
-      return false;
-   }
+   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
-
-   if(!aquireLock(dram_region_ptr->lock)) {
+   if(!aquireLock(tr_ptr->lock)) {
       return monitor_concurrent_call;
    } // Acquire Lock
-
-   // Check that dram region is an metadata region
-   if(dram_region_ptr->type != metadata_region) { 
-      releaseLock(dram_region_ptr->lock); // Release Lock
-      return false;
-   }
-
-   metadata_page_map_t page_map = (metadata_page_map_t) dram_region_ptr;
-
-   uint64_t num_metadata_pages = thread_metadata_pages();
-
-   if((METADATA_IDX(thread_id) + num_metadata_pages) >= metadata_region_pages()) {
-      releaseLock(dram_region_ptr->lock);
-      return monitor_invalid_value;
-   }
-
-   enclave_id_t owner_id = (page_map[METADATA_IDX(thread_id)]) >> ENTRY_OWNER_ID_OFFSET;
-
-   for(int i = METADATA_IDX(thread_id);
-         i < (METADATA_IDX(thread_id) + num_metadata_pages);
-         i++) {
-      if((page_map[i] >> ENTRY_OWNER_ID_OFFSET) != owner_id) { 
-         releaseLock(dram_region_ptr->lock);
-         return monitor_invalid_state;
-      }
-      if((page_map[i] & ((1u << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_thread) { 
-         releaseLock(dram_region_ptr->lock);
-         return monitor_invalid_state;
-      }
-   }
    
+   metadata_page_map_t page_map = (metadata_page_map_t) tr_ptr;
+   
+   enclave_id_t owner_id = (page_map[METADATA_IDX(thread_id)]) >> ENTRY_OWNER_ID_OFFSET;
+   
+   // Check thread_id validity   
+   api_result_t ret = is_valid_thread(owner_id, thread_id);
+
+   if(ret != monitor_ok) {
+      releaseLock(tr_ptr->lock); // Release Lock
+      return ret;
+   }
+
    // Check that thread is not scheduled
    thread_t *thread = (thread_t *) thread_id;
 
    if(aquireLock(thread->is_scheduled)) {
-      releaseLock(dram_region_ptr->lock);
+      releaseLock(tr_ptr->lock);
       return monitor_invalid_state;
    }
 
+   uint64_t num_metadata_pages = thread_metadata_pages();
+   
    // Clean the metadata page map
    for(int i = METADATA_IDX(thread_id);
          i < (METADATA_IDX(thread_id) + num_metadata_pages);
@@ -215,7 +195,7 @@ api_result_t delete_thread(thread_id_t thread_id) {
    // Clean the metadata it-self
    memset((void *) thread_id, 0, sizeof(thread_t));
 
-   releaseLock(dram_region_ptr->lock);
+   releaseLock(tr_ptr->lock);
 
    // Decrease the owning enclave's thread_count
    dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(owner_id)]);

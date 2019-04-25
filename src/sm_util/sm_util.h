@@ -19,7 +19,9 @@ inline int intlog2(int n) {
 
 inline bool is_valid_enclave(enclave_id_t enclave_id);
 inline bool owned(uintptr_t phys_addr, enclave_id_t enclave_id);
-inline bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id);	
+inline bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id);
+
+inline api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id);
 
 // PAGE TABLE MANAGEMENT
 

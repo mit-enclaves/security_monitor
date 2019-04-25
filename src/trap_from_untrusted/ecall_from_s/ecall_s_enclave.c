@@ -384,3 +384,88 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
 
    return monitor_ok;
 }
+
+
+api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
+   
+   if(!is_valid_enclave(enclave_id)) {
+      return monitor_invalid_value;
+   }
+
+   enclave_t * enclave = (enclave_t *) enclave_id;
+
+   // Get a pointer to the DRAM region datastructure of the enclave metadata
+   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+
+   if(!aquireLock(er_ptr->lock)) {
+      return monitor_concurrent_call;
+   }
+
+   // Check that the enclave is initialized.
+   if(!enclave->initialized) {
+      releaseLock(er_ptr->lock);
+      return monitor_invalid_state;
+   }
+
+   releaseLock(er_ptr->lock);
+   
+   core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
+   
+   if(!aquireLock(core->lock)) {
+      return monitor_concurrent_call;
+   } // Acquire Lock
+   
+   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   
+   if(!aquireLock(tr_ptr->lock)) {
+      releaseLock(core->lock);
+      return monitor_concurrent_call;
+   } // Acquire Lock
+   
+   thread_t *thread = (thread_t *) thread_id;
+   
+   if(!aquireLock(thread->is_scheduled)) {
+      releaseLock(core->lock);
+      releaseLock(tr_ptr->lock); // Release Lock
+      return monitor_invalid_state;
+   }
+   
+   // Check thread_id validity   
+   api_result_t ret = is_valid_thread(enclave_id, thread_id);
+
+   if(ret != monitor_ok) {
+      releaseLock(core->lock);
+      releaseLock(tr_ptr->lock); // Release Lock
+      return ret;
+   }
+
+
+   bool aex = thread->aex_present;
+   
+   // Save untrusted state, initialize enclave state
+   for(int i = 0; i < NUM_REGISTERS; i++) {
+      thread->untrusted_state[i] = regs[i];
+      regs[i] = aex ? thread->aex_state[i] : 0; // TODO: Init registers?
+   }
+   
+   thread->untrusted_sp = regs[2];
+   thread->untrusted_pc = read_csr(mepc);
+   thread->page_table_ptr = read_csr(sptbr);
+
+   regs[2] = thread->entry_sp;
+   write_csr(mepc, thread->entry_pc);
+
+   if(aex) {
+      thread->aex_present = false;
+   }
+
+   releaseLock(tr_ptr->lock); // Release Lock
+
+   core->owner = enclave_id;
+   core->has_enclave_schedule = true;
+   core->cur_thread = thread_id;
+
+   releaseLock(core->lock);
+
+   return monitor_ok;
+}
