@@ -65,6 +65,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 
    enclave_t *enclave = (enclave_t *) enclave_id;
 
+   // Initialize the enclave metadata
    enclave->initialized = 0;
    enclave->debug = debug;
    enclave->thread_count = 0;
@@ -293,6 +294,7 @@ api_result_t init_enclave(enclave_id_t enclave_id) {
       return monitor_invalid_state;
    }
 
+   // Initialize Enclave
    enclave->initialized = true;
 
    // Output the measurement
@@ -318,6 +320,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
       return monitor_concurrent_call;
    }
 
+   // Check if enclave is has threads initialized
    if(enclave->thread_count != 0) {
       releaseLock(er_ptr->lock);
       return monitor_invalid_state;
@@ -388,13 +391,14 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
 
 api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
    
+   // Check if enclave_id is valid
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
    }
 
    enclave_t * enclave = (enclave_t *) enclave_id;
 
-   // Get a pointer to the DRAM region datastructure of the enclave metadata
+   // Get a pointer to the DRAM region datastructure of the enclave metadata and aquire the lock
    dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_ptr->lock)) {
@@ -409,12 +413,14 @@ api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintp
 
    releaseLock(er_ptr->lock);
    
+   // Get the curent core metadata and aquire its lock
    core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
    
    if(!aquireLock(core->lock)) {
       return monitor_concurrent_call;
    } // Acquire Lock
    
+   // Get a pointer to the DRAM region datastructure of the thread metadata and aquire the lock
    dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
    
    if(!aquireLock(tr_ptr->lock)) {
@@ -423,22 +429,22 @@ api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintp
    } // Acquire Lock
    
    thread_t *thread = (thread_t *) thread_id;
-   
-   if(!aquireLock(thread->is_scheduled)) {
-      releaseLock(core->lock);
-      releaseLock(tr_ptr->lock); // Release Lock
-      return monitor_invalid_state;
-   }
-   
+  
    // Check thread_id validity   
    api_result_t ret = is_valid_thread(enclave_id, thread_id);
-
+   
    if(ret != monitor_ok) {
       releaseLock(core->lock);
       releaseLock(tr_ptr->lock); // Release Lock
       return ret;
    }
-
+   
+   // Check that the thread is not already sheduled
+   if(!aquireLock(thread->is_scheduled)) {
+      releaseLock(core->lock);
+      releaseLock(tr_ptr->lock); // Release Lock
+      return monitor_invalid_state;
+   }
 
    bool aex = thread->aex_present;
    
@@ -447,11 +453,13 @@ api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintp
       thread->untrusted_state[i] = regs[i];
       regs[i] = aex ? thread->aex_state[i] : 0; // TODO: Init registers?
    }
-   
+
+   // Save untrusted sp, pc and the OS page table pointer
    thread->untrusted_sp = regs[2];
    thread->untrusted_pc = read_csr(mepc);
    thread->page_table_ptr = read_csr(sptbr);
 
+   // Set the enclave sp and pc
    regs[2] = thread->entry_sp;
    write_csr(mepc, thread->entry_pc);
 
@@ -461,6 +469,7 @@ api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintp
 
    releaseLock(tr_ptr->lock); // Release Lock
 
+   // Update the core's metadata
    core->owner = enclave_id;
    core->has_enclave_schedule = true;
    core->cur_thread = thread_id;

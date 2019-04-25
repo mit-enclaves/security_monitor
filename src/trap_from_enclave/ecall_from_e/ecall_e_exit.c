@@ -10,6 +10,7 @@ api_result_t exit_enclave(uintptr_t *regs) {
    
    thread_id_t thread_id = core->cur_thread;
 
+   // Aquire current core's metadata lock
    if(!aquireLock(core->lock)) {
       return monitor_concurrent_call;
    } // Acquire Lock
@@ -28,6 +29,7 @@ api_result_t exit_enclave(uintptr_t *regs) {
       regs[i] = thread->untrusted_state[i];
    }
    
+   // Set the OS page table and PC
    write_csr(sptbr, thread->page_table_ptr);
    write_csr(mepc, thread->untrusted_pc);
 
@@ -35,6 +37,7 @@ api_result_t exit_enclave(uintptr_t *regs) {
 
    releaseLock(tr_ptr->lock); // Release Lock
 
+   // Clean the core's metadata
    core->owner = 0;
    core->has_enclave_schedule = false;
    core->cur_thread = 0;
