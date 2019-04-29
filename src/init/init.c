@@ -9,7 +9,7 @@ void initialize_security_monitor_globals() {
    // INIT CORES
    // INIT REGIONS
    for(int i = 0; i < NUM_REGIONS; i++) {
-      requestLock(sm_globals.regions[i].lock); // TODO get the lock
+      aquireLock(sm_globals.regions[i].lock); // TODO get the lock
       if(i == 0) {
          sm_globals.regions[i].type = security_monitor_region;
          sm_globals.regions[i].owner = {};
@@ -21,6 +21,8 @@ void initialize_security_monitor_globals() {
          sm_globals.regions[i].state = dram_region_free;
       }
    }
+
+   // Initialize the core themselves by writting the csrs and then mret
 }
 
 resume_hart_after_init_globals

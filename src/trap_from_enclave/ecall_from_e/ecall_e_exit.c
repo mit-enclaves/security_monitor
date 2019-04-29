@@ -29,8 +29,7 @@ api_result_t exit_enclave(uintptr_t *regs) {
       regs[i] = thread->untrusted_state[i];
    }
    
-   // Set the OS page table and PC
-   write_csr(sptbr, thread->page_table_ptr);
+   // Set the OS pc
    write_csr(mepc, thread->untrusted_pc);
 
    thread->aex_present = false; // TODO: Usefull?

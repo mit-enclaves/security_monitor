@@ -36,4 +36,6 @@ inline api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_
 #define PTE_W (1u << 2)
 #define PTE_X (1u << 3)
 
+#define SIZE_ENCLAVE_HANDLER // TODO: DEFINE
+
 #endif // SM_UTIL_H

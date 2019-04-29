@@ -58,6 +58,8 @@ typedef struct {
    uintptr_t eptbr; 
    uintptr_t evbase;
    uintptr_t evmask;
+   uintptr_t meparbase;
+   uintptr_t meparmask;
 }enclave_t;
 
 // THREAD
@@ -67,7 +69,6 @@ typedef struct {
    bool aex_present;
    uintptr_t untrusted_pc;
    uintptr_t untrusted_sp;
-   uintptr_t page_table_ptr;
    uintptr_t entry_pc;
    uintptr_t entry_sp;
    uintptr_t fault_pc;

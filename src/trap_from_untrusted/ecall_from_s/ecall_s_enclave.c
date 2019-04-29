@@ -101,6 +101,58 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    return monitor_ok;
 }
 
+api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
+   // TODO: Does phys_addr has to be alligned?
+   
+   // Get a pointer to the DRAM region datastructure of the enclave metadata
+   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+
+   if(!aquireLock(er_ptr->lock)) {
+      return monitor_concurrent_call;
+   }
+
+   if(!is_valid_enclave(enclave_id)) {
+      return monitor_invalid_value;
+   }
+
+   enclave_t * enclave = (enclave_t *)  enclave_id;
+
+   // Check that the enclave is not initialized.
+   if(enclave->initialized) {
+      return monitor_invalid_state;
+   }
+
+   // Check that phys_addr is higher than the last physical address
+   if(enclave->last_phys_addr_loaded <= phys_addr) {
+      return monitor_invalid_value;
+   }
+   
+   // Check that the handlers fit in a DRAM region owned by the enclave
+   uintptr_t end_phys_addr = phys_addr + SIZE_ENCLAVE_HANDLER;
+   
+   for(uintptr_t addr = phys_addr; addr < end_phys_addr; addr += SIZE_REGION) {
+      if(!owned(addr, enclave_id)){
+         return monitor_invalid_state;
+      }
+   }
+
+   // Check that end_phys_addr points into a DRAM region owned by the enclave
+   if(!owned(end_phys_addr, enclave_id)){
+      return monitor_invalid_state;
+   }
+
+   enclave->meparbase = phys_addr;
+   enclave->meparmask = ~ ((1u << intlog2(~(phys_addr ^ end_phys_addr))) - 1);
+  
+   // TODO: need to grab the DRAM regions locks
+
+   // Copy the handlers
+   memcpy((void *) phys_addr, (void *) GLOBAL_ENCLAVE_HANDLERS_ADDRESS, SIZE_ENCLAVE_HANDLER);
+
+   // Update the measurement
+   sha3_update(&(enclave->sha3_ctx), GLOBAL_ENCLAVE_HANDLERS_ADDRESS, SIZE_ENCLAVE_HANDLER);
+}
+
 api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
@@ -454,10 +506,9 @@ api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintp
       regs[i] = aex ? thread->aex_state[i] : 0; // TODO: Init registers?
    }
 
-   // Save untrusted sp, pc and the OS page table pointer
+   // Save untrusted sp, pc
    thread->untrusted_sp = regs[2];
    thread->untrusted_pc = read_csr(mepc);
-   thread->page_table_ptr = read_csr(sptbr);
 
    // Set the enclave sp and pc
    regs[2] = thread->entry_sp;
