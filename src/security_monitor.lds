@@ -27,7 +27,7 @@ SECTIONS
     /* this includes *(.text.enclave_trap.entry)
        this includes *(.text.enclave_trap)
        this includes *(.idpt) */
-    *(.stack)
+    *(.sm_stacks)
   }
   _end = .;
 }

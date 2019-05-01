@@ -1,4 +1,4 @@
-.section ".stacks"
+.section ".sm_stacks"
 .globl stack_base, stack_ptr
 .align 12 // PAGE_SHIFT
 stack_base:

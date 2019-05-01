@@ -1,7 +1,7 @@
 #include <sm_stack.h>
 #include <stdio.h>
 
-__attribute__((section(".stacks")))
+__attribute__((section(".sm_stacks")))
 
 m_stacks_t m_stacks;
 

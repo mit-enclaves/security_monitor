@@ -3,7 +3,7 @@
 
 extern void resume_hart_after_init_globals(void);
 
-__attribute__((section(".init")))
+__attribute__((section(".text.init")))
 
 security_monitor_t sm_globals;
 

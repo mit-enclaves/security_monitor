@@ -1,6 +1,6 @@
 #include <sm_stack.h>
 
-__attribute__((section(".stacks")))
+__attribute__((section(".sm_stacks")))
 
 asm volatile (".globl stack_base, stack_ptr\n
 stack_base:\n");

@@ -108,7 +108,7 @@ sub sp, sp, a2
 
    .globl resume_hart_after_init_globals
    .type resume_hart_after_init_globals, @function
-   .section .text
+   .section .text.init
    resume_hart_after_init_globals:
 
    /* Initialize Sanctum CSRs */
