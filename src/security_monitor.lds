@@ -3,8 +3,18 @@ ENTRY( _start )
 
 SECTIONS
 {
-  . = ALIGN(6); # TODO: how aligned should this be? 6 alignes this to a cache line of 64B
+  . = 0x80000000;
+  .htif ALIGN(0x1000) (NOLOAD) : {
+    *(.htif.fromhost)
+    *(.htif.tohost)
+  }
 
+  . = 0x80001000;
+  .boot_keys ALIGN(0x1000) (NOLOAD) : {
+    /* nothing here for this specific application */
+  }
+
+  . = 0x80002000;
   /* Security monitor */
   .sm : {
     *(.keys)
@@ -14,12 +24,12 @@ SECTIONS
     *(.text.untrusted_trap.entry)
     *(.text.untrusted_trap)
     *(.data)
-    # this includes *(.text.enclave_trap.entry)
-    # this includes *(.text.enclave_trap)
-    # this includes *(.idpt)
+    /* this includes *(.text.enclave_trap.entry)
+       this includes *(.text.enclave_trap)
+       this includes *(.idpt) */
     *(.stack)
   }
   _end = .;
 }
 
-# TODO: inspect pre-link elf to see what we're accidentally throwing away that's necessary. .got? .rodata?
+/* TODO: inspect pre-link elf to see what we're accidentally throwing away that's necessary. .got? .rodata? */

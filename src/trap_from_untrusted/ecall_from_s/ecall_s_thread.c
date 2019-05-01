@@ -30,7 +30,7 @@ api_result_t allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
    for(int i = METADATA_IDX(thread_id);
          i < (METADATA_IDX(thread_id) + num_metadata_pages);
          i++) {
-      if((page_map[i] & ((1u << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) { 
+      if((page_map[i] & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) { 
          return monitor_invalid_state;
       }
    }
@@ -42,7 +42,7 @@ api_result_t allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
          i++) {
       page_map[i] = 0;
       page_map[i] |= (enclave_id << ENTRY_OWNER_ID_OFFSET) 
-         | (metadata_thread & ((1u << ENTRY_OWNER_ID_OFFSET) - 1));
+         | (metadata_thread & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1));
    }
 
    return monitor_ok;
@@ -87,11 +87,10 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
 
    thread_t *thread = (thread_t *) thread_id;
 
-   thread->is_scheduled   = false;
-   thread->aex_present    = false; // TODO: What is this?
+   thread->is_scheduled.flag   = 0;
+   thread->aex_present    = false;
    thread->untrusted_pc   = 0;
    thread->untrusted_sp   = 0;
-   thread->page_table_ptr = 0;
    thread->entry_pc       = entry_pc;
    thread->entry_sp       = entry_stack;
    thread->fault_pc       = fault_pc;

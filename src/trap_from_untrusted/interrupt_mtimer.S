@@ -1,6 +1,9 @@
-.option norvc
-.section .trap
+#include <constants.h>
 
+.option norvc
+.section .text.untrusted_trap
+
+.globl .handle_mtimer_interrupt
 .handle_mtimer_interrupt:
   #Simply clear MTIE and raise STIP.
   # TODO: shouldn't this actually delegate the interrupt to S-mode??

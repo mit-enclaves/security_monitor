@@ -47,7 +47,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    for(int i = METADATA_IDX(enclave_id);
          i < (METADATA_IDX(enclave_id) + num_metadata_pages);
          i++) {
-      if((page_map[i] & ((1u << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) { 
+      if((page_map[i] & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) { 
          releaseLock(dram_region_ptr->lock); // Release Lock
          return monitor_invalid_state;
       }
@@ -60,7 +60,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
          i++) {
       page_map[i] = 0;
       page_map[i] |= (enclave_id << ENTRY_OWNER_ID_OFFSET) 
-         | (metadata_enclave & ((1u << ENTRY_OWNER_ID_OFFSET) - 1));
+         | (metadata_enclave & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1));
    }
 
    enclave_t *enclave = (enclave_t *) enclave_id;
@@ -101,6 +101,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
    return monitor_ok;
 }
 
+/*
 api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    // TODO: Does phys_addr has to be alligned?
    
@@ -142,7 +143,7 @@ api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    }
 
    enclave->meparbase = phys_addr;
-   enclave->meparmask = ~ ((1u << intlog2(~(phys_addr ^ end_phys_addr))) - 1);
+   enclave->meparmask = ~ ((1ul << intlog2(~(phys_addr ^ end_phys_addr))) - 1);
   
    // TODO: need to grab the DRAM regions locks
 
@@ -152,6 +153,7 @@ api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    // Update the measurement
    sha3_update(&(enclave->sha3_ctx), GLOBAL_ENCLAVE_HANDLERS_ADDRESS, SIZE_ENCLAVE_HANDLER);
 }
+*/
 
 api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
@@ -382,7 +384,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
    
    for(int i = 0; i < NUM_REGIONS; i++) {
       
-      if((enclave->dram_bitmap >> i) & 1u) {
+      if((enclave->dram_bitmap >> i) & 1ul) {
          
          // Get a pointer to the DRAM region datastructure
          dram_region_t *r_ptr = &(sm_globals.regions[i]);
@@ -411,7 +413,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
          }
 
          else {
-            enclave->dram_bitmap &= ~(1u << i);
+            enclave->dram_bitmap &= ~(1ul << i);
          }
       }
    }

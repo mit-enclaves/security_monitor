@@ -1,16 +1,19 @@
-# TODO:
-include whatever defines:
-- RISCV_PGSHIFT
-- MIP_MSIP
-- NUM_HARTS
+#include <constants.h>
 
-Make sure stack never grows above 4KB
+# TODO: Make sure stack never grows above 4KB
 
 # Boot event (happens after reset, measurement, etc)
 # ==================================================
 .option norvc # TODO: what the fuck is this?
 
-.section .init.entry
+.section .data
+.align 3
+platform_disabled_hart_mask: 
+.dword 0
+
+.section .text.init.entry
+.globl _start
+_start:
 
 # ## 1). Clear the register file, except $a0 and $a1, which receive inputs from boot
 li x1, 0
@@ -57,16 +60,15 @@ csrr t1, mtvec
 # set $sp to sm_stack_ptr, provided by the linker, and is defined in stack.S
 la sp, stack_ptr
 
-# sp = sp - hartid * page_size
+# sp = sp - hartid * page_size // TODO: do not overwrite the saved states
 csrr a3, mhartid
-slli a2, a3, RISCV_PGSHIFT
+slli a2, a3, SHIFT_PAGE
 sub sp, sp, a2
 
 # ## 4). Designate the first available (unmasked) hart to perform initialization.
 # All other harts will sleep and wait for initialization to be finished
 # $a4 = select one hart among the enabled harts given by ~(*platform_disabled_hart_mask)
-   la a4, platform_disabled_hart_mask
-LOAD a4, 0(a4)
+   ld a4, platform_disabled_hart_mask
    addi a5, a4, 1
    not a4, a4
    and a4, a4, a5
@@ -79,17 +81,16 @@ LOAD a4, 0(a4)
 # call initialize_sm, defined in init.c if this is the designated hart to perform initialization
    bnez a4, initialize_security_monitor_globals
 
-# else this is *not* the hart to perform initialization, so prepare to wait for initialization to finish.
+# Else this is *not* the hart to perform initialization, so prepare to wait for initialization to finish.
 # Enable inter-processor (software) interrupts on this hart
-   li a2, MIP_MSIP
+   li a2, MIE_MEIE
    csrw mie, a2
 
    .init.wait_on_ipi_signal:
    wfi
 
 # disabled harts never start; loop until (if ever) the hart is not disabled
-   la a4, platform_disabled_hart_mask
-LOAD a4, 0(a4)
+   ld a4, platform_disabled_hart_mask
    srl a4, a4, a3
    andi a4, a4, 1
    bnez a4, .init.wait_on_ipi_signal
@@ -101,6 +102,42 @@ LOAD a4, 0(a4)
 
 # If this hart ID is out of range for this SM binary, wait forever.
 # Else, go on to initialize this hart.
-   li a2, NUM_HARTS
+   li a2, NUM_CORES
    bltu a3, a2, resume_hart_after_init_globals
    j .init.wait_on_ipi_signal
+
+   .globl resume_hart_after_init_globals
+   .type resume_hart_after_init_globals, @function
+   .section .text
+   resume_hart_after_init_globals:
+
+   /* Initialize Sanctum CSRs */
+
+   li t0, 0
+   li t1, 0xFFFFFFFFFFFFFFFF
+
+   csrw 0x7c0, t1 // Write MEVBASE
+   csrw 0x7c1, t0 // Write MEVMASK
+
+   csrw 0x7c3, t1 // Write MMRBM
+
+   csrw 0x7c5, t1 // Write MPARBASE
+   csrw 0x7c6, t0 // Write MPARMASK
+
+   /* Switch to S-mode, jump to the protected range */
+   /** Set mPP to 1 (S-mode), sIE to 1, mPIE to 0 and TVM to 1 **/
+   csrr t0, mstatus
+# MSTATUS_TVM:  0x00100000
+# MSTATUS_MPP:  0x00001800
+# MSTATUS_mPIE: 0x00000080
+# MSTATUS_SIE:  0x00000002
+   li t1, 0xFFFFFFFFFFEFE77D
+   li t2, 0x00100802
+   and t0, t0, t1
+   or t0, t0, t2
+   csrw mstatus, t0
+
+   /* Set return address to main program */
+   la t0, main
+   csrw mepc, t0
+   mret

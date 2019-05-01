@@ -95,7 +95,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
          return monitor_concurrent_call;
       }
       
-      ((enclave_t *) new_owner)->dram_bitmap |= (1u << id);
+      ((enclave_t *) new_owner)->dram_bitmap |= (1ul << id);
       
       releaseLock(n_ow_ptr->lock);
       
@@ -104,7 +104,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    }
    else{
       XLENINT mmrbm = read_csr(CSR_MMRBM);
-      mmrbm |= (1u << id);
+      mmrbm |= (1ul << id);
       write_csr(CSR_MMRBM, mmrbm);
       
       r_ptr->owner = 0;
@@ -175,14 +175,14 @@ api_result_t free_dram_region(dram_region_id_t id) {
    // remove it from the OS bitmap
    if(r_ptr->type == untrusted_region) {
       XLENINT mmrbm = read_csr(CSR_MMRBM);
-      mmrbm &= ~(1u << id);
+      mmrbm &= ~(1ul << id);
       write_csr(CSR_MMRBM, mmrbm);
    }
    // If the DRAM region belongs to an enclave
    // remove it from the enclave bitmap
    else if(r_ptr->type == enclave_region) {
       XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
-      memrbm &= ~(1u << id);
+      memrbm &= ~(1ul << id);
       ((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
    }
 

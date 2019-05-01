@@ -1,9 +1,6 @@
-#include "machine.h"
-#include "encoding.h"
-
 .section ".stacks"
 .globl stack_base, stack_ptr
-.align RISCV_PGSHIFT
+.align 12 // PAGE_SHIFT
 stack_base:
-.skip RISCV_PGSIZE * NUM_CORES
+.skip 0x2000 // SIZE_PAGE * NUM_CORES
 stack_ptr:

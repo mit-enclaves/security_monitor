@@ -1,6 +1,7 @@
 .option norvc
-.section .trap
+.section .text.untrusted_trap
 
+.globl .illegal_insn_trap
 .illegal_insn_trap:
   call .save_regs_and_set_args
   call illegal_insn_trap

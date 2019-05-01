@@ -1,7 +1,8 @@
 .option norvc
-.section .trap
+.section .text.untrusted_trap
 
-.handle_trap_pmp:
+.globl .pmp_trap
+.pmp_trap:
   call .save_regs_and_set_args
   call handle_trap_pmp
   call .restore_regs

@@ -1,6 +1,8 @@
-#include "sm_util.h"
+#include <api.h>
+#include <sm.h>
+#include <sm_util/sm_util.h>
 
-inline bool is_valid_enclave(enclave_id_t enclave_id) {
+bool is_valid_enclave(enclave_id_t enclave_id) {
 
    // Check that enclave_id is page alligned	
    if(enclave_id % SIZE_PAGE) {
@@ -29,7 +31,7 @@ inline bool is_valid_enclave(enclave_id_t enclave_id) {
    }
 
    // Check that metadata entry is of type enclave
-   if((entry & ((1u << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_enclave) {
+   if((entry & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_enclave) {
       releaseLock(dram_region_ptr->lock); // Release Lock
       return false;
    }
@@ -39,7 +41,7 @@ inline bool is_valid_enclave(enclave_id_t enclave_id) {
    return true;
 }
 
-inline bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
+bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
 
    dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);	
 
@@ -60,13 +62,13 @@ inline bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
    return true;
 }
 
-inline bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id) {
+bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id) {
 
    // Check that the buffer is contained in a memory regions owned by the enclave.
    return owned(buff_phys_addr, enclave_id) && owned(buff_phys_addr + size_buff * 8, enclave_id);
 }
 
-inline api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
   
    if(thread_id % SIZE_PAGE) {
       return monitor_invalid_value;
@@ -90,10 +92,10 @@ inline api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_
    for(int i = METADATA_IDX(thread_id);
          i < (METADATA_IDX(thread_id) + num_metadata_pages);
          i++) {
-      if((page_map[i] >> ENTRY_OWNER_ID_OFFSET) != caller_id) { 
+      if((page_map[i] >> ENTRY_OWNER_ID_OFFSET) != enclave_id) { 
          return monitor_invalid_state;
       }
-      if((page_map[i] & ((1u << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_thread) { 
+      if((page_map[i] & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_thread) { 
          return monitor_invalid_state;
       }
    }

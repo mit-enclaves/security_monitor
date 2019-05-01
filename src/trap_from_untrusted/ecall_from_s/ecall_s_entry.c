@@ -4,7 +4,7 @@
 // SM CALLS FROM OS (these come from S-mode)
 
 void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
-   uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], arg2 = regs[12], arg3 = regs[13], arg4 = regs[14], arg5 = regs[15], arg6 = regs[16], retval;
+   uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], arg2 = regs[12], arg3 = regs[13], arg4 = regs[14], arg5 = regs[15], retval;
 
    switch(code) {
 
@@ -27,7 +27,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
          retval = free_dram_region((dram_region_id_t) arg0);
          break;
       case SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS:
-         retval = flush_cached_dram_regions();
+         retval = monitor_unsupported;
          break;
       case SBI_SM_OS_CREATE_METADATA_REGION:
          retval = create_metadata_region((dram_region_id_t) arg0);

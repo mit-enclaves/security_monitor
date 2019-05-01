@@ -26,7 +26,7 @@ typedef struct {
       __tmp; })
 
 #define releaseLock(lock) ({ \
-      asm volatile ("amoswap.w.r1 x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
+      asm volatile ("amoswap.w.rl x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
 
 // ENCLAVE AND THREAD IDs
 

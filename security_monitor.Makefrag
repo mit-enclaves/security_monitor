@@ -1,0 +1,27 @@
+SECURITY_MONITOR_DIR := $(SANCTUM_DIR)/security_monitor
+SRC_DIR := $(SECURITY_MONITOR_DIR)/src
+SM_BUILD := $(BUILD_DIR)/security_monitor
+S_TRAP_DIR := $(SRC_DIR)/trap_from_untrusted
+S_ECALL_DIR := $(S_TRAP_DIR)/ecall_from_s
+
+INCLUDE := -I $(SRC_DIR) -I $(COMMON_DIR)
+
+SRC := init.S init/init.c main.c sm_stack.S $(S_TRAP_DIR)/entry.S sm_util/sm_util.c
+SRC += $(wildcard $(S_TRAP_DIR)/trap_*)
+SRC += $(wildcard $(S_TRAP_DIR)/interrupt_*)
+SRC += $(wildcard $(S_ECALL_DIR)/ecall_s_*)
+SRC += $(COMMON_DIR)/clib/memcpy.c
+SRC += $(COMMON_DIR)/clib/memset.c
+SRC += $(COMMON_DIR)/sha3/sha3.c
+
+SM_ELF := $(SM_BUILD)/security_monitor.elf
+
+$(CCFLAGS) += -g
+
+$(SM_ELF):
+	mkdir -p $(SM_BUILD)
+	cd $(SRC_DIR) && $(CC) -T security_monitor.lds $(INCLUDE) $(CCFLAGS) $(SRC) -o $@
+
+.PHONY: security_monitor
+security_monitor: $(QEMU) $(SM_ELF)
+	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $(SM_ELF)
