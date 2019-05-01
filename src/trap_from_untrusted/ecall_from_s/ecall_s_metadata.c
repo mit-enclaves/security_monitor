@@ -1,9 +1,9 @@
-#include <api.h>
+#include <ecall_s.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-api_result_t create_metadata_region(dram_region_id_t id) {
+api_result_t ecall_create_metadata_region(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -38,21 +38,21 @@ api_result_t create_metadata_region(dram_region_id_t id) {
    return monitor_ok;
 }
 
-uint64_t metadata_region_pages() {
+uint64_t ecall_metadata_region_pages() {
    return NUM_METADATA_PAGES_PER_REGION;
 }
 
-uint64_t metadata_region_start() {
-   uint64_t size_mpm = sizeof(metadata_page_map_entry_t) * metadata_region_pages();
+uint64_t ecall_metadata_region_start() {
+   uint64_t size_mpm = sizeof(metadata_page_map_entry_t) * ecall_metadata_region_pages();
    return (size_mpm / SIZE_PAGE) + ((size_mpm % SIZE_PAGE) ? 1 : 0); // Rouded up division. No +1 as indexing starts at 0
 }
 
-uint64_t thread_metadata_pages() {
+uint64_t ecall_thread_metadata_pages() {
    uint64_t size_th = sizeof(thread_t);
    return (size_th / SIZE_PAGE) + ((size_th % SIZE_PAGE) ? 1 : 0); // Rouded up division
 }
 
-uint64_t enclave_metadata_pages(uint64_t mailbox_count) {
+uint64_t ecall_enclave_metadata_pages(uint64_t mailbox_count) {
    uint64_t size_e = sizeof(enclave_t) + (sizeof(mailbox_t) * mailbox_count);
    return (size_e / SIZE_PAGE) + ((size_e % SIZE_PAGE) ? 1 : 0); // Rouded up division
 }

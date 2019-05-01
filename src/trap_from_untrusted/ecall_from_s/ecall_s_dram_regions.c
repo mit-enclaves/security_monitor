@@ -1,9 +1,9 @@
-#include <api.h>
+#include <ecall_s.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-dram_region_state_t dram_region_state(dram_region_id_t id) {
+dram_region_state_t ecall_dram_region_state(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -23,7 +23,7 @@ dram_region_state_t dram_region_state(dram_region_id_t id) {
    return state; 
 }
 
-enclave_id_t dram_region_owner(dram_region_id_t id) {
+enclave_id_t ecall_dram_region_owner(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -43,7 +43,7 @@ enclave_id_t dram_region_owner(dram_region_id_t id) {
    return owner; 
 }
 
-api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
+api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    // Check arguments validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -119,7 +119,7 @@ api_result_t assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    return monitor_ok;
 }
 
-api_result_t os_block_dram_region(dram_region_id_t id) {
+api_result_t ecall_os_block_dram_region(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -152,7 +152,7 @@ api_result_t os_block_dram_region(dram_region_id_t id) {
    return monitor_ok;
 }
 
-api_result_t free_dram_region(dram_region_id_t id) {
+api_result_t ecall_free_dram_region(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;

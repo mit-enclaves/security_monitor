@@ -1,5 +1,5 @@
+#include <ecall_s.h>
 #include <clib/clib.h>
-#include <api.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
@@ -12,7 +12,7 @@ struct inputs_create_t{
    bool debug;
 };
 
-api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
+api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       uintptr_t ev_mask, uint64_t mailbox_count, bool debug) {
    // TODO: Check all arguments validity
 
@@ -37,9 +37,9 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 
    // Check metadata pages availability
 
-   uint64_t num_metadata_pages = enclave_metadata_pages(mailbox_count);
+   uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
 
-   if((METADATA_IDX(enclave_id) + num_metadata_pages) >= metadata_region_pages()) {
+   if((METADATA_IDX(enclave_id) + num_metadata_pages) >= ecall_metadata_region_pages()) {
       releaseLock(dram_region_ptr->lock); // Release Lock
       return monitor_invalid_value;
    }
@@ -102,7 +102,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 }
 
 /*
-api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
+api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    // TODO: Does phys_addr has to be alligned?
    
    // Get a pointer to the DRAM region datastructure of the enclave metadata
@@ -237,7 +237,7 @@ struct inputs_load_pt_t{
    uintptr_t acl;
 };
 
-api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
+api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    if(level > 3) {
@@ -285,7 +285,7 @@ struct inputs_load_page_t{
    uintptr_t acl;
 };
 
-api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
    // Check that ACL is valid anf is not a leaf ACL
@@ -327,7 +327,7 @@ api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
    return monitor_ok;
 }
 
-api_result_t init_enclave(enclave_id_t enclave_id) {
+api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
 
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -359,7 +359,7 @@ api_result_t init_enclave(enclave_id_t enclave_id) {
    return monitor_ok;
 }
 
-api_result_t delete_enclave(enclave_id_t enclave_id) {
+api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
    
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -405,7 +405,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
 
          releaseLock(r_ptr->lock);
 
-         api_result_t ret = free_dram_region((dram_region_id_t) i);
+         api_result_t ret = ecall_free_dram_region((dram_region_id_t) i);
 
          if(ret != monitor_ok) {
             releaseLock(er_ptr->lock);
@@ -427,7 +427,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
 
    // Clean the metadata page map
 
-   uint64_t num_metadata_pages = enclave_metadata_pages(mailbox_count);
+   uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
    
    metadata_page_map_t page_map = (metadata_page_map_t) er_ptr;
    
@@ -443,7 +443,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id) {
 }
 
 
-api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
+api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
    
    // Check if enclave_id is valid
    if(!is_valid_enclave(enclave_id)) {

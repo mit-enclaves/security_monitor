@@ -7,6 +7,60 @@
 #include <sha3/sha3.h>
 #include <constants.h>
 
+// Error codes returned from monitor API calls.
+typedef enum {
+   // API call succeeded.
+   monitor_ok = 0,
+
+   // A parameter given to the API call was invalid.
+   //
+   // This most likely reflects a bug in the caller code.
+   monitor_invalid_value = 1,
+
+   // A resource referenced by the API call is in an unsuitable state.
+   //
+   // The API call will not succeed if the caller simply retries it. However,
+   // the caller may be able to perform other API calls to get the resources in
+   // a state that will allow this call to succeed.
+   monitor_invalid_state = 2,
+
+   // Failed to acquire a lock. Retrying with the same arguments might succeed.
+   //
+   // The monitor returns this instead of blocking a hardware thread when a
+   // resource lock is acquired by another thread. This approach eliminates any
+   // possibility of having the monitor deadlock. The caller is responsible for
+   // retrying the API call.
+   //
+   // This is also sometime returned instead of monitor_invalid_value, in the
+   // interest of reducing edge cases in monitor implementation.
+   monitor_concurrent_call = 3,
+
+   // The call was interrupted due to an asynchronous enclave exit (AEX).
+   //
+   // This is only returned by enter_enclave, and can be considered a more
+   // specific case of monitor_concurrent_call. The caller should retry the
+   // enclave_enter call, so the enclave thread can make progress.
+   monitor_async_exit = 4,
+
+   // The caller is not allowed to access a resource referenced by the API call.
+   //
+   // This is a more specific version of monitor_invalid_value. The monitor does
+   // its best to identify these cases, but may fail.
+   monitor_access_denied = 5,
+
+   // The current monitor implementation does not support the request.
+   //
+   // The caller made a reasonable API request that exercises an unhandled edge
+   // case in the monitor implementaiton. Some edge cases that would require
+   // complex or difficult-to-test implementations are detected and handled by
+   // returning monitor_unsupported.
+   //
+   // The documentation for API calls states the edge cases that result in a
+   // monitor_unsupported response.
+   monitor_unsupported = 6,
+} api_result_t;
+
+
 typedef uint64_t phys_ptr_t;
 typedef uint64_t hash_t[8];
 

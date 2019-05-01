@@ -2,110 +2,6 @@
 #define SECURITY_MONITOR_API_H
 #include <data_structures.h>
 
-//ECALL codes for SM-calls
-
-// SM CALLS FROM ENCLAVE (from U-mode, within an enclave)
-#define UBI_SM_ENCLAVE_BLOCK_DRAM_REGION      1000
-
-#define UBI_SM_ENCLAVE_CHECK_OWNERSHIP        1001
-
-#define UBI_SM_ENCLAVE_ACCEPT_THREAD          1002
-
-#define UBI_SM_ENCLAVE_EXIT_ENCLAVE           1003
-
-#define UBI_SM_ENCLAVE_GET_ATTESTATION_KEY    1004
-
-#define UBI_SM_ENCLAVE_ACCEPT_MESSAGE         1005
-#define UBI_SM_ENCLAVE_READ_MESSAGE           1006
-#define UBI_SM_ENCLAVE_SEND_MESSAGE           1007
-
-// SM CALLS FROM OS (these come from S-mode)
-#define SBI_SM_OS_BLOCK_DRAM_REGION           2000
-
-#define SBI_SM_OS_SET_DMA_RANGE               2001
-
-#define SBI_SM_OS_DRAM_REGION_STATE           2002
-#define SBI_SM_OS_DRAM_REGION_OWNER           2003
-#define SBI_SM_OS_ASSIGN_DRAM_REGION          2004
-#define SBI_SM_OS_FREE_DRAM_REGION            2005
-#define SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS   2006
-
-#define SBI_SM_OS_CREATE_METADATA_REGION      2007
-#define SBI_SM_OS_METADATA_REGION_PAGES       2008
-#define SBI_SM_OS_METADATA_REGION_START       2009
-#define SBI_SM_OS_THREAD_METADATA_PAGES       2010
-#define SBI_SM_OS_ENCLAVE_METADATA_PAGES      2011
-
-#define SBI_SM_OS_CREATE_ENCLAVE              2012
-#define SBI_SM_OS_LOAD_PAGE_TABLE             2013
-#define SBI_SM_OS_LOAD_PAGE                   2014
-#define SBI_SM_OS_LOAD_THREAD                 2015
-#define SBI_SM_OS_ASSIGN_THREAD               2016
-#define SBI_SM_OS_INIT_ENCLAVE                2017
-
-#define SBI_SM_OS_ENTER_ENCLAVE               2018
-
-#define SBI_SM_OS_DELETE_THREAD               2019
-
-#define SBI_SM_OS_DELETE_ENCLAVE              2020
-
-#define SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE     2021
-
-#define SBI_SM_ENCLAVE_FETCH_FIELD            2022
-
-// Error codes returned from monitor API calls.
-typedef enum {
-   // API call succeeded.
-   monitor_ok = 0,
-
-   // A parameter given to the API call was invalid.
-   //
-   // This most likely reflects a bug in the caller code.
-   monitor_invalid_value = 1,
-
-   // A resource referenced by the API call is in an unsuitable state.
-   //
-   // The API call will not succeed if the caller simply retries it. However,
-   // the caller may be able to perform other API calls to get the resources in
-   // a state that will allow this call to succeed.
-   monitor_invalid_state = 2,
-
-   // Failed to acquire a lock. Retrying with the same arguments might succeed.
-   //
-   // The monitor returns this instead of blocking a hardware thread when a
-   // resource lock is acquired by another thread. This approach eliminates any
-   // possibility of having the monitor deadlock. The caller is responsible for
-   // retrying the API call.
-   //
-   // This is also sometime returned instead of monitor_invalid_value, in the
-   // interest of reducing edge cases in monitor implementation.
-   monitor_concurrent_call = 3,
-
-   // The call was interrupted due to an asynchronous enclave exit (AEX).
-   //
-   // This is only returned by enter_enclave, and can be considered a more
-   // specific case of monitor_concurrent_call. The caller should retry the
-   // enclave_enter call, so the enclave thread can make progress.
-   monitor_async_exit = 4,
-
-   // The caller is not allowed to access a resource referenced by the API call.
-   //
-   // This is a more specific version of monitor_invalid_value. The monitor does
-   // its best to identify these cases, but may fail.
-   monitor_access_denied = 5,
-
-   // The current monitor implementation does not support the request.
-   //
-   // The caller made a reasonable API request that exercises an unhandled edge
-   // case in the monitor implementaiton. Some edge cases that would require
-   // complex or difficult-to-test implementations are detected and handled by
-   // returning monitor_unsupported.
-   //
-   // The documentation for API calls states the edge cases that result in a
-   // monitor_unsupported response.
-   monitor_unsupported = 6,
-} api_result_t;
-
 //// DRAM
 
 // Blocks a DRAM region that was previously owned by the caller.
@@ -306,7 +202,7 @@ api_result_t delete_enclave(enclave_id_t enclave_id);
 //
 // `thread_id` must identify a hardware thread that was created but is not
 // executing on any core.
-api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs);
+api_result_t enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id);
 
 // Ends the currently running enclave thread and returns control to the OS.
 api_result_t exit_enclave();

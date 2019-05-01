@@ -1,10 +1,10 @@
+#include <ecall_s.h>
 #include <clib/clib.h>
-#include <api.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-api_result_t allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 
    // Check that thread_id is page alligned
    if(thread_id % SIZE_PAGE) {
@@ -21,9 +21,9 @@ api_result_t allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 
    // Check metadata pages availability
 
-   uint64_t num_metadata_pages = thread_metadata_pages();
+   uint64_t num_metadata_pages = ecall_thread_metadata_pages();
 
-   if((METADATA_IDX(thread_id) + num_metadata_pages) >= metadata_region_pages()) {
+   if((METADATA_IDX(thread_id) + num_metadata_pages) >= ecall_metadata_region_pages()) {
       return monitor_invalid_value;
    }
 
@@ -55,7 +55,7 @@ struct inputs_load_thread_t{
    uintptr_t fault_stack;
 };
 
-api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
+api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
     uintptr_t fault_stack) {
 
@@ -78,7 +78,7 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
       return monitor_concurrent_call;
    } // Acquire Lock
   
-   api_result_t ret = allocate_thread(enclave_id, thread_id);
+   api_result_t ret = ecall_allocate_thread(enclave_id, thread_id);
 
    if(ret != monitor_ok) {
       releaseLock(dram_region_ptr->lock);
@@ -126,7 +126,7 @@ api_result_t load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
    return monitor_ok;
 }
 
-api_result_t assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
    
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -147,13 +147,13 @@ api_result_t assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
       return monitor_concurrent_call;
    } // Acquire Lock
   
-   api_result_t ret = allocate_thread(enclave_id, thread_id);
+   api_result_t ret = ecall_allocate_thread(enclave_id, thread_id);
 
    releaseLock(dram_region_ptr->lock);
    return ret;
 }
 
-api_result_t delete_thread(thread_id_t thread_id) {
+api_result_t ecall_delete_thread(thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 
    dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
@@ -182,7 +182,7 @@ api_result_t delete_thread(thread_id_t thread_id) {
       return monitor_invalid_state;
    }
 
-   uint64_t num_metadata_pages = thread_metadata_pages();
+   uint64_t num_metadata_pages = ecall_thread_metadata_pages();
    
    // Clean the metadata page map
    for(int i = METADATA_IDX(thread_id);
@@ -209,5 +209,3 @@ api_result_t delete_thread(thread_id_t thread_id) {
    
    return monitor_ok;
 }
-
-

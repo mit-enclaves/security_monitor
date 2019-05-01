@@ -1,4 +1,4 @@
-#include <api.h>
+#include <data_structures.h>
 #include <sm.h>
 #include <sm_util/sm_util.h>
 
@@ -83,9 +83,9 @@ api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 
    metadata_page_map_t page_map = (metadata_page_map_t) tr_ptr;
 
-   uint64_t num_metadata_pages = thread_metadata_pages();
+   uint64_t num_metadata_pages = ecall_thread_metadata_pages();
 
-   if((METADATA_IDX(thread_id) + num_metadata_pages) >= metadata_region_pages()) {
+   if((METADATA_IDX(thread_id) + num_metadata_pages) >= ecall_metadata_region_pages()) {
       return monitor_invalid_value;
    }
 
