@@ -1,5 +1,5 @@
 .option norvc
-.section .text.untrusted_trap 
+.section .text.sm.untrusted_trap 
 
 .globl .ecall_from_s_trap
 .ecall_from_s_trap:

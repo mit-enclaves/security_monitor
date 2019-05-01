@@ -5,6 +5,8 @@
 #include <sm_util/sm_util.h>
 #include <sha3/sha3.h>
 
+__attribute__((section(".text.sm.untrusted_trap")))
+
 struct inputs_create_t{
    uintptr_t ev_base;
    uintptr_t ev_mask;

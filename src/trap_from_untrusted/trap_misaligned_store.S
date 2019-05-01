@@ -1,5 +1,5 @@
 .option norvc
-.section .text.untrusted_trap 
+.section .text.sm.untrusted_trap 
 
 .globl .misaligned_store_trap
 .misaligned_store_trap:

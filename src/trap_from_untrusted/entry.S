@@ -4,7 +4,7 @@
 
 # Trap vector (table) for events originating in untrusted software
 # ================================================================
-  .section .text.untrusted_trap
+  .section .text.sm.untrusted_trap
   .align 6 # Align to a cache line (64B) boundary
 trap_table:
   # NOTE: only T0 are saved at this point
@@ -43,7 +43,7 @@ interrupt_table:
 
 # Handler for events originating in untrusted software
 # ====================================================
-  .section .text.untrusted_trap.entry
+  .section .text.sm.untrusted_trap.entry
   .globl trap_vector_from_untrusted
 trap_vector_from_untrusted:
 

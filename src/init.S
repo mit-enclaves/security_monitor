@@ -6,12 +6,12 @@
 # ==================================================
 .option norvc # TODO: what the fuck is this?
 
-.section .data
+.section .data.sm
 .align 3
 platform_disabled_hart_mask: 
 .dword 0
 
-.section .text.init.entry
+.section .text.sm.init.entry
 .globl _start
 _start:
 
@@ -108,7 +108,7 @@ sub sp, sp, a2
 
    .globl resume_hart_after_init_globals
    .type resume_hart_after_init_globals, @function
-   .section .text.init
+   .section .text.sm.init
    resume_hart_after_init_globals:
 
    /* Initialize Sanctum CSRs */

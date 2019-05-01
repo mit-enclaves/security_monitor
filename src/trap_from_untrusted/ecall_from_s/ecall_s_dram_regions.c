@@ -3,6 +3,8 @@
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
+__attribute__((section(".text.sm.untrusted_trap")))
+
 dram_region_state_t ecall_dram_region_state(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {

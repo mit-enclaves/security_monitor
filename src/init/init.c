@@ -1,9 +1,9 @@
 #include <sm.h>
 #include <data_structures.h>
 
-extern void resume_hart_after_init_globals(void);
+__attribute__((section(".text.sm.init")))
 
-__attribute__((section(".text.init")))
+extern void resume_hart_after_init_globals(void);
 
 security_monitor_t sm_globals;
 

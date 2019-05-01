@@ -3,6 +3,8 @@
 volatile uint64_t tohost    __attribute__((section(".htif.tohost")));
 volatile uint64_t fromhost  __attribute__((section(".htif.fromhost")));
 
+__attribute__((section(".text.os")))
+
 void print_char(char c) {
   // No synchronization needed, as the bootloader runs solely on core 0
 

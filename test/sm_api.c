@@ -1,6 +1,8 @@
 #include <api.h>
 #include <sm_util/sm_util.h>
 
+__attribute__((section(".os.text")))
+
 api_result_t block_dram_region(dram_region_id_t id) {
    return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_BLOCK_DRAM_REGION, id, 0, 0, 0, 0, 0);
 }

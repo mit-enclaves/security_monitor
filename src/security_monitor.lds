@@ -17,19 +17,26 @@ SECTIONS
   . = 0x80002000;
   /* Security monitor */
   .sm : {
-    *(.keys)
+    *(.sm_keys)
     PROVIDE(sm_entry = .);
-    *(.text.init.entry)
-    *(.text.init)
-    *(.text.untrusted_trap.entry)
-    *(.text.untrusted_trap)
-    *(.data)
+    *(.text.sm.init.entry)
+    *(.text.sm.init)
+    *(.text.sm.untrusted_trap.entry)
+    *(.text.sm.untrusted_trap)
+    *(.text.sm)
+    *(.data.sm)
     /* this includes *(.text.enclave_trap.entry)
        this includes *(.text.enclave_trap)
        this includes *(.idpt) */
     *(.sm_stacks)
   }
-  _end = .;
+
+  . = 0x82000000;
+  .os : {
+    *(.os.text)
+  }
+
+_end = .;
 }
 
 /* TODO: inspect pre-link elf to see what we're accidentally throwing away that's necessary. .got? .rodata? */
