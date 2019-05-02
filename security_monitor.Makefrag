@@ -19,6 +19,7 @@ SM_SRC += $(COMMON_DIR)/sha3/sha3.c
 TEST_SRC += $(TEST_DIR)/main.c
 TEST_SRC += $(TEST_DIR)/sm_api.c
 TEST_SRC += $(TEST_DIR)/htif/htif.c
+TEST_SRC += $(TEST_DIR)/os_stack.S
 
 SM_ELF := $(SM_BUILD)/security_monitor.elf
 

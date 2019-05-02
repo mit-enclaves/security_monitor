@@ -16,8 +16,7 @@
 //
 // Before issuing this call, the OS is responsible for wiping its own
 // confidential information from the DRAM region.
-api_result_t os_block_dram_region(dram_region_id_t id);
-api_result_t enclave_block_dram_region(dram_region_id_t id);
+api_result_t block_dram_region(dram_region_id_t id);
 
 //namespace enclave {  // sanctum::api::enclave
 

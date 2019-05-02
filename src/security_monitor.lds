@@ -28,12 +28,13 @@ SECTIONS
     /* this includes *(.text.enclave_trap.entry)
        this includes *(.text.enclave_trap)
        this includes *(.idpt) */
-    *(.sm_stacks)
+    *(.sm.mstacks)
   }
 
   . = 0x82000000;
   .os : {
     *(.os.text)
+    *(.os.stack)
   }
 
 _end = .;

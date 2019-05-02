@@ -52,7 +52,8 @@ trap_vector_from_untrusted:
   beqz sp, .recursive_trap_from_untrusted
   # TODO: the above is problematic. Make sure recurison does not blow the stack.
 
-  # Save t0 and former SP, load the trap cause (mcause)
+  # Save ra, t0 and former SP, load the trap cause (mcause)
+  sd ra, 1*REGBYTES(sp)
   sd t0, 5*REGBYTES(sp)
   csrr t0, mscratch
   sd t0, 2*REGBYTES(sp) # separately handled
@@ -144,7 +145,7 @@ trap_vector_from_untrusted:
   # Restore all of the registers.
   # x0 need not be restored
   #ld ra, 1*REGBYTES(sp) # loaded later
-  #ld t0, 2*REGBYTES(sp) # separately hadled
+  #ld sp, 2*REGBYTES(sp) # separately hadled
   ld gp, 3*REGBYTES(sp)
   ld tp, 4*REGBYTES(sp)
   # ld t0, 5*REGBYTES(sp) # loaded later
@@ -225,6 +226,13 @@ trap_vector_from_untrusted:
 .globl .perform_mret
 .perform_mret:
   # Go back whence we came.
+  ld t0, 2*REGBYTES(sp)
+  csrw mscratch, t0
+  
+  csrr t0, mepc
+  addi t0, t0, 4
+  csrw mepc, t0
+
   ld ra, 1*REGBYTES(sp)
   ld t0, 5*REGBYTES(sp)
   csrrw sp, mscratch, sp

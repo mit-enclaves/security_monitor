@@ -137,6 +137,10 @@ sub sp, sp, a2
    or t0, t0, t2
    csrw mstatus, t0
 
+   /* Save sp in mscratch and set new sp */
+   csrw mscratch, sp
+   la sp, os_stack_ptr
+
    /* Set return address to main program */
    la t0, main
    csrw mepc, t0
