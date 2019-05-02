@@ -1,5 +1,5 @@
 .option norvc
-.section .text.sm.untrusted_trap
+.section .sm.text.untrusted_trap
 
 .globl .illegal_insn_trap
 .illegal_insn_trap:

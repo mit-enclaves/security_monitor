@@ -19,12 +19,12 @@ SECTIONS
   .sm : {
     *(.sm_keys)
     PROVIDE(sm_entry = .);
-    *(.text.sm.init.entry)
-    *(.text.sm.init)
-    *(.text.sm.untrusted_trap.entry)
-    *(.text.sm.untrusted_trap)
-    *(.text.sm)
-    *(.data.sm)
+    *(.sm.text.init.entry)
+    *(.sm.text.init)
+    *(.sm.text.untrusted_trap.entry)
+    *(.sm.text.untrusted_trap)
+    *(.sm.text)
+    *(.sm.data)
     /* this includes *(.text.enclave_trap.entry)
        this includes *(.text.enclave_trap)
        this includes *(.idpt) */

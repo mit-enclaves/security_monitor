@@ -2,7 +2,7 @@
 #include <sm.h>
 #include <sm_util/sm_util.h>
 
-__attribute__((section(".text.sm")))
+__attribute__((section(".sm.text")))
 
 bool is_valid_enclave(enclave_id_t enclave_id) {
 

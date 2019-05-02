@@ -1,7 +1,7 @@
 #include <constants.h>
 
 .option norvc
-.section .text.sm.untrusted_trap
+.section .sm.text.untrusted_trap
 
 .globl .handle_mtimer_interrupt
 .handle_mtimer_interrupt:

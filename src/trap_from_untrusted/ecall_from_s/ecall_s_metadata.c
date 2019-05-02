@@ -3,7 +3,7 @@
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-__attribute__((section(".text.sm.untrusted_trap")))
+__attribute__((section(".sm.text.untrusted_trap")))
 
 api_result_t ecall_create_metadata_region(dram_region_id_t id) {
    // Check argument validity

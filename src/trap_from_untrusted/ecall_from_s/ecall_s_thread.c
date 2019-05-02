@@ -4,7 +4,7 @@
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-__attribute__((section(".text.sm.untrusted_trap")))
+__attribute__((section(".sm.text.untrusted_trap")))
 
 api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 

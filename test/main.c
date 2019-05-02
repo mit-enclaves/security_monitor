@@ -1,7 +1,7 @@
 #include "htif/htif.h"
 #include <api.h>
 
-__attribute__((section(".text.os")))
+__attribute__((section(".os.text")))
 
 int main(void) {
   print_str("Hello World!\n");
