@@ -1,4 +1,4 @@
-#include "htif/htif.h"
+#include "../htif/htif.h"
 #include <api.h>
 
 __attribute__((section(".os.text")))

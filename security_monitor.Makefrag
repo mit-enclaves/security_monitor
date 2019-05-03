@@ -5,6 +5,11 @@ S_TRAP_DIR := $(SM_SRC_DIR)/trap_from_untrusted
 S_ECALL_DIR := $(S_TRAP_DIR)/ecall_from_s
 
 TEST_DIR := $(SECURITY_MONITOR_DIR)/test
+UNIT_TESTS_DIR := $(TEST_DIR)/unit_tests
+
+TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR)/test_*)))
+TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
+TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 
 SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(COMMON_DIR)
 
@@ -16,20 +21,24 @@ SM_SRC += $(COMMON_DIR)/clib/memcpy.c
 SM_SRC += $(COMMON_DIR)/clib/memset.c
 SM_SRC += $(COMMON_DIR)/sha3/sha3.c
 
-TEST_SRC += $(TEST_DIR)/main.c
 TEST_SRC += $(TEST_DIR)/sm_api.c
 TEST_SRC += $(TEST_DIR)/htif/htif.c
 TEST_SRC += $(TEST_DIR)/os_stack.S
 
-SM_ELF := $(SM_BUILD)/security_monitor.elf
 
-$(SM_ELF):
+$(SM_BUILD)/%.elf:
 	mkdir -p $(SM_BUILD)
-	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(SM_INCLUDE) $(TEST_INCLUDE) $(CCFLAGS) $(SM_SRC) $(TEST_SRC) -o $@
+	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(SM_INCLUDE) $(TEST_INCLUDE) $(CCFLAGS) $(SM_SRC) $(TEST_SRC) $(UNIT_TESTS_DIR)/$*.c -o $@
 
-.PHONY: security_monitor
-security_monitor: $(QEMU) $(SM_ELF)
+.PHONY: security_monitor_test_elfs
+security_monitor_test_elfs: $(TEST_ELFS)
 
-security_monitor_qemu: security_monitor
-	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $(SM_ELF)
+
+%.task: $(SM_BUILD)/%.elf
+	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $^
+
+.PHONY: security_monitor_tests
+security_monitor_tests: $(TEST_TASKS)
+	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
+	@echo "The tests were: $(TEST_NAMES)"
 
