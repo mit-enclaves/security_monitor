@@ -4,9 +4,7 @@
 #include <csr/csr.h>
 #include <sm_util/sm_util.h>
 
-__attribute__((section(".sm.text.untrusted_trap")))
-
-api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+SM_UTRAP api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
 
    // Check that thread_id is page alligned
    if(thread_id % SIZE_PAGE) {
@@ -57,7 +55,7 @@ struct inputs_load_thread_t{
    uintptr_t fault_stack;
 };
 
-api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
+SM_UTRAP api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
     uintptr_t fault_stack) {
 
@@ -128,7 +126,7 @@ api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thread_id,
    return monitor_ok;
 }
 
-api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+SM_UTRAP api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
    
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -155,7 +153,7 @@ api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t thread_id)
    return ret;
 }
 
-api_result_t ecall_delete_thread(thread_id_t thread_id) {
+SM_UTRAP api_result_t ecall_delete_thread(thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 
    dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
