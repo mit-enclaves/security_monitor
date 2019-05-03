@@ -2,9 +2,7 @@
 #include <sm.h>
 #include <sm_util/sm_util.h>
 
-__attribute__((section(".sm.text")))
-
-bool is_valid_enclave(enclave_id_t enclave_id) {
+SM_UTRAP bool is_valid_enclave(enclave_id_t enclave_id) {
 
    // Check that enclave_id is page alligned	
    if(enclave_id % SIZE_PAGE) {
@@ -43,7 +41,7 @@ bool is_valid_enclave(enclave_id_t enclave_id) {
    return true;
 }
 
-bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
+SM_UTRAP bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
 
    dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);	
 
@@ -64,13 +62,13 @@ bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
    return true;
 }
 
-bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id) {
+SM_UTRAP bool check_buffer_ownership(uintptr_t buff_phys_addr, size_t size_buff, enclave_id_t enclave_id) {
 
    // Check that the buffer is contained in a memory regions owned by the enclave.
    return owned(buff_phys_addr, enclave_id) && owned(buff_phys_addr + size_buff * 8, enclave_id);
 }
 
-api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
+SM_UTRAP api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id) {
   
    if(thread_id % SIZE_PAGE) {
       return monitor_invalid_value;

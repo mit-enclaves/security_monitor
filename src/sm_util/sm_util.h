@@ -4,6 +4,12 @@
 #include <data_structures.h>
 #include <ecall_s.h>
 
+// SECTION MACROS
+
+#define SM_UTRAP __attribute__((section(".sm.text.untrusted_trap")))
+
+// SBI CALL MACRO
+
 #define SBI_SM_OS_CALL(code, arg0, arg1, arg2, arg3, arg4, arg5) ({ \
       register uintptr_t a0 asm ("a0") = (uintptr_t)(arg0);  \
       register uintptr_t a1 asm ("a1") = (uintptr_t)(arg1);  \
@@ -18,6 +24,8 @@
             : "memory");                                     \
       a0;                                                    \
       })
+
+// CONSTANTS MANAGEMENT
 
 static inline int intlog2(int n) {
    int cnt = 0;

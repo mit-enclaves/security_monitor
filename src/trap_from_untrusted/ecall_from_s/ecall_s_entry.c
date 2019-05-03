@@ -1,11 +1,10 @@
 #include <ecall_s.h>
 #include <errno.h> // TODO only include ENOSYS?
-
-__attribute__((section(".sm.text.untrusted_trap")))
+#include <sm_util/sm_util.h>
 
 // SM CALLS FROM OS (these come from S-mode)
 
-void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
+SM_UTRAP void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
    uintptr_t code = regs[17], arg0 = regs[10], arg1 = regs[11], arg2 = regs[12], arg3 = regs[13], arg4 = regs[14], arg5 = regs[15], retval;
 
    switch(code) {

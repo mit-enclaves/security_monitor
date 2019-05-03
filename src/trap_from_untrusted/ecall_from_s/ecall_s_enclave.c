@@ -5,8 +5,6 @@
 #include <sm_util/sm_util.h>
 #include <sha3/sha3.h>
 
-__attribute__((section(".sm.text.untrusted_trap")))
-
 struct inputs_create_t{
    uintptr_t ev_base;
    uintptr_t ev_mask;
@@ -14,7 +12,7 @@ struct inputs_create_t{
    bool debug;
 };
 
-api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
+SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       uintptr_t ev_mask, uint64_t mailbox_count, bool debug) {
    // TODO: Check all arguments validity
 
@@ -104,7 +102,7 @@ api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 }
 
 /*
-api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
+SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    // TODO: Does phys_addr has to be alligned?
    
    // Get a pointer to the DRAM region datastructure of the enclave metadata
@@ -157,7 +155,7 @@ api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_add
 }
 */
 
-api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
+SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    // Check that phys_addr is page alligned
@@ -239,7 +237,7 @@ struct inputs_load_pt_t{
    uintptr_t acl;
 };
 
-api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
+SM_UTRAP api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    if(level > 3) {
@@ -287,7 +285,7 @@ struct inputs_load_page_t{
    uintptr_t acl;
 };
 
-api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
+SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
    // Check that ACL is valid anf is not a leaf ACL
@@ -329,7 +327,7 @@ api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
    return monitor_ok;
 }
 
-api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
+SM_UTRAP api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
 
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -361,7 +359,7 @@ api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
    return monitor_ok;
 }
 
-api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
+SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
    
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
@@ -445,7 +443,7 @@ api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
 }
 
 
-api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
+SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
    
    // Check if enclave_id is valid
    if(!is_valid_enclave(enclave_id)) {
