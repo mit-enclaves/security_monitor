@@ -35,9 +35,15 @@ SECTIONS
   .os : {
     *(.os.text)
     *(.os.stack)
+    *(.text)
+    *(.rodata)
+    *(.got)
+    *(.got.plt)
    }
-   .os.page_table ALIGN(0x1000) : {
-    *(.os.page_table)
+
+  . = 0xFFFFD000;
+  .text.page_table ALIGN(0x1000) : {
+    *(.text.page_table) /* Has to be in a text section to be readable */
   }
 
 _end = .;
