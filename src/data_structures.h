@@ -77,7 +77,7 @@ typedef struct {
 
 #define aquireLock(lock) ({ unsigned long __tmp; \
       asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&(lock.flag))); \
-      __tmp; })
+      ~__tmp; })
 
 #define releaseLock(lock) ({ \
       asm volatile ("amoswap.w.rl x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })

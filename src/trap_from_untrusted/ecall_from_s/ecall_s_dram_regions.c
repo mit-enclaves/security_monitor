@@ -7,7 +7,7 @@ __attribute__((section(".sm.text.untrusted_trap")))
 
 dram_region_state_t ecall_dram_region_state(dram_region_id_t id) {
    // Check argument validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 
@@ -27,7 +27,7 @@ dram_region_state_t ecall_dram_region_state(dram_region_id_t id) {
 
 enclave_id_t ecall_dram_region_owner(dram_region_id_t id) {
    // Check argument validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 
@@ -47,7 +47,7 @@ enclave_id_t ecall_dram_region_owner(dram_region_id_t id) {
 
 api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t new_owner) {
    // Check arguments validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 
@@ -123,7 +123,7 @@ api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t new_owne
 
 api_result_t ecall_os_block_dram_region(dram_region_id_t id) {
    // Check argument validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 
@@ -156,7 +156,7 @@ api_result_t ecall_os_block_dram_region(dram_region_id_t id) {
 
 api_result_t ecall_free_dram_region(dram_region_id_t id) {
    // Check argument validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 

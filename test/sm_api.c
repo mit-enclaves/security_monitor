@@ -4,7 +4,7 @@
 __attribute__((section(".os.text")))
 
 api_result_t block_dram_region(dram_region_id_t id) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_BLOCK_DRAM_REGION, id, 0, 0, 0, 0, 0);
+   return SBI_SM_OS_CALL(SBI_SM_OS_BLOCK_DRAM_REGION, id, 0, 0, 0, 0, 0);
 }
 
 api_result_t dram_region_check_ownership(dram_region_id_t id) {
