@@ -5,8 +5,11 @@ S_TRAP_DIR := $(SM_SRC_DIR)/trap_from_untrusted
 S_ECALL_DIR := $(S_TRAP_DIR)/ecall_from_s
 
 TEST_DIR := $(SECURITY_MONITOR_DIR)/test
+TEST_IDPT := $(SM_BUILD)/idpt.bin
 
 SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(COMMON_DIR)
+
+TEST_INCLUDE := -I $(SM_BUILD)
 
 SM_SRC := init.S init/init.c sm_stack.S $(S_TRAP_DIR)/entry.S sm_util/sm_util.c
 SM_SRC += $(wildcard $(S_TRAP_DIR)/trap_*)
@@ -20,10 +23,15 @@ TEST_SRC += $(TEST_DIR)/main.c
 TEST_SRC += $(TEST_DIR)/sm_api.c
 TEST_SRC += $(TEST_DIR)/htif/htif.c
 TEST_SRC += $(TEST_DIR)/os_stack.S
+TEST_SRC += $(TEST_DIR)/os_pt.S
 
 SM_ELF := $(SM_BUILD)/security_monitor.elf
 
-$(SM_ELF):
+$(TEST_IDPT): $(TEST_DIR)/make_idpt.py
+	mkdir -p $(SM_BUILD)
+	cd $(SM_BUILD) && python $(TEST_DIR)/make_idpt.py
+
+$(SM_ELF): $(TEST_IDPT)
 	mkdir -p $(SM_BUILD)
 	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(SM_INCLUDE) $(TEST_INCLUDE) $(CCFLAGS) $(SM_SRC) $(TEST_SRC) -o $@
 

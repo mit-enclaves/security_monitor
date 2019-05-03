@@ -35,6 +35,9 @@ SECTIONS
   .os : {
     *(.os.text)
     *(.os.stack)
+   }
+   .os.page_table ALIGN(0x1000) : {
+    *(.os.page_table)
   }
 
 _end = .;

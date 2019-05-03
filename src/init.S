@@ -68,80 +68,89 @@ sub sp, sp, a2
 # ## 4). Designate the first available (unmasked) hart to perform initialization.
 # All other harts will sleep and wait for initialization to be finished
 # $a4 = select one hart among the enabled harts given by ~(*platform_disabled_hart_mask)
-   ld a4, platform_disabled_hart_mask
-   addi a5, a4, 1
-   not a4, a4
-   and a4, a4, a5
+ld a4, platform_disabled_hart_mask
+addi a5, a4, 1
+not a4, a4
+and a4, a4, a5
 
 # a4 is the one-hot vector of the lowest-numbered hart that isn't disabled
 # Check to see if *this* hart is the lowest hart that isn't disabled
-   srl a4, a4, a3
-   andi a4, a4, 1
+srl a4, a4, a3
+andi a4, a4, 1
 
 # call initialize_sm, defined in init.c if this is the designated hart to perform initialization
-   bnez a4, initialize_security_monitor_globals
+bnez a4, initialize_security_monitor_globals
 
 # Else this is *not* the hart to perform initialization, so prepare to wait for initialization to finish.
 # Enable inter-processor (software) interrupts on this hart
-   li a2, MIE_MEIE
-   csrw mie, a2
+li a2, MIE_MEIE
+csrw mie, a2
 
-   .init.wait_on_ipi_signal:
-   wfi
+.init.wait_on_ipi_signal:
+wfi
 
 # disabled harts never start; loop until (if ever) the hart is not disabled
-   ld a4, platform_disabled_hart_mask
-   srl a4, a4, a3
-   andi a4, a4, 1
-   bnez a4, .init.wait_on_ipi_signal
+ld a4, platform_disabled_hart_mask
+srl a4, a4, a3
+andi a4, a4, 1
+bnez a4, .init.wait_on_ipi_signal
 
 # If a software interrupt is pendng (this hart received an IPI), the SM must have been initialized.
-   csrr a2, mip
-   andi a2, a2, MIP_MSIP
-   beqz a2, .init.wait_on_ipi_signal
+csrr a2, mip
+andi a2, a2, MIP_MSIP
+beqz a2, .init.wait_on_ipi_signal
 
 # If this hart ID is out of range for this SM binary, wait forever.
 # Else, go on to initialize this hart.
-   li a2, NUM_CORES
-   bltu a3, a2, resume_hart_after_init_globals
-   j .init.wait_on_ipi_signal
+li a2, NUM_CORES
+bltu a3, a2, resume_hart_after_init_globals
+j .init.wait_on_ipi_signal
 
-   .globl resume_hart_after_init_globals
-   .type resume_hart_after_init_globals, @function
-   .section .sm.text.init
-   resume_hart_after_init_globals:
+.globl resume_hart_after_init_globals
+.type resume_hart_after_init_globals, @function
+.section .sm.text.init
+resume_hart_after_init_globals:
 
-   /* Initialize Sanctum CSRs */
+/* Initialize Sanctum CSRs */
 
-   li t0, 0
-   li t1, 0xFFFFFFFFFFFFFFFF
+li t0, 0
+li t1, 0xFFFFFFFFFFFFFFFF
 
-   csrw 0x7c0, t1 // Write MEVBASE
-   csrw 0x7c1, t0 // Write MEVMASK
+csrw 0x7c0, t1 // Write MEVBASE
+csrw 0x7c1, t0 // Write MEVMASK
 
-   csrw 0x7c3, t1 // Write MMRBM
+csrw 0x7c3, t1 // Write MMRBM
 
-   csrw 0x7c5, t1 // Write MPARBASE
-   csrw 0x7c6, t0 // Write MPARMASK
+csrw 0x7c5, t1 // Write MPARBASE
+csrw 0x7c6, t0 // Write MPARMASK
 
-   /* Switch to S-mode, jump to the protected range */
-   /** Set mPP to 1 (S-mode), sIE to 1, mPIE to 0 and TVM to 1 **/
-   csrr t0, mstatus
+/* Activate Address Translation */
+/** Set satp mode to Sv39 and set the root page table address **/ 
+# SATP_MODE: 0xFF00000000000000
+li t0, 0x8000000000000000 # Mode Sv39 is value 8
+la t2, root_page_table
+srl t2, t2, 0xC # Physical Address divided by 4KiB
+or t0, t0, t2 
+csrw satp, t0
+
+/* Switch to S-mode, jump to the protected range */
+/** Set mPP to 1 (S-mode), sIE to 1, mPIE to 0 and TVM to 1 **/
+csrr t0, mstatus
 # MSTATUS_TVM:  0x00100000
 # MSTATUS_MPP:  0x00001800
 # MSTATUS_mPIE: 0x00000080
 # MSTATUS_SIE:  0x00000002
-   li t1, 0xFFFFFFFFFFEFE77D
-   li t2, 0x00100802
-   and t0, t0, t1
-   or t0, t0, t2
-   csrw mstatus, t0
+li t1, 0xFFFFFFFFFFEFE77D
+li t2, 0x00100802
+and t0, t0, t1
+or t0, t0, t2
+csrw mstatus, t0
 
-   /* Save sp in mscratch and set new sp */
-   csrw mscratch, sp
-   la sp, os_stack_ptr
+/* Save sp in mscratch and set new sp */
+csrw mscratch, sp
+la sp, os_stack_ptr
 
-   /* Set return address to main program */
-   la t0, main
-   csrw mepc, t0
-   mret
+/* Set return address to main program */
+la t0, main
+csrw mepc, t0
+mret
