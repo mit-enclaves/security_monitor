@@ -9,6 +9,7 @@ UNIT_TESTS_DIR := $(TEST_DIR)/unit_tests
 
 TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR)/test_*)))
 TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
+.SECONDARY: $(TEST_ELFS) 
 TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 TEST_IDPT := $(SM_BUILD)/idpt.bin
 
