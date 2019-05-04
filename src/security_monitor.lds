@@ -41,6 +41,11 @@ SECTIONS
     *(.got.plt)
    }
 
+  . = 0x83000000;
+  .illegal : {
+    *(.illegal.data)
+  }
+
   . = 0xFFFFD000;
   .text.page_table ALIGN(0x1000) : {
     *(.text.page_table) /* Has to be in a text section to be readable */
