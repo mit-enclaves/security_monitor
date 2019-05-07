@@ -3,8 +3,6 @@
 
 #include <sm_util/sm_util.h>
 
-#define SIZE_REGION (0x2000000)
-
 #define leaf_permissions (0b11101111) // D A G (not U) X W R V
 #define node_permissions (0b00000001) // Node
 
@@ -96,8 +94,6 @@ __attribute__((section(".os.text"))) int main(void) {
    print_str("\n");
 
    thread_id_t thread_id = enclave_id + (ret * SIZE_PAGE);
-
-   int64_t num_metadata_pages_per_regions = NUM_METADATA_PAGES_PER_REGION;
 
    print_str("load_thread(enclave_id, thread_id, entry_pc, entry_sp, trap_handler_entry, fault_stack_ptr)");
    res = load_thread(enclave_id, thread_id, 0, 0, trap_handler_entry, fault_stack_ptr);

@@ -543,8 +543,29 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    thread->untrusted_pc = read_csr(mepc);
 
    // Set the enclave sp and pc
-   regs[2] = thread->entry_sp;
    write_csr(mepc, thread->entry_pc);
+
+   uint64_t mstatus_tmp = read_csr(mstatus);
+
+   // Set TVM to one, MPP to 0 (U mode), MPIE, SIE to 0 and UIE to 1
+   mstatus_tmp |= MSTATUS_TVM_MASK;
+   mstatus_tmp &= (~MSTATUS_MPP_MASK);
+   mstatus_tmp &= (~MSTATUS_MPIE_MASK);
+   mstatus_tmp &= (~MSTATUS_SIE_MASK);
+   mstatus_tmp |= MSTATUS_UIE_MASK;
+
+   write_csr(mstatus, mstatus_tmp);
+
+   // Set sanctum specific CSRs
+   write_csr(CSR_MEATP, enclave->eptbr);
+
+   write_csr(CSR_MEVBASE, enclave->evbase);
+   write_csr(CSR_MEVMASK, enclave->evmask);
+
+   write_csr(CSR_MEMRBM, enclave->dram_bitmap);
+
+   write_csr(CSR_MEPARBASE, enclave->meparbase);
+   write_csr(CSR_MEPARMASK, enclave->meparmask);
 
    if(aex) {
       thread->aex_present = false;
@@ -559,5 +580,9 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
 
    releaseLock(core->lock);
 
-   return monitor_ok;
+   asm volatile ("csrw mscratch, %0" : "=r"(thread->entry_sp));
+   asm volatile ("csrrw sp, mscratch, sp");
+   asm volatile ("mret");
+
+   return monitor_ok; // TODO : useless
 }
