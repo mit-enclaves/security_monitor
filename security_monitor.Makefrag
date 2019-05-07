@@ -34,6 +34,7 @@ TEST_SRC += $(TEST_DIR)/os/sm_api_os.c
 TEST_SRC += $(TEST_DIR)/os/os_stack.S
 TEST_SRC += $(TEST_DIR)/os/os_pt.S
 TEST_SRC += $(TEST_DIR)/enclave/sm_api_enclave.c
+TEST_SRC += $(TEST_DIR)/enclave/enclave_code.S
 TEST_SRC += $(TEST_DIR)/htif/htif.c
 
 $(TEST_IDPT): $(TEST_DIR)/make_idpt.py

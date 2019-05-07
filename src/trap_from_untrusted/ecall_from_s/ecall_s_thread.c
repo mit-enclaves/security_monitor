@@ -12,7 +12,7 @@ SM_UTRAP api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t
    }
 
    dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
-   metadata_page_map_t page_map = (metadata_page_map_t) dram_region_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(thread_id);
    
    // Check that dram region is an metadata region
    if(dram_region_ptr->type != metadata_region) {
@@ -162,7 +162,7 @@ SM_UTRAP api_result_t ecall_delete_thread(thread_id_t thread_id) {
       return monitor_concurrent_call;
    } // Acquire Lock
    
-   metadata_page_map_t page_map = (metadata_page_map_t) tr_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(thread_id);
    
    enclave_id_t owner_id = (page_map[METADATA_IDX(thread_id)]) >> ENTRY_OWNER_ID_OFFSET;
    

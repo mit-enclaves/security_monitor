@@ -55,6 +55,11 @@ SECTIONS
     *(.illegal.data)
   }
 
+  . = 0x8C000000;
+  .enclave_binary : {
+    *(.enclave.text)
+  }
+
   . = 0xFFFFD000;
   .text.page_table ALIGN(0x1000) : {
     *(.text.page_table) /* Has to be in a text section to be readable */

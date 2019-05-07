@@ -21,7 +21,7 @@ SM_UTRAP bool is_valid_enclave(enclave_id_t enclave_id) {
       return false;
    }
 
-   metadata_page_map_t page_map = (metadata_page_map_t) dram_region_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(enclave_id);
    metadata_page_map_entry_t entry = page_map[METADATA_IDX(enclave_id)];
 
    // Check that metadata entry is owned by the right enclave
@@ -81,7 +81,7 @@ SM_UTRAP api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t threa
       return monitor_invalid_state;
    }
 
-   metadata_page_map_t page_map = (metadata_page_map_t) tr_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(thread_id);
 
    uint64_t num_metadata_pages = ecall_thread_metadata_pages();
 

@@ -21,26 +21,26 @@ SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev
       return monitor_invalid_value;
    }
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) enclave_id)]);	
+   dram_region_t * dram_region_info = &(sm_globals.regions[REGION_IDX((uintptr_t) enclave_id)]);
 
-   if(!aquireLock(dram_region_ptr->lock)) {
+   if(!aquireLock(dram_region_info->lock)) {
       return monitor_concurrent_call;
    } // Acquire Lock
 
    // Check that dram region is an metadata region
-   if(dram_region_ptr->type != metadata_region) {
-      releaseLock(dram_region_ptr->lock); // Release Lock
+   if(dram_region_info->type != metadata_region) {
+      releaseLock(dram_region_info->lock); // Release Lock
       return monitor_invalid_value;
    }
 
-   metadata_page_map_t page_map = (metadata_page_map_t) dram_region_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(enclave_id);
 
    // Check metadata pages availability
 
    uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
 
    if((METADATA_IDX(enclave_id) + num_metadata_pages) >= ecall_metadata_region_pages()) {
-      releaseLock(dram_region_ptr->lock); // Release Lock
+      releaseLock(dram_region_info->lock); // Release Lock
       return monitor_invalid_value;
    }
 
@@ -48,7 +48,7 @@ SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev
          i < (METADATA_IDX(enclave_id) + num_metadata_pages);
          i++) {
       if((page_map[i] & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) { 
-         releaseLock(dram_region_ptr->lock); // Release Lock
+         releaseLock(dram_region_info->lock); // Release Lock
          return monitor_invalid_state;
       }
    }
@@ -96,7 +96,7 @@ SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev
 
    sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_create_t));
 
-   releaseLock(dram_region_ptr->lock); // Release Lock
+   releaseLock(dram_region_info->lock); // Release Lock
 
    return monitor_ok;
 }
@@ -105,14 +105,14 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
    // TODO: Does phys_addr has to be alligned?
    
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
    if(!is_valid_enclave(enclave_id)) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_value;
    }
 
@@ -120,67 +120,67 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
 
    // Check that the enclave is not initialized.
    if(enclave->initialized) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_state;
    }
 
    // Check that phys_addr is higher than the last physical address
-   if(enclave->last_phys_addr_loaded <= phys_addr) {
-      releaseLock(er_ptr->lock);
+   if(enclave->last_phys_addr_loaded > phys_addr) {
+      releaseLock(er_info->lock);
       return monitor_invalid_value;
    }
    
    // Check that phys_addr points into a DRAM region owned by the enclave
    if(!owned(phys_addr, enclave_id)){
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_state;
    }
 
-   dram_region_t *r_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);
+   dram_region_t *r_info = &(sm_globals.regions[REGION_IDX(phys_addr)]);
    
    // Check that the handlers fit in a DRAM region owned by the enclave
-   uintptr_t end_phys_addr = phys_addr + (enclave_trap_handler_start - enclave_trap_handler_end);
+   uintptr_t end_phys_addr = phys_addr + (enclave_trap_handler_end - enclave_trap_handler_start);
  
-   dram_region_t *r_end_ptr = NULL;
+   dram_region_t *r_end_info = NULL;
    
    // TODO: Make sure the handlers are not larger than a DRAM region
    if(REGION_IDX(phys_addr) != REGION_IDX(end_phys_addr)){
       // Check that end_phys_addr points into a DRAM region owned by the enclave
       if(!owned(end_phys_addr, enclave_id)){
-         releaseLock(er_ptr->lock);
+         releaseLock(er_info->lock);
          return monitor_invalid_state;
       }
-      r_end_ptr = &(sm_globals.regions[REGION_IDX(end_phys_addr)]);
+      r_end_info = &(sm_globals.regions[REGION_IDX(end_phys_addr)]);
    }
 
    enclave->meparbase = phys_addr;
-   enclave->meparmask = ~ ((1ul << intlog2(~(phys_addr ^ end_phys_addr))) - 1);
+   enclave->meparmask = ~((1ul << intlog2(phys_addr ^ end_phys_addr)) - 1);
   
    // TODO: need to grab the DRAM regions locks
    
-   if(!aquireLock(r_ptr->lock)) {
-      releaseLock(er_ptr->lock);
+   if(!aquireLock(r_info->lock)) {
+      releaseLock(er_info->lock);
       return monitor_concurrent_call;
    }
    
-   if(r_end_ptr != NULL) {
-      if(!aquireLock(r_end_ptr->lock)) {
-         releaseLock(er_ptr->lock);
-         releaseLock(r_ptr->lock);
+   if(r_end_info != NULL) {
+      if(!aquireLock(r_end_info->lock)) {
+         releaseLock(er_info->lock);
+         releaseLock(r_info->lock);
          return monitor_concurrent_call;
       }
    }
 
    // Copy the handlers
-   memcpy((void *) phys_addr, (void *) enclave_trap_handler_start, (enclave_trap_handler_start - enclave_trap_handler_end));
+   memcpy((void *) phys_addr, (void *) enclave_trap_handler_start, (enclave_trap_handler_end - enclave_trap_handler_start));
 
    // Update the measurement
-   sha3_update(&(enclave->sha3_ctx), (void *) enclave_trap_handler_start, (enclave_trap_handler_start - enclave_trap_handler_end));
+   sha3_update(&(enclave->sha3_ctx), (void *) enclave_trap_handler_start, (enclave_trap_handler_end - enclave_trap_handler_start));
 
-   releaseLock(er_ptr->lock);
-   releaseLock(r_ptr->lock);
-   if(r_end_ptr != NULL) {
-      releaseLock(r_end_ptr->lock);
+   releaseLock(er_info->lock);
+   releaseLock(r_info->lock);
+   if(r_end_info != NULL) {
+      releaseLock(r_end_info->lock);
    }
 
    return monitor_ok;
@@ -206,7 +206,7 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
    }
 
    // Check that phys_addr is higher than the last physical address
-   if(enclave->last_phys_addr_loaded <= phys_addr) {
+   if(enclave->last_phys_addr_loaded > phys_addr) {
       return monitor_invalid_value;
    }
 
@@ -231,7 +231,7 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
          return monitor_invalid_state;
       }
 
-      for(int i = 2; i >= level; i--) {
+      for(int i = 2; i >= (int) level; i--) {
          uint64_t * pte_addr = (uint64_t *) ((uint64_t) pte_base +
             ((virtual_addr >> (PAGE_OFFSET + (PN_OFFSET * i))) & PN_MASK));
 
@@ -243,7 +243,7 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
                return monitor_invalid_state;
             }
 
-            pte_base = (((*pte_addr) >> PAGE_ENTRY_ACL_OFFSET) & PPNs_MASK) << PAGE_OFFSET;
+            pte_base = (((*pte_addr) & PPNs_MASK) >> PAGE_ENTRY_ACL_OFFSET)  << PAGE_OFFSET;
 
             if(!owned(pte_base, enclave_id)){
                return monitor_invalid_state;
@@ -251,8 +251,8 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
          }
          else {
             *pte_addr = 0 |
-               ((phys_addr >> PAGE_OFFSET) & (PPNs_MASK) << PAGE_ENTRY_ACL_OFFSET) |
-               (acl & ACL_MASK);
+               ((((phys_addr >> PAGE_OFFSET) << PAGE_ENTRY_ACL_OFFSET) & (PPNs_MASK)) |
+               (acl & ACL_MASK));
          }
       }
    }
@@ -275,17 +275,16 @@ SM_UTRAP api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t p
       return monitor_invalid_value;
    }
 
-   // Check that ACL is valid and is a leaf ACL
+   // Check that ACL is valid
    if(((acl & PTE_V) == 0) ||
-         (((acl & PTE_R) == 0) && ((acl & PTE_W) == PTE_W)) || 
-         ((acl & PTE_R) == PTE_R) || ((acl & PTE_X) == PTE_X)    ) {
+         (((acl & PTE_R) == 0) && ((acl & PTE_W) == PTE_W))) {
       return monitor_invalid_value;
    }
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
@@ -293,7 +292,7 @@ SM_UTRAP api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t p
    api_result_t ret = load_page_table_entry(enclave_id, phys_addr, virtual_addr, level, acl);
 
    if(ret != monitor_ok) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return ret;
    }
 
@@ -306,7 +305,7 @@ SM_UTRAP api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t p
    enclave_t *enclave = (enclave_t *) enclave_id;
    sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
 
-   releaseLock(er_ptr->lock);
+   releaseLock(er_info->lock);
 
    return monitor_ok;
 }
@@ -319,7 +318,7 @@ struct inputs_load_page_t{
 SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
-   // Check that ACL is valid anf is not a leaf ACL
+   // Check that ACL is valid and is a leaf ACL
    if(((acl & PTE_V) == 0) ||
          (((acl & PTE_R) == 0) && ((acl & PTE_W) == PTE_W)) || 
          (((acl & PTE_R) == 0) && ((acl & PTE_X) == 0))         ) {
@@ -327,9 +326,9 @@ SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_ad
    }
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
@@ -337,7 +336,7 @@ SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_ad
    api_result_t ret = load_page_table_entry(enclave_id, phys_addr, virtual_addr, 0, acl); // TODO: Are loaded pages always kilo pages?
 
    if(ret != monitor_ok) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return ret;
    }
 
@@ -353,7 +352,7 @@ SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_ad
    sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
    sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), (const void *) os_addr, SIZE_PAGE);
 
-   releaseLock(er_ptr->lock);
+   releaseLock(er_info->lock);
 
    return monitor_ok;
 }
@@ -367,15 +366,15 @@ SM_UTRAP api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
    // Check that the enclave is not initialized.
    if(enclave->initialized) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_state;
    }
 
@@ -385,7 +384,7 @@ SM_UTRAP api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
    // Output the measurement
    sha3_final(&(enclave->measurement),&(enclave->sha3_ctx));
 
-   releaseLock(er_ptr->lock);
+   releaseLock(er_info->lock);
 
    return monitor_ok;
 }
@@ -399,15 +398,15 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
    // Check if enclave is has threads initialized
    if(enclave->thread_count != 0) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_state;
    }
 
@@ -418,28 +417,28 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
       if((enclave->dram_bitmap >> i) & 1ul) {
          
          // Get a pointer to the DRAM region datastructure
-         dram_region_t *r_ptr = &(sm_globals.regions[i]);
+         dram_region_t *r_info = &(sm_globals.regions[i]);
 
-         if(!aquireLock(r_ptr->lock)) {
+         if(!aquireLock(r_info->lock)) {
             return monitor_concurrent_call;
          } // Acquire Lock
 
-         if((r_ptr->owner != enclave_id) || 
-               (r_ptr->type != enclave_region) ||
-               (r_ptr->state != dram_region_blocked)) {
-            releaseLock(r_ptr->lock);
-            releaseLock(er_ptr->lock);
+         if((r_info->owner != enclave_id) || 
+               (r_info->type != enclave_region) ||
+               (r_info->state != dram_region_blocked)) {
+            releaseLock(r_info->lock);
+            releaseLock(er_info->lock);
             return monitor_invalid_state;
          }
          
          // TODO: zero the region?
 
-         releaseLock(r_ptr->lock);
+         releaseLock(r_info->lock);
 
          api_result_t ret = ecall_free_dram_region((dram_region_id_t) i);
 
          if(ret != monitor_ok) {
-            releaseLock(er_ptr->lock);
+            releaseLock(er_info->lock);
             return ret;
          }
 
@@ -460,7 +459,7 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
 
    uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
    
-   metadata_page_map_t page_map = (metadata_page_map_t) er_ptr;
+   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(enclave_id);
    
    for(int i = METADATA_IDX(enclave_id);
          i < (METADATA_IDX(enclave_id) + num_metadata_pages);
@@ -468,7 +467,7 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
       page_map[i] = 0;
    }
 
-   releaseLock(er_ptr->lock);
+   releaseLock(er_info->lock);
 
    return monitor_ok;
 }
@@ -484,19 +483,19 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata and aquire the lock
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
 
-   if(!aquireLock(er_ptr->lock)) {
+   if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
    }
 
    // Check that the enclave is initialized.
    if(!enclave->initialized) {
-      releaseLock(er_ptr->lock);
+      releaseLock(er_info->lock);
       return monitor_invalid_state;
    }
 
-   releaseLock(er_ptr->lock);
+   releaseLock(er_info->lock);
    
    // Get the curent core metadata and aquire its lock
    core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
@@ -506,9 +505,9 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    } // Acquire Lock
    
    // Get a pointer to the DRAM region datastructure of the thread metadata and aquire the lock
-   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_info = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
    
-   if(!aquireLock(tr_ptr->lock)) {
+   if(!aquireLock(tr_info->lock)) {
       releaseLock(core->lock);
       return monitor_concurrent_call;
    } // Acquire Lock
@@ -520,14 +519,14 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    
    if(ret != monitor_ok) {
       releaseLock(core->lock);
-      releaseLock(tr_ptr->lock); // Release Lock
+      releaseLock(tr_info->lock); // Release Lock
       return ret;
    }
    
    // Check that the thread is not already sheduled
    if(!aquireLock(thread->is_scheduled)) {
       releaseLock(core->lock);
-      releaseLock(tr_ptr->lock); // Release Lock
+      releaseLock(tr_info->lock); // Release Lock
       return monitor_invalid_state;
    }
 
@@ -551,7 +550,7 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
       thread->aex_present = false;
    }
 
-   releaseLock(tr_ptr->lock); // Release Lock
+   releaseLock(tr_info->lock); // Release Lock
 
    // Update the core's metadata
    core->owner = enclave_id;

@@ -4,8 +4,6 @@
 __attribute__((section(".illegal.data"))) int integer = 2019;
 
 __attribute__((section(".os.text"))) int main(void) {
-  print_str("Hello World!\n");
-  
   print_str("Read integer stored in the 3rd DRAM region\n");
   print_int(integer);
   print_str("\n");

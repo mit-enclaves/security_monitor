@@ -5,7 +5,7 @@
 
 SM_UTRAP api_result_t ecall_create_metadata_region(dram_region_id_t id) {
    // Check argument validity
-   if(id < NUM_REGIONS) {
+   if(id >= NUM_REGIONS) {
       return monitor_invalid_value;
    }
 
@@ -27,10 +27,12 @@ SM_UTRAP api_result_t ecall_create_metadata_region(dram_region_id_t id) {
    r_ptr->state = dram_region_owned;
 
    // Initialize the metadata page map
-   metadata_page_map_t page_map = (metadata_page_map_t) id;
+   metadata_page_map_t page_map = (metadata_page_map_t) REGION_BASE(id);
+
+   uint64_t init_value = metadata_free; 
 
    for(int i = 0; i < NUM_METADATA_PAGES_PER_REGION; i++) {
-      page_map[i] = 0;
+      page_map[i] = init_value;
    }
 
    releaseLock(r_ptr->lock); // Release Lock

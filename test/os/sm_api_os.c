@@ -53,7 +53,7 @@ api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
 }
 
 api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
-   return SBI_SM_OS_CALL(SBI_SM_OS_LOAD_PAGE_TABLE, enclave_id, phys_addr, 0, 0, 0, 0);
+   return SBI_SM_OS_CALL(SBI_SM_OS_LOAD_TRAP_HANDLER, enclave_id, phys_addr, 0, 0, 0, 0);
 }
 
 api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
