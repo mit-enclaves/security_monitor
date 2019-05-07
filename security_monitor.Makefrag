@@ -17,7 +17,7 @@ TEST_IDPT := $(SM_BUILD)/idpt.bin
 
 SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(E_ECALL_DIR) -I $(COMMON_DIR)
 
-TEST_INCLUDE := -I $(SM_BUILD)
+TEST_INCLUDE := -I $(SM_BUILD) -I $(TEST_DIR)
 
 SM_SRC := init.S init/init.c sm_stack.S $(S_TRAP_DIR)/entry.S $(E_TRAP_DIR)/entry.S sm_util/sm_util.c
 SM_SRC += $(wildcard $(S_TRAP_DIR)/trap_*)
@@ -30,11 +30,11 @@ SM_SRC += $(COMMON_DIR)/clib/memcpy.c
 SM_SRC += $(COMMON_DIR)/clib/memset.c
 SM_SRC += $(COMMON_DIR)/sha3/sha3.c
 
-TEST_SRC += $(TEST_DIR)/sm_api_os.c
-TEST_SRC += $(TEST_DIR)/sm_api_enclave.c
+TEST_SRC += $(TEST_DIR)/os/sm_api_os.c
+TEST_SRC += $(TEST_DIR)/os/os_stack.S
+TEST_SRC += $(TEST_DIR)/os/os_pt.S
+TEST_SRC += $(TEST_DIR)/enclave/sm_api_enclave.c
 TEST_SRC += $(TEST_DIR)/htif/htif.c
-TEST_SRC += $(TEST_DIR)/os_stack.S
-TEST_SRC += $(TEST_DIR)/os_pt.S
 
 $(TEST_IDPT): $(TEST_DIR)/make_idpt.py
 	mkdir -p $(SM_BUILD)

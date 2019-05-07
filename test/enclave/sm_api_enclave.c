@@ -1,5 +1,5 @@
 #include <api.h>
-#include <sm_util/sm_util.h>
+#include <enclave/enclave_util.h>
 
 __attribute__((section(".os.text")))
 
