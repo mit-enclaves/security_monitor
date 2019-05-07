@@ -1,10 +1,10 @@
-#include <api.h>
+#include <ecall_e.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <clib/clib.h> 
 #include <sm_util/sm_util.h>
 
-api_result_t exit_enclave(uintptr_t *regs) {
+SM_ETRAP api_result_t ecall_exit_enclave(uintptr_t *regs) {
 
    core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
    

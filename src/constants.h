@@ -36,27 +36,29 @@
 #define SBI_SM_OS_ENCLAVE_METADATA_PAGES      2011
 
 #define SBI_SM_OS_CREATE_ENCLAVE              2012
-#define SBI_SM_OS_LOAD_PAGE_TABLE             2013
-#define SBI_SM_OS_LOAD_PAGE                   2014
-#define SBI_SM_OS_LOAD_THREAD                 2015
-#define SBI_SM_OS_ASSIGN_THREAD               2016
-#define SBI_SM_OS_INIT_ENCLAVE                2017
+#define SBI_SM_OS_LOAD_TRAP_HANDLER           2013
+#define SBI_SM_OS_LOAD_PAGE_TABLE             2014
+#define SBI_SM_OS_LOAD_PAGE                   2015
+#define SBI_SM_OS_LOAD_THREAD                 2016
+#define SBI_SM_OS_ASSIGN_THREAD               2017
+#define SBI_SM_OS_INIT_ENCLAVE                2018
 
-#define SBI_SM_OS_ENTER_ENCLAVE               2018
+#define SBI_SM_OS_ENTER_ENCLAVE               2019
 
-#define SBI_SM_OS_DELETE_THREAD               2019
+#define SBI_SM_OS_DELETE_THREAD               2020
 
-#define SBI_SM_OS_DELETE_ENCLAVE              2020
+#define SBI_SM_OS_DELETE_ENCLAVE              2021
 
-#define SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE     2021
+#define SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE     2022
 
-#define SBI_SM_ENCLAVE_FETCH_FIELD            2022
+#define SBI_SM_ENCLAVE_FETCH_FIELD            2023
 
 // ARCHI CONSTANTS
 
 #define XLENINT uint64_t
 #define SIZE_DRAM 0x80000000
 #define SIZE_PAGE 0x1000
+#define SIZE_KEY 0x20 // TODO
 #define SHIFT_PAGE 12
 #define NUM_CORES 2
 #define NUM_REGIONS 64
@@ -75,7 +77,6 @@
 #define MIP_SSIP 0x2 
 
 #define INTEGER_CONTEXT_SIZE 256 // TODO: is sp byte aligned?
-#define TRAP_FROM_MACHINE_MODE_VECTOR 0 // TODO: deal with that
 
 // HACKS
 

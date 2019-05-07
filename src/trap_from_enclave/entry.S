@@ -2,54 +2,54 @@
 
 # TODO: Make sure stack never grows above 4KB !!
 
-# Trap vector (table) for events originating in untrusted software
+# Trap vector (table) for events originating from enclave
 # ================================================================
-  .section .sm.text.untrusted_trap
+  .section .sm.text.enclave_trap
   .align 6 # Align to a cache line (64B) boundary
-trap_table:
+enclave_trap_table:
   # NOTE: only T0 are saved at this point
-  .word .delegate_to_s          //  0: misaligned instruction address
-  .word .pmp_trap               //  1: instruction access fault
-  .word .illegal_insn_trap      //  2: illegal instruction
-  .word .delegate_to_s          //  3: breakpoint
-  .word .misaligned_load_trap   //  4: misaligned load addr
-  .word .pmp_trap               //  5: load access fault
-  .word .misaligned_store_trap  //  6: misaligned store/AMO addr
-  .word .pmp_trap               //  7: store/AMO access fault
-  .word .delegate_to_s          //  8: ECALL from U-mode
-  .word .ecall_from_s_trap      //  9: ECALL from S-mode
+  .word .bad_event              //  0: misaligned instruction address
+  .word .bad_event              //  1: instruction access fault
+  .word .bad_event              //  2: illegal instruction
+  .word .bad_event              //  3: breakpoint
+  .word .bad_event              //  4: misaligned load addr
+  .word .bad_event              //  5: load access fault
+  .word .bad_event              //  6: misaligned store/AMO addr
+  .word .bad_event              //  7: store/AMO access fault
+  .word .ecall_from_e_trap      //  8: ECALL from U-mode
+  .word .bad_event              //  9: ECALL from S-mode
   .word .bad_event              // 10: (reserved)
   .word .bad_event              // 11: ECALL from M-mode
-  .word .delegate_to_s          // 12: instruction page fault
-  .word .delegate_to_s          // 13: load page fault
+  .word .bad_event              // 12: instruction page fault
+  .word .bad_event              // 13: load page fault
   .word .bad_event              // 14: (reserved)
-  .word .delegate_to_s          // 15: store/AMO page fault
+  .word .bad_event              // 15: store/AMO page fault
 
   .align 6
-interrupt_table:
+enclave_interrupt_table:
   # NOTE: only T0 are saved at this point
-  .word .delegate_to_s          //  0: user software interrupt
-  .word .delegate_to_s          //  1: supervisor software interrupt
+  .word .bad_event              //  0: user software interrupt
+  .word .bad_event              //  1: supervisor software interrupt
   .word .bad_event              //  2: (reserved)
-  .word .handle_mipi            //  3: machine softwre interrupt
-  .word .delegate_to_s          //  4: user timer interrupt
-  .word .delegate_to_s          //  5: supervisor timer interrupt
+  .word .bad_event              //  3: machine softwre interrupt
+  .word .bad_event              //  4: user timer interrupt
+  .word .bad_event              //  5: supervisor timer interrupt
   .word .bad_event              //  6: (reserved)
-  .word .handle_mtimer_interrupt //  7: machine timer interrupt
+  .word .bad_event              //  7: machine timer interrupt
   .word .bad_event              //  8: user external interrupt
   .word .bad_event              //  9: supervisor external interrupt
   .word .bad_event              // 10: (reserved)
   .word .bad_event              // 11: machine external interrupt
 
-# Handler for events originating in untrusted software
+# Handler for events originating from an enclave
 # ====================================================
-  .section .sm.text.untrusted_trap.entry
-  .globl trap_vector_from_untrusted
-trap_vector_from_untrusted:
+  .section .sm.text.enclave_trap.entry
+  .globl trap_vector_from_enclave
+trap_vector_from_enclave:
 
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
-  beqz sp, .recursive_trap_from_untrusted
+  beqz sp, .recursive_trap_from_enclave
   # TODO: the above is problematic. Make sure recurison does not blow the stack.
 
   # Save ra, t0 and former SP, load the trap cause (mcause)
@@ -63,12 +63,12 @@ trap_vector_from_untrusted:
   # -- Is this event an interrupt?
   bgez t0, .route_trap
   # -- -- Yes! Interrupt
-  la ra, interrupt_table
+  la ra, enclave_interrupt_table
   j .route_all_events
 
   # -- -- No, this is an OS trap
 .route_trap:
-  la ra, trap_table
+  la ra, enclave_trap_table
 
 .route_all_events:
   # Look up the handler address in the relevant event table
@@ -85,18 +85,17 @@ trap_vector_from_untrusted:
 # ---------------------
 
 # Oh no! This trap came from within machine mode!
-.recursive_trap_from_untrusted:
+.recursive_trap_from_enclave:
   csrr sp, mscratch
   j .bad_event
-
 # TODO: can we guarantee this is indeed a trap? mcause needs to not be out of range
 
 # Calling convention helpers
 # --------------------------
 
 # TODO: turn this into a nice macro instead of a call maybe
-.globl .save_regs_and_set_args
-.save_regs_and_set_args:
+.globl .enclave_save_regs_and_set_args
+.enclave_save_regs_and_set_args:
   # Preserve the registers.
   sd x0, (sp) # Zero x0's save slot.
   #sd ra, 1*REGBYTES(sp) # previously saved
@@ -137,8 +136,8 @@ trap_vector_from_untrusted:
   ret
 
 # TODO: turn this into a nice macro instead of a call maybe
-.globl .restore_regs
-.restore_regs:
+.globl .enclave_restore_regs
+.enclave_restore_regs:
   # Restore all of the registers.
   # x0 need not be restored
   #ld ra, 1*REGBYTES(sp) # loaded later
@@ -177,51 +176,8 @@ trap_vector_from_untrusted:
 # Generic event handlers
 # ----------------------
 
-.delegate_to_s:
-  # delegate trap/interrupt to S mode
-  # Set sIE to 0
-  sd t1, 6*REGBYTES(sp)
-  sd t2, 7*REGBYTES(sp)
-  # Get MSTATUS
-  csrr t0, mstatus
-  # MSTATUS_SPP:    0x00000100
-  # MSTATUS_SPIE:   0x00000020
-  # MSTATUS_SIE:    0x00000002
-  # MSTATUS_MPP:    0x00001800
-  # sPIE <-- sIE
-  andi t1, t0, 0x2
-  sll t2, t1, 4
-  # sPP <-- mPP[0]
-  srl t1, t0, 3
-  andi t1, t1, 0x100
-  or t2, t2, t1
-  # mPP <-- 0x1
-  li t1, 0x0800
-  or t2, t2, t1
-  # Set sIE to 0, add sPP, sPIE
-  li t1, 0xFFFFFFFFFFFFE6DD
-  and t0, t0, t1
-  or t0, t0, t2
-  csrw mstatus, t0
-  # sepc <-- mepc
-  csrr t0, mepc
-  csrw sepc, t0
-  # scause <-- mcause
-  csrr t0, mcause
-  csrw scause, t0
-  # sbadaddr <-- mbadaddr
-  csrr t0, mbadaddr
-  csrw sbadaddr, t0
-  # Set M-mode return address to S-mode handler
-  # mepc <-- stvec
-  csrr t0, stvec
-  csrw mepc, t0
-  # Restore dirty registers and stack pointer
-  ld t1, 6*REGBYTES(sp)
-  ld t2, 7*REGBYTES(sp)
-  # (continue to perform_mret)
-.globl .perform_mret
-.perform_mret:
+.globl .enclave_perform_mret
+.enclave_perform_mret:
   # Go back whence we came.
   ld t0, 2*REGBYTES(sp)
   csrw mscratch, t0
@@ -237,6 +193,8 @@ trap_vector_from_untrusted:
 
 .bad_event:
   csrr a0, mcause
+  csrr a1, mepc
+  csrr a2, mtval
   call .panic; // TODO: Implement real panic
 
 .panic:

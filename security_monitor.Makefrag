@@ -3,6 +3,8 @@ SM_SRC_DIR := $(SECURITY_MONITOR_DIR)/src
 SM_BUILD := $(BUILD_DIR)/security_monitor
 S_TRAP_DIR := $(SM_SRC_DIR)/trap_from_untrusted
 S_ECALL_DIR := $(S_TRAP_DIR)/ecall_from_s
+E_TRAP_DIR := $(SM_SRC_DIR)/trap_from_enclave
+E_ECALL_DIR := $(E_TRAP_DIR)/ecall_from_e
 
 TEST_DIR := $(SECURITY_MONITOR_DIR)/test
 UNIT_TESTS_DIR := $(TEST_DIR)/unit_tests
@@ -13,23 +15,26 @@ TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
 TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 TEST_IDPT := $(SM_BUILD)/idpt.bin
 
-SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(COMMON_DIR)
+SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(E_ECALL_DIR) -I $(COMMON_DIR)
 
 TEST_INCLUDE := -I $(SM_BUILD)
 
-SM_SRC := init.S init/init.c sm_stack.S $(S_TRAP_DIR)/entry.S sm_util/sm_util.c
+SM_SRC := init.S init/init.c sm_stack.S $(S_TRAP_DIR)/entry.S $(E_TRAP_DIR)/entry.S sm_util/sm_util.c
 SM_SRC += $(wildcard $(S_TRAP_DIR)/trap_*)
 SM_SRC += $(wildcard $(S_TRAP_DIR)/interrupt_*)
 SM_SRC += $(wildcard $(S_ECALL_DIR)/ecall_s_*)
+SM_SRC += $(wildcard $(E_TRAP_DIR)/trap_*)
+SM_SRC += $(wildcard $(E_TRAP_DIR)/interrupt_*)
+SM_SRC += $(wildcard $(E_ECALL_DIR)/ecall_e_*)
 SM_SRC += $(COMMON_DIR)/clib/memcpy.c
 SM_SRC += $(COMMON_DIR)/clib/memset.c
 SM_SRC += $(COMMON_DIR)/sha3/sha3.c
 
-TEST_SRC += $(TEST_DIR)/sm_api.c
+TEST_SRC += $(TEST_DIR)/sm_api_os.c
+TEST_SRC += $(TEST_DIR)/sm_api_enclave.c
 TEST_SRC += $(TEST_DIR)/htif/htif.c
 TEST_SRC += $(TEST_DIR)/os_stack.S
 TEST_SRC += $(TEST_DIR)/os_pt.S
-
 
 $(TEST_IDPT): $(TEST_DIR)/make_idpt.py
 	mkdir -p $(SM_BUILD)

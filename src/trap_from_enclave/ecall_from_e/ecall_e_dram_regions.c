@@ -1,8 +1,9 @@
-#include <api.h>
+#include <ecall_e.h>
 #include <sm.h>
 #include <csr/csr.h>
+#include <sm_util/sm_util.h>
 
-api_result_t enclave_block_dram_region(dram_region_id_t id) {
+SM_ETRAP api_result_t ecall_enclave_block_dram_region(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;
@@ -43,7 +44,7 @@ api_result_t enclave_block_dram_region(dram_region_id_t id) {
 }
 
 
-api_result_t dram_region_check_ownership(dram_region_id_t id) {
+SM_ETRAP api_result_t ecall_dram_region_check_ownership(dram_region_id_t id) {
    // Check argument validity
    if(id < NUM_REGIONS) {
       return monitor_invalid_value;

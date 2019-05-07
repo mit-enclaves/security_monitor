@@ -101,7 +101,6 @@ SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev
    return monitor_ok;
 }
 
-/*
 SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
    // TODO: Does phys_addr has to be alligned?
    
@@ -113,6 +112,7 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
    }
 
    if(!is_valid_enclave(enclave_id)) {
+      releaseLock(er_ptr->lock);
       return monitor_invalid_value;
    }
 
@@ -120,40 +120,71 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
 
    // Check that the enclave is not initialized.
    if(enclave->initialized) {
+      releaseLock(er_ptr->lock);
       return monitor_invalid_state;
    }
 
    // Check that phys_addr is higher than the last physical address
    if(enclave->last_phys_addr_loaded <= phys_addr) {
+      releaseLock(er_ptr->lock);
       return monitor_invalid_value;
    }
    
-   // Check that the handlers fit in a DRAM region owned by the enclave
-   uintptr_t end_phys_addr = phys_addr + SIZE_ENCLAVE_HANDLER;
-   
-   for(uintptr_t addr = phys_addr; addr < end_phys_addr; addr += SIZE_REGION) {
-      if(!owned(addr, enclave_id)){
-         return monitor_invalid_state;
-      }
+   // Check that phys_addr points into a DRAM region owned by the enclave
+   if(!owned(phys_addr, enclave_id)){
+      releaseLock(er_ptr->lock);
+      return monitor_invalid_state;
    }
 
-   // Check that end_phys_addr points into a DRAM region owned by the enclave
-   if(!owned(end_phys_addr, enclave_id)){
-      return monitor_invalid_state;
+   dram_region_t *r_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);
+   
+   // Check that the handlers fit in a DRAM region owned by the enclave
+   uintptr_t end_phys_addr = phys_addr + (enclave_trap_handler_start - enclave_trap_handler_end);
+ 
+   dram_region_t *r_end_ptr = NULL;
+   
+   // TODO: Make sure the handlers are not larger than a DRAM region
+   if(REGION_IDX(phys_addr) != REGION_IDX(end_phys_addr)){
+      // Check that end_phys_addr points into a DRAM region owned by the enclave
+      if(!owned(end_phys_addr, enclave_id)){
+         releaseLock(er_ptr->lock);
+         return monitor_invalid_state;
+      }
+      r_end_ptr = &(sm_globals.regions[REGION_IDX(end_phys_addr)]);
    }
 
    enclave->meparbase = phys_addr;
    enclave->meparmask = ~ ((1ul << intlog2(~(phys_addr ^ end_phys_addr))) - 1);
   
    // TODO: need to grab the DRAM regions locks
+   
+   if(!aquireLock(r_ptr->lock)) {
+      releaseLock(er_ptr->lock);
+      return monitor_concurrent_call;
+   }
+   
+   if(r_end_ptr != NULL) {
+      if(!aquireLock(r_end_ptr->lock)) {
+         releaseLock(er_ptr->lock);
+         releaseLock(r_ptr->lock);
+         return monitor_concurrent_call;
+      }
+   }
 
    // Copy the handlers
-   memcpy((void *) phys_addr, (void *) GLOBAL_ENCLAVE_HANDLERS_ADDRESS, SIZE_ENCLAVE_HANDLER);
+   memcpy((void *) phys_addr, (void *) enclave_trap_handler_start, (enclave_trap_handler_start - enclave_trap_handler_end));
 
    // Update the measurement
-   sha3_update(&(enclave->sha3_ctx), GLOBAL_ENCLAVE_HANDLERS_ADDRESS, SIZE_ENCLAVE_HANDLER);
+   sha3_update(&(enclave->sha3_ctx), (void *) enclave_trap_handler_start, (enclave_trap_handler_start - enclave_trap_handler_end));
+
+   releaseLock(er_ptr->lock);
+   releaseLock(r_ptr->lock);
+   if(r_end_ptr != NULL) {
+      releaseLock(r_end_ptr->lock);
+   }
+
+   return monitor_ok;
 }
-*/
 
 SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t phys_addr, 
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {

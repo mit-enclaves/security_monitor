@@ -7,35 +7,6 @@ api_result_t block_dram_region(dram_region_id_t id) {
    return SBI_SM_OS_CALL(SBI_SM_OS_BLOCK_DRAM_REGION, id, 0, 0, 0, 0, 0);
 }
 
-api_result_t dram_region_check_ownership(dram_region_id_t id) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_CHECK_OWNERSHIP, id, 0, 0, 0, 0, 0);
-}
-
-api_result_t get_attestation_key(uintptr_t phys_addr) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_GET_ATTESTATION_KEY, phys_addr, 0, 0, 0, 0, 0);
-}
-
-api_result_t accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_ACCEPT_MESSAGE, mailbox_id, expected_sender, 0, 0, 0, 0);
-}
-
-api_result_t read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_READ_MESSAGE, mailbox_id, phys_addr, 0, 0, 0, 0);
-}
-
-api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id,
-      uintptr_t phys_addr) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_SEND_MESSAGE, enclave_id, mailbox_id, 0, 0, 0, 0);
-}
-
-api_result_t accept_thread(thread_id_t thread_id, uintptr_t thread_info_addr) {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_ACCEPT_THREAD, thread_id, thread_info_addr, 0, 0, 0, 0);
-}
-
-api_result_t exit_enclave() {
-   return SBI_SM_OS_CALL(UBI_SM_ENCLAVE_EXIT_ENCLAVE, 0, 0, 0, 0, 0, 0);
-}
-
 dram_region_state_t dram_region_state(dram_region_id_t id) {
    return SBI_SM_OS_CALL(SBI_SM_OS_DRAM_REGION_STATE, id, 0, 0, 0, 0, 0);
 }
@@ -79,6 +50,10 @@ uint64_t enclave_metadata_pages(uint64_t mailbox_count) {
 api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       uintptr_t ev_mask, uint64_t mailbox_count, bool debug) {
    return SBI_SM_OS_CALL(SBI_SM_OS_CREATE_ENCLAVE, enclave_id, ev_base, ev_mask, mailbox_count, debug, 0);
+}
+
+api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr) {
+   return SBI_SM_OS_CALL(SBI_SM_OS_LOAD_PAGE_TABLE, enclave_id, phys_addr, 0, 0, 0, 0);
 }
 
 api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,

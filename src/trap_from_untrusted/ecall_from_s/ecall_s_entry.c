@@ -1,5 +1,5 @@
-#include <ecall_s.h>
 #include <errno.h> // TODO only include ENOSYS?
+#include <ecall_s.h>
 #include <sm_util/sm_util.h>
 
 // SM CALLS FROM OS (these come from S-mode)
@@ -47,6 +47,9 @@ SM_UTRAP void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mep
          break;
       case SBI_SM_OS_CREATE_ENCLAVE:
          retval = ecall_create_enclave(arg0, arg1, arg2, arg3, (bool) arg4);
+         break;
+      case SBI_SM_OS_LOAD_TRAP_HANDLER:
+         retval = ecall_load_trap_handler(arg0, arg1);
          break;
       case SBI_SM_OS_LOAD_PAGE_TABLE:
          retval = ecall_load_page_table(arg0, arg1, arg2, (uint64_t) arg3, arg4);

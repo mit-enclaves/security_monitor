@@ -11,7 +11,8 @@ SECTIONS
 
   . = 0x80001000;
   .boot_keys ALIGN(0x1000) (NOLOAD) : {
-    /* nothing here for this specific application */
+    security_monitor_secret_key = .;
+   /* nothing here for this specific application */
   }
 
   . = 0x80002000;
@@ -31,6 +32,14 @@ SECTIONS
     *(.sm.mstacks)
   }
 
+  .enclave_trap_handler ALIGN(0x1000): {
+    enclave_trap_handler_start = .;
+    *(.sm.text.enclave_trap.entry)
+    *(.sm.text.enclave_trap)
+    enclave_trap_handler_end = .;
+    . = ALIGN(0x1000);
+  }
+
   . = 0x82000000;
   .os : {
     *(.os.text)
@@ -41,7 +50,7 @@ SECTIONS
     *(.got.plt)
    }
 
-  . = 0x83000000;
+  . = 0x86000000;
   .illegal : {
     *(.illegal.data)
   }

@@ -148,6 +148,8 @@ uint64_t enclave_metadata_pages(uint64_t mailbox_count);
 api_result_t create_enclave(enclave_id_t enclave_id, uintptr_t ev_base,
       uintptr_t ev_mask, uint64_t mailbox_count, bool debug);
 
+api_result_t load_trap_handler(enclave_id_t enclave_id, uintptr_t phys_addr);
+
 // Allocates a page in the enclave's main DRAM region for page tables.
 //
 // `enclave_id` must be an enclave that has not yet been initialized.

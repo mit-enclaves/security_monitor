@@ -1,12 +1,10 @@
-#include <api.h>
+#include <ecall_e.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <clib/clib.h> 
 #include <sm_util/sm_util.h>
 
-#include <boot_api.h> //TODO: Is this the right way to do it?
-
-api_result_t get_attestation_key(uintptr_t phys_addr) {
+SM_ETRAP api_result_t ecall_get_attestation_key(uintptr_t phys_addr) {
    // Check that the caller is an attestation enclave
    enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
    if(((enclave_t *) caller_id)->measurement != sm_globals.signing_enclave_measurement) {
@@ -20,12 +18,12 @@ api_result_t get_attestation_key(uintptr_t phys_addr) {
       return monitor_invalid_value;
    }
 
-   memcpy((void *) phys_addr, boot_api_state.security_monitor_secret_key, size_key);
+   memcpy((void *) phys_addr, (void *) security_monitor_secret_key, SIZE_KEY);
 
    return monitor_ok;
 }
 
-api_result_t accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
+SM_ETRAP api_result_t ecall_accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
    // Check that caller is an enclave
    if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	
@@ -56,7 +54,7 @@ api_result_t accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sende
    return monitor_ok;
 }
 
-api_result_t read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr) {
+SM_ETRAP api_result_t ecall_read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr) {
    // Check that caller is an enclave
    if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	
@@ -85,7 +83,7 @@ api_result_t read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr) {
    return monitor_ok;
 }
 
-api_result_t send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id, uintptr_t phys_addr) {
+SM_ETRAP api_result_t ecall_send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id, uintptr_t phys_addr) {
    // Check that caller is an enclave
    if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	

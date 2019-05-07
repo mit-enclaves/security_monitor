@@ -3,5 +3,8 @@
 #include <data_structures.h>
 
 extern security_monitor_t sm_globals;
+extern uintptr_t enclave_trap_handler_start;
+extern uintptr_t enclave_trap_handler_end;
+extern uintptr_t security_monitor_secret_key;
 
 #endif // SECURITY_MONITOR_H

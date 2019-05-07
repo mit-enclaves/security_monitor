@@ -1,10 +1,10 @@
-#include <api.h>
+#include <ecall_e.h>
 #include <sm.h>
 #include <csr/csr.h>
 #include <clib/clib.h> 
 #include <sm_util/sm_util.h>
 
-api_result_t accept_thread(thread_id_t thread_id, uintptr_t thread_info_addr) {
+SM_ETRAP api_result_t ecall_accept_thread(thread_id_t thread_id, uintptr_t thread_info_addr) {
 
    // Get the caller id
    enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
