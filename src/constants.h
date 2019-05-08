@@ -83,6 +83,8 @@
 #define MSTATUS_SIE_MASK 0x00000002
 #define MSTATUS_UIE_MASK 0x00000001
 
+#define SATP_MODE_SHIFT 60
+
 #define INTEGER_CONTEXT_SIZE 256 // TODO: is sp byte aligned?
 
 // HACKS

@@ -8,7 +8,7 @@
 
 #define SM_UTRAP __attribute__((section(".sm.text.untrusted_trap")))
 
-#define SM_ETRAP __attribute__((section(".sm.text.enclave_trap")))
+#define SM_ETRAP __attribute__((section(".text.enclave_trap")))
 
 // CONSTANTS MANAGEMENT
 
@@ -40,7 +40,8 @@ api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id);
 #define PN_MASK ((1ul << PN_OFFSET) - 1)
 #define PPN2_MASK ((1ul << PPN2_OFFSET) - 1)
 #define ACL_MASK ((1ul << PAGE_ENTRY_ACL_OFFSET) - 1)
-#define PPNs_MASK ((PPN2_MASK << ((PN_OFFSET * 2) + PAGE_ENTRY_ACL_OFFSET)) | (PN_MASK << (PN_OFFSET + PAGE_ENTRY_ACL_OFFSET)) | (PN_MASK << (PAGE_ENTRY_ACL_OFFSET)))
+#define SATP_PPN_MASK ((PPN2_MASK << (PN_OFFSET * 2)) | (PN_MASK << PN_OFFSET) | PN_MASK)
+#define PPNs_MASK (SATP_PPN_MASK << PAGE_ENTRY_ACL_OFFSET)
 
 #define PTE_V (1ul)
 #define PTE_R (1ul << 1)

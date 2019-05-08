@@ -1,5 +1,5 @@
 .option norvc
-.section .sm.text.enclave_trap 
+.section .text.enclave_trap 
 
 .globl .ecall_from_e_trap
 .ecall_from_e_trap:

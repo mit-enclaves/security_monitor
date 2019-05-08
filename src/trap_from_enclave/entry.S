@@ -4,7 +4,7 @@
 
 # Trap vector (table) for events originating from enclave
 # ================================================================
-  .section .sm.text.enclave_trap
+  .section .text.enclave_trap
   .align 6 # Align to a cache line (64B) boundary
 enclave_trap_table:
   # NOTE: only T0 are saved at this point
@@ -43,7 +43,7 @@ enclave_interrupt_table:
 
 # Handler for events originating from an enclave
 # ====================================================
-  .section .sm.text.enclave_trap.entry
+  .section .text.enclave_trap.entry
   .globl trap_vector_from_enclave
 trap_vector_from_enclave:
 

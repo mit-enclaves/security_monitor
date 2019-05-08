@@ -3,7 +3,7 @@
 
 #include <sm_util/sm_util.h>
 
-#define leaf_permissions (0b11101111) // D A G (not U) X W R V
+#define leaf_permissions (0b11111111) // D A G U X W R V
 #define node_permissions (0b00000001) // Node
 
 __attribute__((section(".os.text"))) int main(void) {
@@ -51,10 +51,12 @@ __attribute__((section(".os.text"))) int main(void) {
    print_api_r(res);
    print_str("\n");
 
-   phys_addr += SIZE_PAGE;
-   //STACK
+   phys_addr += 512 * SIZE_PAGE;
+   //STACKS
    phys_addr += SIZE_PAGE;
    uintptr_t fault_stack_ptr = phys_addr;
+   phys_addr += SIZE_PAGE;
+   uintptr_t entry_sp = phys_addr;
 
    print_str("load_page_table(enclave_id, phys_addr, 0, 3, node_permissions)");
    res = load_page_table(enclave_id, phys_addr, 0, 3, node_permissions);
@@ -96,7 +98,7 @@ __attribute__((section(".os.text"))) int main(void) {
    thread_id_t thread_id = enclave_id + (ret * SIZE_PAGE);
 
    print_str("load_thread(enclave_id, thread_id, entry_pc, entry_sp, trap_handler_entry, fault_stack_ptr)");
-   res = load_thread(enclave_id, thread_id, 0, 0, trap_handler_entry, fault_stack_ptr);
+   res = load_thread(enclave_id, thread_id, 0, entry_sp, trap_handler_entry, fault_stack_ptr);
    print_api_r(res);
    print_str("\n");
    

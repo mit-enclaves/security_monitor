@@ -139,7 +139,9 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
    dram_region_t *r_info = &(sm_globals.regions[REGION_IDX(phys_addr)]);
    
    // Check that the handlers fit in a DRAM region owned by the enclave
-   uintptr_t end_phys_addr = phys_addr + (enclave_trap_handler_end - enclave_trap_handler_start);
+   uint64_t size_handler = ((uint64_t) &_enclave_trap_handler_end) - ((uint64_t) &_enclave_trap_handler_start);
+   
+   uintptr_t end_phys_addr = phys_addr + size_handler;
  
    dram_region_t *r_end_info = NULL;
    
@@ -154,7 +156,7 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
    }
 
    enclave->meparbase = phys_addr;
-   enclave->meparmask = ~((1ul << intlog2(phys_addr ^ end_phys_addr)) - 1);
+   enclave->meparmask = ~((1ul << (intlog2(end_phys_addr - phys_addr) + 1)) - 1);
   
    // TODO: need to grab the DRAM regions locks
    
@@ -171,11 +173,12 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
       }
    }
 
+
    // Copy the handlers
-   memcpy((void *) phys_addr, (void *) enclave_trap_handler_start, (enclave_trap_handler_end - enclave_trap_handler_start));
+   memcpy((void *) phys_addr, (void *) &_enclave_trap_handler_start, size_handler);
 
    // Update the measurement
-   sha3_update(&(enclave->sha3_ctx), (void *) enclave_trap_handler_start, (enclave_trap_handler_end - enclave_trap_handler_start));
+   sha3_update(&(enclave->sha3_ctx), (void *) &_enclave_trap_handler_start, size_handler);
 
    releaseLock(er_info->lock);
    releaseLock(r_info->lock);
@@ -223,10 +226,11 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
 
    // Initialize page table entry
    if(level == 3) {
-      enclave->eptbr = phys_addr;
+      enclave->eptbr = phys_addr >> SHIFT_PAGE;
+      enclave->eptbr |= 8lu << SATP_MODE_SHIFT;
    }
    else {
-      uintptr_t pte_base = enclave->eptbr;
+      uintptr_t pte_base = (enclave->eptbr & SATP_PPN_MASK) << SHIFT_PAGE;
       if(!owned(pte_base, enclave_id)){
          return monitor_invalid_state;
       }
@@ -539,7 +543,7 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    }
 
    // Save untrusted sp, pc
-   thread->untrusted_sp = regs[2];
+   thread->untrusted_sp = thread->untrusted_state[2];
    thread->untrusted_pc = read_csr(mepc);
 
    // Set the enclave sp and pc
@@ -567,6 +571,10 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    write_csr(CSR_MEPARBASE, enclave->meparbase);
    write_csr(CSR_MEPARMASK, enclave->meparmask);
 
+   // Set trap handler
+   
+   write_csr(mtvec, thread->fault_pc);
+
    if(aex) {
       thread->aex_present = false;
    }
@@ -580,8 +588,9 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
 
    releaseLock(core->lock);
 
-   asm volatile ("csrw mscratch, %0" : "=r"(thread->entry_sp));
+   write_csr(mscratch, thread->entry_sp);
    asm volatile ("csrrw sp, mscratch, sp");
+   swap_csr(mscratch, thread->fault_sp);
    asm volatile ("mret");
 
    return monitor_ok; // TODO : useless

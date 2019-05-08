@@ -18,7 +18,7 @@ SM_ETRAP api_result_t ecall_get_attestation_key(uintptr_t phys_addr) {
       return monitor_invalid_value;
    }
 
-   memcpy((void *) phys_addr, (void *) security_monitor_secret_key, SIZE_KEY);
+   memcpy((void *) phys_addr, (void *) &_security_monitor_secret_key, SIZE_KEY);
 
    return monitor_ok;
 }

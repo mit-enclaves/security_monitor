@@ -1,5 +1,6 @@
-.section ".enclave.text"
+.section ".text.enclave_code"
 .enclave_entry:
    li a0, 5
-   call dram_region_check_ownership
-   call exit_enclave
+.loop:
+   add a0, a0, 1
+   j .loop
