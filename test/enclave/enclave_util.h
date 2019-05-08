@@ -1,6 +1,8 @@
 #ifndef ENCLAVE_UTIL_H
 #define ENCLAVE_UTIL_H
 
+#define E_CODE __attribute__((section(".text.enclave_code")))
+
 // UBI CALL MACRO
 
 #define UBI_SM_ENCLAVE_CALL(code, arg0, arg1, arg2) ({ \

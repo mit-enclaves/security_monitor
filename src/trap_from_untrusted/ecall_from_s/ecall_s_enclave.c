@@ -546,6 +546,19 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    thread->untrusted_sp = thread->untrusted_state[2];
    thread->untrusted_pc = read_csr(mepc);
 
+   if(aex) {
+      thread->aex_present = false;
+   }
+
+   releaseLock(tr_info->lock); // Release Lock
+
+   // Update the core's metadata
+   core->owner = enclave_id;
+   core->has_enclave_schedule = true;
+   core->cur_thread = thread_id;
+
+   releaseLock(core->lock);
+   
    // Set the enclave sp and pc
    write_csr(mepc, thread->entry_pc);
 
@@ -561,36 +574,59 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    write_csr(mstatus, mstatus_tmp);
 
    // Set sanctum specific CSRs
-   write_csr(CSR_MEATP, enclave->eptbr);
+   swap_csr(CSR_MEATP, enclave->eptbr);
 
-   write_csr(CSR_MEVBASE, enclave->evbase);
-   write_csr(CSR_MEVMASK, enclave->evmask);
+   swap_csr(CSR_MEVBASE, enclave->evbase);
+   swap_csr(CSR_MEVMASK, enclave->evmask);
 
-   write_csr(CSR_MEMRBM, enclave->dram_bitmap);
+   swap_csr(CSR_MEMRBM, enclave->dram_bitmap);
 
-   write_csr(CSR_MEPARBASE, enclave->meparbase);
-   write_csr(CSR_MEPARMASK, enclave->meparmask);
+   swap_csr(CSR_MEPARBASE, enclave->meparbase);
+   swap_csr(CSR_MEPARMASK, enclave->meparmask);
 
    // Set trap handler
-   
-   write_csr(mtvec, thread->fault_pc);
+   swap_csr(mtvec, thread->fault_pc);
 
-   if(aex) {
-      thread->aex_present = false;
-   }
-
-   releaseLock(tr_info->lock); // Release Lock
-
-   // Update the core's metadata
-   core->owner = enclave_id;
-   core->has_enclave_schedule = true;
-   core->cur_thread = thread_id;
-
-   releaseLock(core->lock);
-
+   // Set sp
    write_csr(mscratch, thread->entry_sp);
    asm volatile ("csrrw sp, mscratch, sp");
    swap_csr(mscratch, thread->fault_sp);
+   
+   // Clean State
+
+   clean_reg(x1);
+   // Do not clean x2
+   clean_reg(x3);
+   clean_reg(x4);
+   clean_reg(x5);
+   clean_reg(x6);
+   clean_reg(x7);
+   clean_reg(x8);
+   clean_reg(x9);
+   clean_reg(x10);
+   clean_reg(x11);
+   clean_reg(x12);
+   clean_reg(x13);
+   clean_reg(x14);
+   clean_reg(x15);
+   clean_reg(x16);
+   clean_reg(x17);
+   clean_reg(x18);
+   clean_reg(x19);
+   clean_reg(x20);
+   clean_reg(x21);
+   clean_reg(x22);
+   clean_reg(x23);
+   clean_reg(x24);
+   clean_reg(x25);
+   clean_reg(x26);
+   clean_reg(x27);
+   clean_reg(x28);
+   clean_reg(x29);
+   clean_reg(x30);
+   clean_reg(x31);
+
+   // mret
    asm volatile ("mret");
 
    return monitor_ok; // TODO : useless

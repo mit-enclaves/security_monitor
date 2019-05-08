@@ -50,4 +50,10 @@ api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t thread_id);
 
 #define SIZE_ENCLAVE_HANDLER // TODO: DEFINE
 
+// REGISTERS MANAGEMENT
+
+#define clean_reg(reg) ({asm volatile ("li " #reg ", 0");})
+
+#define write_reg(reg, val) ({asm volatile ("ld " #reg ", %0" :: "rK"(val));})
+
 #endif // SM_UTIL_H
