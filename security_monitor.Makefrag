@@ -11,13 +11,14 @@ UNIT_TESTS_DIR := $(TEST_DIR)/unit_tests
 
 TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR)/test_*)))
 TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
-.SECONDARY: $(TEST_ELFS) 
 TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 TEST_IDPT := $(SM_BUILD)/idpt.bin
 
 SM_INCLUDE := -I $(SM_SRC_DIR) -I $(S_ECALL_DIR) -I $(E_ECALL_DIR) -I $(COMMON_DIR)
 
 TEST_INCLUDE := -I $(SM_BUILD) -I $(TEST_DIR)
+
+CFLAGS += $(SM_INCLUDE) $(TEST_INCLUDE) 
 
 SM_SRC := init.S init/init.c sm_stack.S $(S_TRAP_DIR)/entry.S $(E_TRAP_DIR)/entry.S sm_util/sm_util.c
 SM_SRC += $(wildcard $(S_TRAP_DIR)/trap_*)
@@ -30,6 +31,8 @@ SM_SRC += $(COMMON_DIR)/clib/memcpy.c
 SM_SRC += $(COMMON_DIR)/clib/memset.c
 SM_SRC += $(COMMON_DIR)/sha3/sha3.c
 
+SM_OBJS := $(addsuffix .o, $(basename $(SM_SRC)))
+
 TEST_SRC += $(TEST_DIR)/os/sm_api_os.c
 TEST_SRC += $(TEST_DIR)/os/os_stack.S
 TEST_SRC += $(TEST_DIR)/os/os_pt.S
@@ -37,14 +40,17 @@ TEST_SRC += $(TEST_DIR)/enclave/sm_api_enclave.c
 TEST_SRC += $(TEST_DIR)/enclave/enclave_code.S
 TEST_SRC += $(TEST_DIR)/htif/htif.c
 
+TEST_OBJS := $(addsuffix .o, $(basename $(TEST_SRC)))
+
+OBJS := $(SM_OBJS) $(TEST_OBJS) $(wildcard $(UNIT_TESTS_DIR)/*.o))
+
 $(TEST_IDPT): $(TEST_DIR)/make_idpt.py
 	mkdir -p $(SM_BUILD)
 	cd $(SM_BUILD) && python $(TEST_DIR)/make_idpt.py
 
-
-$(SM_BUILD)/%.elf: $(TEST_IDPT)
+$(SM_BUILD)/%.elf: $(TEST_IDPT) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/%.o
 	mkdir -p $(SM_BUILD)
-	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(SM_INCLUDE) $(TEST_INCLUDE) $(CCFLAGS) $(SM_SRC) $(TEST_SRC) $(UNIT_TESTS_DIR)/$*.c -o $@
+	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/$*.o -o $@
 
 .PHONY: security_monitor_test_elfs
 security_monitor_test_elfs: $(TEST_ELFS)
@@ -58,3 +64,6 @@ security_monitor_tests: $(TEST_TASKS)
 	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
 	@echo "The tests were: $(TEST_NAMES)"
 
+.PHONY: clean_security_monitor
+clean_security_monitor:
+	rm -f $(OBJS) $(TEST_ELFS)
