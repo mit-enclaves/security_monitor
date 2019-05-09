@@ -7,9 +7,9 @@
 SM_ETRAP api_result_t ecall_accept_thread(thread_id_t thread_id, uintptr_t thread_info_addr) {
 
    // Get the caller id
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
    
-   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
 
    if(!aquireLock(tr_ptr->lock)) {
       return monitor_concurrent_call;
@@ -33,7 +33,7 @@ SM_ETRAP api_result_t ecall_accept_thread(thread_id_t thread_id, uintptr_t threa
    releaseLock(tr_ptr->lock); // Release Lock
    
    // Increase the enclave's thread_count
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(caller_id)]);
+   dram_region_t *er_ptr = &(SM_GLOBALS.regions[REGION_IDX(caller_id)]);
 
    if(!aquireLock(er_ptr->lock)) {
       return monitor_concurrent_call;

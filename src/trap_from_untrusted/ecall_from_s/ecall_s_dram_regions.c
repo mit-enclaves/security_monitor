@@ -10,7 +10,7 @@ SM_UTRAP dram_region_state_t ecall_dram_region_state(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -30,7 +30,7 @@ SM_UTRAP enclave_id_t ecall_dram_region_owner(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -58,7 +58,7 @@ SM_UTRAP api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t
    // Check that new_owner is not initialized
    if(is_enclave) {
       // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(sm_globals.regions[REGION_IDX(new_owner)]);
+      dram_region_t *n_ow_ptr = &(SM_GLOBALS.regions[REGION_IDX(new_owner)]);
 
       if(!aquireLock(n_ow_ptr->lock)) {
          return monitor_concurrent_call;
@@ -74,7 +74,7 @@ SM_UTRAP api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t
    }
 
    // Get a pointer to the DRAM region datastructure
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -89,7 +89,7 @@ SM_UTRAP api_result_t ecall_assign_dram_region(dram_region_id_t id, enclave_id_t
    // Set the new owner and update the owner's bitmap
    if(is_enclave){
       // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(sm_globals.regions[REGION_IDX(new_owner)]);
+      dram_region_t *n_ow_ptr = &(SM_GLOBALS.regions[REGION_IDX(new_owner)]);
 
       if(!aquireLock(n_ow_ptr->lock)) {
          return monitor_concurrent_call;
@@ -126,7 +126,7 @@ SM_UTRAP api_result_t ecall_os_block_dram_region(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -159,7 +159,7 @@ SM_UTRAP api_result_t ecall_free_dram_region(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;

@@ -10,7 +10,7 @@ SM_UTRAP api_result_t ecall_create_metadata_region(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;

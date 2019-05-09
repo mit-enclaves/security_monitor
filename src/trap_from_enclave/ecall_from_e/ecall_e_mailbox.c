@@ -6,8 +6,8 @@
 
 SM_ETRAP api_result_t ecall_get_attestation_key(uintptr_t phys_addr) {
    // Check that the caller is an attestation enclave
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
-   if(((enclave_t *) caller_id)->measurement != sm_globals.signing_enclave_measurement) {
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
+   if(((enclave_t *) caller_id)->measurement != SM_GLOBALS.signing_enclave_measurement) {
       return monitor_access_denied;
    }
 
@@ -25,11 +25,11 @@ SM_ETRAP api_result_t ecall_get_attestation_key(uintptr_t phys_addr) {
 
 SM_ETRAP api_result_t ecall_accept_message(mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
    // Check that caller is an enclave
-   if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
+   if(!SM_GLOBALS.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	
    }
 
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
 
    // Check mailbox_id validity
    if(mailbox_id >= ((enclave_t *) caller_id)->mailbox_count) {
@@ -56,11 +56,11 @@ SM_ETRAP api_result_t ecall_accept_message(mailbox_id_t mailbox_id, enclave_id_t
 
 SM_ETRAP api_result_t ecall_read_message(mailbox_id_t mailbox_id, uintptr_t phys_addr) {
    // Check that caller is an enclave
-   if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
+   if(!SM_GLOBALS.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	
    }
 
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
 
    // Check mailbox_id validity
    if(mailbox_id >= ((enclave_t *) caller_id)->mailbox_count) {
@@ -85,11 +85,11 @@ SM_ETRAP api_result_t ecall_read_message(mailbox_id_t mailbox_id, uintptr_t phys
 
 SM_ETRAP api_result_t ecall_send_message(enclave_id_t enclave_id, mailbox_id_t mailbox_id, uintptr_t phys_addr) {
    // Check that caller is an enclave
-   if(!sm_globals.cores[read_csr(mhartid)].has_enclave_schedule) {
+   if(!SM_GLOBALS.cores[read_csr(mhartid)].has_enclave_schedule) {
       return monitor_invalid_state;	
    }
 
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
 
    // Check mailbox_id validity
    if(mailbox_id >= ((enclave_t *) caller_id)->mailbox_count) {

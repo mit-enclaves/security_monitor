@@ -25,6 +25,9 @@ SECTIONS
     *(.sm.text.untrusted_trap.entry)
     *(.sm.text.untrusted_trap)
     *(.sm.text)
+    . = ALIGN(4);
+    _sm_globals = .;
+    *(.sm.globals)
     *(.sm.data)
     . = ALIGN(0x1000);
     _enclave_trap_handler_start = .;

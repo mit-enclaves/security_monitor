@@ -21,7 +21,7 @@ SM_UTRAP api_result_t ecall_create_enclave(enclave_id_t enclave_id, uintptr_t ev
       return monitor_invalid_value;
    }
 
-   dram_region_t * dram_region_info = &(sm_globals.regions[REGION_IDX((uintptr_t) enclave_id)]);
+   dram_region_t * dram_region_info = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) enclave_id)]);
 
    if(!aquireLock(dram_region_info->lock)) {
       return monitor_concurrent_call;
@@ -105,7 +105,7 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
    // TODO: Does phys_addr has to be alligned?
    
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -136,7 +136,7 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
       return monitor_invalid_state;
    }
 
-   dram_region_t *r_info = &(sm_globals.regions[REGION_IDX(phys_addr)]);
+   dram_region_t *r_info = &(SM_GLOBALS.regions[REGION_IDX(phys_addr)]);
    
    // Check that the handlers fit in a DRAM region owned by the enclave
    uint64_t size_handler = ((uint64_t) &_enclave_trap_handler_end) - ((uint64_t) &_enclave_trap_handler_start);
@@ -152,7 +152,7 @@ SM_UTRAP api_result_t ecall_load_trap_handler(enclave_id_t enclave_id, uintptr_t
          releaseLock(er_info->lock);
          return monitor_invalid_state;
       }
-      r_end_info = &(sm_globals.regions[REGION_IDX(end_phys_addr)]);
+      r_end_info = &(SM_GLOBALS.regions[REGION_IDX(end_phys_addr)]);
    }
 
    enclave->meparbase = phys_addr;
@@ -286,7 +286,7 @@ SM_UTRAP api_result_t ecall_load_page_table(enclave_id_t enclave_id, uintptr_t p
    }
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -330,7 +330,7 @@ SM_UTRAP api_result_t ecall_load_page(enclave_id_t enclave_id, uintptr_t phys_ad
    }
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -370,7 +370,7 @@ SM_UTRAP api_result_t ecall_init_enclave(enclave_id_t enclave_id) {
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -402,7 +402,7 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -421,7 +421,7 @@ SM_UTRAP api_result_t ecall_delete_enclave(enclave_id_t enclave_id) {
       if((enclave->dram_bitmap >> i) & 1ul) {
          
          // Get a pointer to the DRAM region datastructure
-         dram_region_t *r_info = &(sm_globals.regions[i]);
+         dram_region_t *r_info = &(SM_GLOBALS.regions[i]);
 
          if(!aquireLock(r_info->lock)) {
             return monitor_concurrent_call;
@@ -487,7 +487,7 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    enclave_t * enclave = (enclave_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata and aquire the lock
-   dram_region_t *er_info = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_info->lock)) {
       return monitor_concurrent_call;
@@ -502,14 +502,14 @@ SM_UTRAP api_result_t ecall_enter_enclave(enclave_id_t enclave_id, thread_id_t t
    releaseLock(er_info->lock);
    
    // Get the curent core metadata and aquire its lock
-   core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
+   core_t *core = &(SM_GLOBALS.cores[read_csr(mhartid)]);
    
    if(!aquireLock(core->lock)) {
       return monitor_concurrent_call;
    } // Acquire Lock
    
    // Get a pointer to the DRAM region datastructure of the thread metadata and aquire the lock
-   dram_region_t * tr_info = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_info = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
    
    if(!aquireLock(tr_info->lock)) {
       releaseLock(core->lock);

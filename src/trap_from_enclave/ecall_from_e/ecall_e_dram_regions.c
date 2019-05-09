@@ -10,7 +10,7 @@ SM_ETRAP api_result_t ecall_enclave_block_dram_region(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -28,7 +28,7 @@ SM_ETRAP api_result_t ecall_enclave_block_dram_region(dram_region_id_t id) {
       return monitor_access_denied;
    }
 
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
 
    if(caller_id != r_ptr->owner) {
       releaseLock(r_ptr->lock); // Release Lock
@@ -51,7 +51,7 @@ SM_ETRAP api_result_t ecall_dram_region_check_ownership(dram_region_id_t id) {
    }
 
    // Get a pointer to the DRAM region datastructure	
-   dram_region_t *r_ptr = &(sm_globals.regions[id]);
+   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
 
    if(!aquireLock(r_ptr->lock)) {
       return monitor_concurrent_call;
@@ -69,7 +69,7 @@ SM_ETRAP api_result_t ecall_dram_region_check_ownership(dram_region_id_t id) {
       return monitor_access_denied;
    }
 
-   enclave_id_t caller_id = sm_globals.cores[read_csr(mhartid)].owner;
+   enclave_id_t caller_id = SM_GLOBALS.cores[read_csr(mhartid)].owner;
 
    if(caller_id != r_ptr->owner) {
       releaseLock(r_ptr->lock); // Release Lock

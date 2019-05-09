@@ -9,7 +9,7 @@ SM_UTRAP bool is_valid_enclave(enclave_id_t enclave_id) {
       return false;
    }
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) enclave_id)]);	
+   dram_region_t * dram_region_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) enclave_id)]);	
 
    if(!aquireLock(dram_region_ptr->lock)) {
       return monitor_concurrent_call;
@@ -43,7 +43,7 @@ SM_UTRAP bool is_valid_enclave(enclave_id_t enclave_id) {
 
 SM_UTRAP bool owned(uintptr_t phys_addr, enclave_id_t enclave_id) {
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX(phys_addr)]);	
+   dram_region_t * dram_region_ptr = &(SM_GLOBALS.regions[REGION_IDX(phys_addr)]);	
 
    if(!aquireLock(dram_region_ptr->lock)) {
       return monitor_concurrent_call;
@@ -74,7 +74,7 @@ SM_UTRAP api_result_t is_valid_thread(enclave_id_t enclave_id, thread_id_t threa
       return monitor_invalid_value;
    }
 
-   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
 
    // Check that dram region is an metadata region
    if(tr_ptr->type != metadata_region) { 

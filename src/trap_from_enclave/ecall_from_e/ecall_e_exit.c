@@ -6,7 +6,7 @@
 
 SM_ETRAP api_result_t ecall_exit_enclave(uintptr_t *regs) {
 
-   core_t *core = &(sm_globals.cores[read_csr(mhartid)]);
+   core_t *core = &(SM_GLOBALS.cores[read_csr(mhartid)]);
    
    thread_id_t thread_id = core->cur_thread;
 
@@ -17,7 +17,7 @@ SM_ETRAP api_result_t ecall_exit_enclave(uintptr_t *regs) {
       return monitor_concurrent_call;
    } // Acquire Lock
    
-   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
    
    if(!aquireLock(tr_ptr->lock)) {
       releaseLock(core->lock);

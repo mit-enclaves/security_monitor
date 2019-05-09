@@ -11,7 +11,7 @@ SM_UTRAP api_result_t ecall_allocate_thread(enclave_id_t enclave_id, thread_id_t
       return monitor_invalid_value;
    }
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * dram_region_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
    metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(thread_id);
    
    // Check that dram region is an metadata region
@@ -72,7 +72,7 @@ SM_UTRAP api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thr
       return monitor_invalid_state;
    }
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * dram_region_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
 
    if(!aquireLock(dram_region_ptr->lock)) {
       return monitor_concurrent_call;
@@ -104,7 +104,7 @@ SM_UTRAP api_result_t ecall_load_thread(enclave_id_t enclave_id, thread_id_t thr
    releaseLock(dram_region_ptr->lock); // Release Lock
 
    // Increase the enclave's thread_count
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(enclave_id)]);
+   dram_region_t *er_ptr = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
 
    if(!aquireLock(er_ptr->lock)) {
       return monitor_concurrent_call;
@@ -141,7 +141,7 @@ SM_UTRAP api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t t
 
    // TODO: Check that enclave hasn't been killed
 
-   dram_region_t * dram_region_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * dram_region_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
 
    if(!aquireLock(dram_region_ptr->lock)) {
       return monitor_concurrent_call;
@@ -156,7 +156,7 @@ SM_UTRAP api_result_t ecall_assign_thread(enclave_id_t enclave_id, thread_id_t t
 SM_UTRAP api_result_t ecall_delete_thread(thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 
-   dram_region_t * tr_ptr = &(sm_globals.regions[REGION_IDX((uintptr_t) thread_id)]);
+   dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
 
    if(!aquireLock(tr_ptr->lock)) {
       return monitor_concurrent_call;
@@ -197,7 +197,7 @@ SM_UTRAP api_result_t ecall_delete_thread(thread_id_t thread_id) {
    releaseLock(tr_ptr->lock);
 
    // Decrease the owning enclave's thread_count
-   dram_region_t *er_ptr = &(sm_globals.regions[REGION_IDX(owner_id)]);
+   dram_region_t *er_ptr = &(SM_GLOBALS.regions[REGION_IDX(owner_id)]);
 
    if(!aquireLock(er_ptr->lock)) {
       return monitor_concurrent_call;
