@@ -53,10 +53,9 @@ __attribute__((section(".os.text"))) int main(void) {
 
    phys_addr += 512 * SIZE_PAGE;
    //STACKS
+   uintptr_t start_empty_page = phys_addr;
    phys_addr += SIZE_PAGE;
    uintptr_t fault_stack_ptr = phys_addr;
-   phys_addr += SIZE_PAGE;
-   uintptr_t entry_sp = phys_addr;
 
    print_str("load_page_table(enclave_id, phys_addr, 0, 3, node_permissions)");
    res = load_page_table(enclave_id, phys_addr, 0, 3, node_permissions);
@@ -79,12 +78,21 @@ __attribute__((section(".os.text"))) int main(void) {
 
    phys_addr += SIZE_PAGE;
 
+   uintptr_t entry_sp = 0x1000;
+
+   print_str("load_page(enclave_id, phys_addr, entry_sp - SIZE_PAGE, start_empty_page, leaf_permissions)");
+   res = load_page(enclave_id, phys_addr, entry_sp - SIZE_PAGE, start_empty_page, leaf_permissions);
+   print_api_r(res);
+   print_str("\n");
+   
+   phys_addr += 2 * SIZE_PAGE;
+
    dram_region_id_t code_id = 6;
 
    uintptr_t os_addr = DRAM_START + (code_id * SIZE_REGION);
    
-   print_str("load_page(enclave_id, phys_addr, 0, os_addr, leaf_permissions)");
-   res = load_page(enclave_id, phys_addr, 0, os_addr, leaf_permissions);
+   print_str("load_page(enclave_id, phys_addr, entry_sp + SIZE_PAGE, os_addr, leaf_permissions)");
+   res = load_page(enclave_id, phys_addr, entry_sp + SIZE_PAGE, os_addr, leaf_permissions);
    print_api_r(res);
    print_str("\n");
    
@@ -98,7 +106,7 @@ __attribute__((section(".os.text"))) int main(void) {
    thread_id_t thread_id = enclave_id + (ret * SIZE_PAGE);
 
    print_str("load_thread(enclave_id, thread_id, entry_pc, entry_sp, trap_handler_entry, fault_stack_ptr)");
-   res = load_thread(enclave_id, thread_id, 0, entry_sp, trap_handler_entry, fault_stack_ptr);
+   res = load_thread(enclave_id, thread_id, entry_sp + SIZE_PAGE, entry_sp, trap_handler_entry, fault_stack_ptr);
    print_api_r(res);
    print_str("\n");
    

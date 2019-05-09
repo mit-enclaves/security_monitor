@@ -63,6 +63,7 @@
 #define NUM_CORES 2
 #define NUM_REGIONS 64
 #define MAILBOX_SIZE 128
+#define PTE_SIZE 8
 #define PN_OFFSET 9
 #define PPN2_OFFSET 26
 #define PAGE_ENTRY_ACL_OFFSET 10

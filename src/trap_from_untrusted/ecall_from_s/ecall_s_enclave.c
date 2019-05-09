@@ -237,7 +237,7 @@ SM_UTRAP api_result_t load_page_table_entry(enclave_id_t enclave_id, uintptr_t p
 
       for(int i = 2; i >= (int) level; i--) {
          uint64_t * pte_addr = (uint64_t *) ((uint64_t) pte_base +
-            ((virtual_addr >> (PAGE_OFFSET + (PN_OFFSET * i))) & PN_MASK));
+            (((virtual_addr >> (PAGE_OFFSET + (PN_OFFSET * i))) & PN_MASK) * PTE_SIZE));
 
          if(i != level) {
             uint64_t pte_acl = (*pte_addr) & ACL_MASK;

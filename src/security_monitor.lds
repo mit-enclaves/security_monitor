@@ -52,6 +52,7 @@ SECTIONS
 
   . = 0x8C000000;
   .enclave_binary : {
+    *(.text.enclave_code.entry)
     *(.text.enclave_code)
   }
 
