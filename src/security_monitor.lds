@@ -25,7 +25,7 @@ SECTIONS
     *(.sm.text.untrusted_trap.entry)
     *(.sm.text.untrusted_trap)
     *(.sm.text)
-    . = ALIGN(4);
+    . = ALIGN(0x10);
     _sm_globals = .;
     *(.sm.globals)
     *(.sm.data)

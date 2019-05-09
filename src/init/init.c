@@ -3,7 +3,7 @@
 
 extern void resume_hart_after_init_globals(void);
 
-__atrribute__((section(".sm.globals"))) security_monitor_globals_t sm_globals;
+__attribute__((section(".sm.globals"))) security_monitor_globals_t sm_globals;
 
 __attribute__((section(".sm.text.init"))) void initialize_security_monitor_globals() {
    // INIT CORES

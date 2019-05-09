@@ -187,7 +187,7 @@ typedef struct {
 typedef struct {
    core_t cores[NUM_CORES];
    dram_region_t regions[NUM_REGIONS];
-   const hash_t signing_enclave_measurement;
+   hash_t signing_enclave_measurement;
 }security_monitor_globals_t;
 
 #endif // SECURITY_MONITOR_DATA_STRUCTURES_H
