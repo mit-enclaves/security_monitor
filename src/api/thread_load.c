@@ -1,7 +1,6 @@
 #include <sm.h>
-#include <sm_util/sm_util.h>
 
-api_result_t thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
+api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
     uintptr_t fault_stack) {
 

@@ -1,9 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
-api_result_t thread_delete (thread_id_t thread_id) {
+api_result_t sm_thread_delete (thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 
    dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);

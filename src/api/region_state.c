@@ -1,7 +1,4 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
 dram_region_state_t sm_region_state (dram_region_id_t id) {
    // Check argument validity

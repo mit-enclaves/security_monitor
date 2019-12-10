@@ -1,94 +1,104 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
-#include <sha3/sha3.h>
 
-api_result_t enclave_create (enclave_id_t enclave_id, uintptr_t ev_base,
-      uintptr_t ev_mask, uint64_t mailbox_count, bool debug) {
-   // TODO: Check all arguments validity
+api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, bool debug) {
+  // TODO: Check all arguments validity
 
-   // Check that enclave_id is page alligned
-   if(enclave_id % PAGE_SIZE) {
-      return monitor_invalid_value;
-   }
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   dram_region_t * dram_region_info = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) enclave_id)]);
+  // Validate inputs
+  // ---------------
 
-   if(!lock_acquire(dram_region_info->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+  /*
+    - enclave_id must point to a sequence of sm_enclave_metadata_pages(mailbox_count) metadata pages of type METADATA_FREE. The sequence must be contained within one region.
+    - all configurations of ev_base, ev_mask (including invalid ones) are acceptable; these inputs are covered by measurement.
+    - mailbox_count affects the enclave metadata size, and is covered by measurement.
+    - debug is covered by measurement.
+      */
 
-   // Check that dram region is an metadata region
-   if(dram_region_info->type != metadata_region) {
-      lock_release(dram_region_info->lock); // Release Lock
-      return monitor_invalid_value;
-   }
+  // Perform validation that does not require a lock first.
 
-   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(enclave_id);
+  // Check that enclave_id is page alligned
+  if ( !page_aligned(enclave_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-   // Check metadata pages availability
+  // Check that the requested region is indeed a region in RAM
+  uint64_t region_id = addr_to_region_id(enclave_id);
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-   uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
+  // Check that the chosen enclave_id does not overlap with region page info structure.
+  uint64_t page_id = addr_to_region_page_id(enclave_id);
+  // region page info table is marked as METADATA_INVALID, so we do not need to explicitly check that page_id > sm_region_metadata_start().
 
-   if((METADATA_IDX(enclave_id) + num_metadata_pages) >= ecall_metadata_region_pages()) {
-      lock_release(dram_region_info->lock); // Release Lock
-      return monitor_invalid_value;
-   }
+  // Check that the enclave structure does not span regions
+  uint64_t enclave_pages = sm_enclave_metadata_pages(mailbox_count);
+  if ( is_valid_page_id_in_region(page_id+enclave_pages-1) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-   for(int i = METADATA_IDX(enclave_id);
-         i < (METADATA_IDX(enclave_id) + num_metadata_pages);
-         i++) {
-      if((page_map[i] & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1)) != metadata_free) {
-         lock_release(dram_region_info->lock); // Release Lock
-         return monitor_invalid_state;
+  // A lock on the requested metadata region is required
+  sm_state * sm = get_sm_state_ptr();
+  // <TRANSACTION>
+  {
+    if ( !platform_lock_acquire( sm->regions[region_id].lock ) ) {
+      return MONITOR_CONCURRENT_CALL;
+    }
+
+    // Check that the requested region is indeed a metadata region
+    if ( sm->regions[region_id].type != REGION_TYPE_METADATA ) {
+      platform_lock_release( sm->regions[region_id].lock );
+      return MONITOR_INVALID_STATE;
+    }
+
+    // Check that each of the requested metadata pages is of type METADATA_FREE
+    for ( int i=0; i<enclave_pages; i++ ) {
+      if ( metadata_page_type( sm->regions[region_id].region->page_info[i] ) != METADATA_FREE; ) {
+        platform_lock_release( sm->regions[region_id].lock );
+        return MONITOR_INVALID_STATE;
       }
-   }
+    }
 
-   // Initiate the metadata page map
+    // NOTE: Inputs are now deemed valid.
 
-   for(int i = METADATA_IDX(enclave_id);
-         i < (METADATA_IDX(enclave_id) + num_metadata_pages);
-         i++) {
-      page_map[i] = 0;
-      page_map[i] |= (enclave_id << ENTRY_OWNER_ID_OFFSET)
-         | (metadata_enclave & ((1ul << ENTRY_OWNER_ID_OFFSET) - 1));
-   }
+    // Apply state transition
+    // ----------------------
 
-   enclave_t *enclave = (enclave_t *) enclave_id;
+    // Mark metadata pages as belonging to the enclave
+    sm->regions[region_id].region->page_info[0] = make_page_info(enclave_id, METADATA_ENCLAVE);
+    for ( int i=1; i<enclave_pages; i++ ) {
+      sm->regions[region_id].region->page_info[i] = make_page_info(enclave_id, METADATA_INVALID);
+    }
 
-   // Initialize the enclave metadata
-   enclave->initialized = 0;
-   enclave->debug = debug;
-   enclave->thread_count = 0;
-   enclave->dram_bitmap = 0;
-   enclave->last_phys_addr_loaded = 0;
-   enclave->evbase = ev_base;
-   enclave->evmask = ev_mask;
+    // The selected pages were of type METADATA_FREE --> are already zero.
 
-   // Initialize mailboxes
-   enclave->mailbox_count = mailbox_count;
-   enclave->mailbox_array = (mailbox_t *) (enclave_id + sizeof(enclave_t));
-   for(int i = 0; i < enclave->mailbox_count; i++) {
-      (enclave->mailbox_array[i]).sender = 0;
-      (enclave->mailbox_array[i]).has_message = false;
-      for(int j = 0; j < MAILBOX_SIZE; j++) {
-         (enclave->mailbox_array[i]).message[j] = 0;
-      }
-   }
+    // Enclave initialization state
+    enclave_id->init_state = ENCLAVE_STATE_CREATED;
+    enclave_id->last_phys_addr_loaded = 0;
+    hash_init( &enclave_id->hash_context );
 
-   // Update measurement
-   sha3_init(&(enclave->sha3_ctx), sizeof(hash_t));
+    // Enclave parameters (covered by measurement)
+    enclave_id->ev_base = ev_base;
+    hash_extend(&enclave_id->hash_context, &enclave_id->ev_base, sizeof(enclave_id->ev_base));
 
-   struct inputs_create_t inputs = {0};
-   inputs.ev_base = ev_base;
-   inputs.ev_mask = ev_mask;
-   inputs.mailbox_count = mailbox_count;
-   inputs.debug = debug;
+    enclave_id->ev_base = ev_mask;
+    hash_extend(&enclave_id->hash_context, &enclave_id->ev_mask, sizeof(enclave_id->ev_mask));
 
-   sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_create_t));
+    enclave_id->num_mailboxes = num_mailboxes;
+    hash_extend(&enclave_id->hash_context, &enclave_id->num_mailboxes, sizeof(enclave_id->num_mailboxes));
 
-   lock_release(dram_region_info->lock); // Release Lock
+    enclave_id->debug = debug;
+    hash_extend(&enclave_id->hash_context, &enclave_id->debug, sizeof(enclave_id->debug));
+
+    // Enclave state
+    // enclave_id->num_threads is zero
+    // enclave_id->regions is a false array (zero)
+    // enclave_id->mailboxes are zero (empty, not expecting mail)
+
+    platform_lock_release( sm->regions[region_id].lock );
+  }
+  // </TRANSACTION>
 
    return monitor_ok;
 }

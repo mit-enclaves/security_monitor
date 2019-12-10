@@ -1,7 +1,4 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
 enclave_id_t sm_region_owner (dram_region_id_t id) {
    // Check argument validity

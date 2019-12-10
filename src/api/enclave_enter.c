@@ -1,10 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
-#include <sha3/sha3.h>
 
-api_result_t enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
+api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
 
    // Check if enclave_id is valid
    if(!is_valid_enclave(enclave_id)) {

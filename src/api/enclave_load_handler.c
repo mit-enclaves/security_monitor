@@ -1,11 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
-#include <sha3/sha3.h>
 
-
-api_result_t enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_addr) {
+api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_addr) {
    // TODO: Does phys_addr has to be alligned?
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata

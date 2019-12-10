@@ -9,19 +9,19 @@
 
 typedef enum {
    // API call succeeded.
-   monitor_ok = 0,
+   MONITOR_OK = 0,
 
    // A parameter given to the API call was invalid.
    //
    // This most likely reflects a bug in the caller code.
-   monitor_invalid_value = 1,
+   MONITOR_INVALID_VALUE = 1,
 
    // A resource referenced by the API call is in an unsuitable state.
    //
    // The API call will not succeed if the caller simply retries it. However,
    // the caller may be able to perform other API calls to get the resources in
    // a state that will allow this call to succeed.
-   monitor_invalid_state = 2,
+   MONITOR_INVALID_STATE = 2,
 
    // Failed to acquire a lock. Retrying with the same arguments might succeed.
    //
@@ -32,20 +32,20 @@ typedef enum {
    //
    // This is also sometime returned instead of monitor_invalid_value, in the
    // interest of reducing edge cases in monitor implementation.
-   monitor_concurrent_call = 3,
+   MONITOR_CONCURRENT_CALL = 3,
 
    // The call was interrupted due to an asynchronous enclave exit (AEX).
    //
    // This is only returned by enter_enclave, and can be considered a more
    // specific case of monitor_concurrent_call. The caller should retry the
    // enclave_enter call, so the enclave thread can make progress.
-   monitor_async_exit = 4,
+   MONITOR_ASYNC_EXIT = 4,
 
    // The caller is not allowed to access a resource referenced by the API call.
    //
    // This is a more specific version of monitor_invalid_value. The monitor does
    // its best to identify these cases, but may fail.
-   monitor_access_denied = 5,
+   MONITOR_ACCESS_DENIED = 5,
 
    // The current monitor implementation does not support the request.
    //
@@ -56,7 +56,7 @@ typedef enum {
    //
    // The documentation for API calls states the edge cases that result in a
    // monitor_unsupported response.
-   monitor_unsupported = 6,
+   MONITOR_UNSUPPORTED = 6,
 } api_result_t;
 
 typedef uint64_t region_id_t;
@@ -87,10 +87,10 @@ typedef enum {
 } dram_region_type_t;
 
 typedef enum { // NOTE must fit into 12 bits
-  METADATA_INVALID = 0,
-  METADATA_FREE = 1,
-  METADATA_ENCLAVE = 2,
-  METADATA_THREAD = 3,
+  METADATA_PAGE_INVALID = 0,
+  METADATA_PAGE_FREE = 1,
+  METADATA_PAGE_ENCLAVE = 2,
+  METADATA_PAGE_THREAD = 3,
 } metadata_page_t;
 
 
@@ -166,7 +166,7 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id);
 //
 // `virtual_addr`, `level` and `acl` become a part of the enclave's
 // measurement.
-api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
 
 // Allocates and initializes a page in the enclave's main DRAM region.
@@ -179,11 +179,11 @@ api_result_t load_page_table(enclave_id_t enclave_id, uintptr_t phys_addr,
 //
 // `virtual_addr`, `acl`, and the contents of the page at `os_addr` become a
 // part of the enclave's measurement.
-api_result_t load_page(enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
 
 // Returns the number of pages used by an enclave metadata structure.
-uint64_t sm_enclave_metadata_pages(uint64_t mailbox_count);
+uint64_t sm_enclave_metadata_pages (uint64_t mailbox_count);
 
 // APIs: Getters for SM values
 // ---------------------------
@@ -363,12 +363,48 @@ api_result_t sm_thread_delete (thread_id_t thread_id);
 //
 // This must be called after the enclave's root page table is set by a call to
 // load_page_table().
-api_result_t load_thread (enclave_id_t enclave_id, thread_id_t thread_id,
+api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
     uintptr_t fault_stack);
 
 // Returns the number of pages used by a thread metadata structure.
 uint64_t sm_thread_metadata_pages();
+
+// SM API Calls
+// ------------
+#define SM_ENCLAVE_CREATE                   (1000)
+#define SM_ENCLAVE_DELETE                   (1001)
+#define SM_ENCLAVE_ENTER                    (1002)
+#define SM_ENCLAVE_EXIT                     (1003)
+#define SM_ENCLAVE_INIT                     (1004)
+#define SM_ENCLAVE_LOAD_HANDLER             (1005)
+#define SM_ENCLAVE_LOAD_PAGE_TABLE          (1006)
+#define SM_ENCLAVE_LOAD_PAGE                (1007)
+#define SM_ENCLAVE_METADATA_PAGES           (1008)
+
+#define SM_GET_ATTESTATION_KEY              (1010)
+#define SM_GET_PUBLIC_FIELD                 (1011)
+
+#define SM_MAIL_ACCEPT                      (1020)
+#define SM_MAIL_RECEIVE                     (1021)
+#define SM_MAIL_SEND                        (1022)
+
+#define SM_REGION_ASSIGN                    (1030)
+#define SM_REGION_BLOCK                     (1031)
+#define SM_REGION_CHECK_OWNED               (1032)
+#define SM_REGION_FLUSH                     (1033)
+#define SM_REGION_FREE                      (1034)
+#define SM_REGION_METADATA_CREATE           (1035)
+#define SM_REGION_METADATA_PAGES            (1036)
+#define SM_REGION_METADATA_START            (1037)
+#define SM_REGION_OWNER                     (1038)
+#define SM_REGION_STATE                     (1039)
+
+#define SM_THREAD_ACCEPT                    (1040)
+#define SM_THREAD_ASSIGN                    (1041)
+#define SM_THREAD_DELETE                    (1042)
+#define SM_THREAD_LOAD                      (1043)
+#define SM_THREAD_METADATA_PAGES            (1044)
 
 
 #endif // SECURITY_MONITOR_API_COMMON_H

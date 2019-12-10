@@ -1,7 +1,4 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
 api_result_t sm_region_assign (dram_region_id_t id, enclave_id_t new_owner) {
    // Check arguments validity

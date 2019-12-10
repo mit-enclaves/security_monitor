@@ -1,9 +1,5 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
-api_result_t sm_region_metadata_pages () {
-  TODO
-  return monitor_ok;
+uint64_t sm_region_metadata_pages () {
+  return SM_METADATA_PAGES_PER_REGION;
 }

@@ -1,11 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
-#include <sha3/sha3.h>
 
-
-api_result_t enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
    // Check that ACL is valid and is a leaf ACL

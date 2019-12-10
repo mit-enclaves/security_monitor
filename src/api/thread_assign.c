@@ -1,9 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
 
-api_result_t thread_assign (enclave_id_t enclave_id, thread_id_t thread_id) {
+api_result_t sm_thread_assign (enclave_id_t enclave_id, thread_id_t thread_id) {
 
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;

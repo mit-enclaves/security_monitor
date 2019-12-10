@@ -11,29 +11,29 @@ void sm_init(void) {
   // INIT CORES
   // TODO: If this is not core 0 wait for an IPI
 
-  // Initialize globals data structure
-  sm_state->sm.
-  sm_state->os.
+  // Initialize core metadata
+  for ( int i=0; i<NUM_CORES; i++ ) {
+    sm_state->cores[i].owner = OWNER_UNTRUSTED;
+    sm_state->cores[i].thread = ENCLAVE_THRE AD_NONE;
+    platform_lock_release( &sm_state->cores[i].lock );
+  }
+
+  // Initialize region metadata : untrusted SW owns all regions.
+  for ( int i=0; i<NUM_REGIONS; i++ ) {
+    sm_state->regions[i].owner = OWNER_UNTRUSTED;
+    sm_state->regions[i].type = REGION_TYPE_UNTRUSTED;
+    sm_state->regions[i].state = REGION_STATE_OWNED;
+    platform_lock_release( &sm_state->regions[i].lock );
+  }
+
+  // Initialize untrusted metadata : untrusted SW is allowed access to all regions.
+  for ( int i=0; i<NUM_REGIONS; i++ ) {
+    sm_state->untrusted_regions[i] = true;
+  }
 
   // Initialize signing enclave measurement
   const uint8_t signing_enclave_measurement[64] = SIGNING_ENCLAVE_MEASUREMENT;
   memcpy( sm_state->signing_enclave_measurement, signing_enclave_measurement, sizeof(signing_enclave_measurement) );
-
-  // Initialize cores
-  for(int i=0; i<NUM_CORES; i++) {
-    sm_state->cores[i].owner_eid = EID_OS;
-    sm_state->cores[i].owner_thread = THREAD_OS;
-    sm_state->cores[i].is_enclaved = false;
-    platform_lock_release( sm_state->cores[i].lock );
-  }
-
-  // Initialize regions
-  for(int i=0; i<NUM_REGIONS; i++) {
-    sm_state->regions[i].type = REGION_TYPE_UNTRUSTED;
-    sm_state->regions[i].owner = EID_OS;
-    sm_state->regions[i].state = REGION_STATE_OWNED;
-    platform_lock_release( sm_state->regions[i].lock );
-  }
 
   // TODO: Send IPI to other core to wake them up
 

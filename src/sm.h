@@ -1,6 +1,10 @@
 #ifndef SECURITY_MONITOR_H
 #define SECURITY_MONITOR_H
 #include <constants.h>
+#include <platform.h>
+
+// Helpful macros
+// --------------
 
 #define get_abs_addr(symbol) ({  \
   unsigned long __tmp;    \
@@ -16,118 +20,148 @@ define assert(expr, message) \
     #error "assert error : " #message
 
 // Validate parameterization
+// -------------------------
+
+// TODO: ENUMs fit in their respective bit fields
+
 assert(NUM_CORES == 1, "One core is currently supported - see TODOs")
-assert(NUM_REGIONS <= 64, "Up to XLEN=64 regions are supported")
+assert(NUM_REGIONS <= 64, "Up to XLEN=64 regions are supported here")
+
+// SM Types
+// --------
 
 typedef uint64_t phys_ptr_t;
-typedef uint64_t hash_t[8];
 
-#define NUM_REGISTERS 32
-typedef uint64_t core_states_t[NUM_REGISTERS];
+typedef enclave_t * enclave_id_t;
+typedef thread_t * thread_id_t;
 
-// ATOMIC FLAG
-
-typedef struct {
-   uint64_t flag;
-   uint64_t pad[7];
-}atomic_flag_t;
-
-#define lock_try(lock) ({ unsigned long __tmp; \
-      asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&(lock.flag))); \
-      ~__tmp; })
-
-#define lock_release(lock) ({ \
-      asm volatile ("amoswap.w.rl x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
-
-// ENCLAVE AND THREAD IDs
-
-typedef phys_ptr_t enclave_id_t;
-typedef phys_ptr_t thread_id_t;
-
-// MAILBOX
-
-typedef int64_t mailbox_id_t;
+typedef enum {
+  ENCLAVE_MAILBOX_STATE_UNUSED = 0,
+  ENCLAVE_MAILBOX_STATE_EMPTY = 1,
+  ENCLAVE_MAILBOX_STATE_FULL = 2,
+} enclave_mailbox_state_t;
 
 typedef struct{
-   enclave_id_t sender;
-   bool has_message;
-   uint8_t message[MAILBOX_SIZE];
-}mailbox_t;
+  enclave_mailbox_state_t state;
+  enclave_id_t expected_sender;
+  hash_t sender_measurement
+  uint8_t message[MAILBOX_SIZE];
+} mailbox_t;
 
-// ENCLAVE
+typedef enum {
+  ENCLAVE_STATE_CREATED = 0,
+  ENCLAVE_STATE_HANDLER_LOADED = 1,
+  ENCLAVE_STATE_PAGE_TABLES_LOADED = 2,
+  ENCLAVE_STATE_PAGE_DATA_LOADED = 3,
+  ENCLAVE_STATE_INITIALIZED = 4,
+} enclave_init_state_t;
 
 typedef struct {
-   bool initialized;
-   bool debug;
-   int64_t thread_count;
-   int64_t dram_bitmap;
-   hash_context_t sha3_ctx;
-   hash_t measurement;
-   int64_t mailbox_count;
-   mailbox_t *mailbox_array;
-   uintptr_t last_phys_addr_loaded;
-   uintptr_t eptbr;
-   uintptr_t evbase;
-   uintptr_t evmask;
-   uintptr_t meparbase;
-   uintptr_t meparmask;
+  // Initialization state
+  enclave_init_state_t init_state;
+  uintptr_t last_phys_addr_loaded;
+  hash_context_t hash_context;
+
+  // Parameters
+  uintptr_t evbase;
+  uintptr_t evmask;
+  int64_t num_mailboxes;
+  bool debug;
+
+  // Measurement
+  hash_t measurement;
+
+  // State
+  int64_t num_threads;
+  region_map_t regions;
+  mailbox_t mailboxes[];
 } enclave_t;
 
-// THREAD
-
 typedef struct {
-   atomic_flag_t is_scheduled;
-   bool aex_present;
-   uintptr_t untrusted_pc;
-   uintptr_t untrusted_sp;
-   uintptr_t entry_pc;
-   uintptr_t entry_sp;
-   uintptr_t fault_pc;
-   uintptr_t fault_sp;
-   core_states_t untrusted_state;
-   core_states_t fault_state;
-   core_states_t aex_state;
+  // Parameters
+  uintptr_t entry_pc;
+  uintptr_t entry_sp;
+
+  // State
+  platform_lock_t is_scheduled;
+
+  // Untrusted core state at enclave_enter
+  uintptr_t untrusted_pc;
+  uintptr_t untrusted_sp;
+  platform_core_state_t untrusted_state;
+
+  // Enclave state buffer in the event of a trap/interrupt/fault
+  platform_core_state_t fault_state;
+
+  // AEX - asynchronous enclave exit state
+  bool aex_present;
+  platform_core_state_t aex_state;
 } thread_t;
 
-// METADATE PAGE MAP
+typedef uintptr_t metadata_page_map_entry_t;
+typedef uint8_t page_t[PAGE_SIZE];
 
-typedef uint64_t metadata_page_map_entry_t;
-
-#define ENTRY_OWNER_ID_OFFSET 12
-
-typedef metadata_page_map_entry_t *metadata_page_map_t; // Array of size NUM_METADATA_PAGES_PER_REGION
-
-// CORE
+typedef union {
+  metadata_page_map_entry_t page_info[NUM_REGION_PAGES];
+  page_t pages[NUM_REGION_PAGES];
+} metadata_page_t;
 
 typedef struct {
    enclave_id_t owner;
-   bool has_enclave_schedule;
-   thread_id_t cur_thread;
+   thread_id_t thread;
+
    atomic_flag_t lock;
 } core_t;
 
-// DRAM REGION
-
 typedef struct {
    enclave_id_t owner;
+
    dram_region_type_t type;
    dram_region_state_t state;
-   atomic_flag_t lock;
-} dram_region_t;
 
-// SECURITY MONITOR
-
-typedef struct {
-   core_t cores[NUM_CORES];
-   dram_region_t regions[NUM_REGIONS];
-   hash_t signing_enclave_measurement;
-} security_monitor_globals_t;
+   platform_lock_t lock;
+} sm_region_t;
 
 typedef struct sm_state_t {
   sm_core_t cores[NUM_CORES];
   sm_region_t regions[NUM_REGIONS];
-  sm_sm_t sm;
-  sm_os_t os;
+  hash_t signing_enclave_measurement;
+  region_map_t untrusted_regions;
 } sm_state_t;
+
+// Common minor operations
+// -----------------------
+
+static inline bool is_page_aligned (uintptr_t addr) {
+  return (enclave_id % PAGE_SIZE);
+}
+
+static inline uint64_t addr_to_region_id (uintptr_t addr) {
+  return ((addr-RAM_BASE) & REGION_MASK) >> REGION_SHIFT; // will return an illegally large number in case of an address outside RAM. CAUTION!
+}
+
+static inline bool is_valid_region_id (uint64_t region_id) {
+  return (region_id < NUM_REGIONS);
+}
+
+static inline bool addr_to_region_page_id (uintptr_t addr) {
+  return ((addr & REGION_MASK) >> PAGE_SHIFT);
+}
+
+static inline bool is_valid_page_id_in_region (uint64_t page_id) {
+  return page_id < NUM_REGION_PAGES;
+}
+
+static inline uint64_t make_page_info(enclave_id_t enclave_id, uint64_t metadata_page_type) {
+  return ( enclave_id | (metadata_page_type & PAGE_MASK) );
+}
+
+static inline sm_state_t * get_sm_state_ptr (void) {
+  return get_abs_addr(sm_state);
+}
+
+static inline sm_keys_t * get_sm_keys_ptr (void) {
+  return get_abs_addr(sm_keys);
+}
 
 #endif // SECURITY_MONITOR_H

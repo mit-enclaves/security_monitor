@@ -1,11 +1,6 @@
-#include <ecall_s.h>
 #include <sm.h>
-#include <csr/csr.h>
-#include <sm_util/sm_util.h>
-#include <sha3/sha3.h>
 
-
-api_result_t enclave_delete (enclave_id_t enclave_id) {
+api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
 
    if(!is_valid_enclave(enclave_id)) {
       return monitor_invalid_value;
