@@ -1,107 +1,67 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-//ECALL codes for SM-calls
+// SM Parameters:
+// --------------
 
-// SM CALLS FROM ENCLAVE (from U-mode, within an enclave)
-#define UBI_SM_ENCLAVE_BLOCK_DRAM_REGION      1000
 
-#define UBI_SM_ENCLAVE_CHECK_OWNERSHIP        1001
+#define STACK_SIZE    (0x1000)
+#define MAILBOX_SIZE  (0x1000)
+#define NUM_MAILBOXES (0x1000)
 
-#define UBI_SM_ENCLAVE_ACCEPT_THREAD          1002
+/* Note: make sure the parameterization below is consistent with the target hardware platform! */
 
-#define UBI_SM_ENCLAVE_EXIT_ENCLAVE           1003
+#define NUM_CORES     (1)
+#define PAGE_SHIFT    (12)
+#define REGION_SHIFT  (25)
+#define RAM_BASE      (0x80000000)
+#define RAM_SIZE      (0x80000000)
 
-#define UBI_SM_ENCLAVE_GET_ATTESTATION_KEY    1004
 
-#define UBI_SM_ENCLAVE_ACCEPT_MESSAGE         1005
-#define UBI_SM_ENCLAVE_READ_MESSAGE           1006
-#define UBI_SM_ENCLAVE_SEND_MESSAGE           1007
+// Derived values:
+// ---------------
 
-// SM CALLS FROM OS (these come from S-mode)
-#define SBI_SM_OS_BLOCK_DRAM_REGION           2000
+#define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PAGE_MASK (PAGE_SIZE-1)
 
-#define SBI_SM_OS_SET_DMA_RANGE               2001
+#define REGION_SIZE (1<<REGION_SHIFT)
+#define REGION_MASK (REGION_SIZE-1)
+#define NUM_REGIONS (RAM_SIZE / REGION_SIZE)
 
-#define SBI_SM_OS_DRAM_REGION_STATE           2002
-#define SBI_SM_OS_DRAM_REGION_OWNER           2003
-#define SBI_SM_OS_ASSIGN_DRAM_REGION          2004
-#define SBI_SM_OS_FREE_DRAM_REGION            2005
-#define SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS   2006
+#define PTE_SIZE    (8)
+#define PN_OFFSET   (9)
+#define PPN2_OFFSET (26)
+#define PAGE_ENTRY_ACL_OFFSET (10)
 
-#define SBI_SM_OS_CREATE_METADATA_REGION      2007
-#define SBI_SM_OS_METADATA_REGION_PAGES       2008
-#define SBI_SM_OS_METADATA_REGION_START       2009
-#define SBI_SM_OS_THREAD_METADATA_PAGES       2010
-#define SBI_SM_OS_ENCLAVE_METADATA_PAGES      2011
+// SM API Calls
+// ------------
+#define SM_ENCLAVE_CREATE                   (1000)
+#define SM_ENCLAVE_DELETE                   (1001)
+#define SM_ENCLAVE_ENTER                    (1002)
+#define SM_ENCLAVE_EXIT                     (1003)
+#define SM_ENCLAVE_INIT                     (1004)
+#define SM_ENCLAVE_LOAD_HANDLER             (1005)
+#define SM_ENCLAVE_LOAD_PAGE_TABLE_ENTRY    (1006)
+#define SM_ENCLAVE_LOAD_PAGE_TABLE          (1007)
+#define SM_ENCLAVE_LOAD_PAGE                (1008)
 
-#define SBI_SM_OS_CREATE_ENCLAVE              2012
-#define SBI_SM_OS_LOAD_TRAP_HANDLER           2013
-#define SBI_SM_OS_LOAD_PAGE_TABLE             2014
-#define SBI_SM_OS_LOAD_PAGE                   2015
-#define SBI_SM_OS_LOAD_THREAD                 2016
-#define SBI_SM_OS_ASSIGN_THREAD               2017
-#define SBI_SM_OS_INIT_ENCLAVE                2018
+#define SM_GET_ATTESTATION_KEY              (1010)
+#define SM_GET_PUBLIC_FIELD                 (1011)
 
-#define SBI_SM_OS_ENTER_ENCLAVE               2019
+#define SM_MAIL_ACCEPT                      (1020)
+#define SM_MAIL_RECEIVE                     (1021)
+#define SM_MAIL_SEND                        (1022)
 
-#define SBI_SM_OS_DELETE_THREAD               2020
+#define SM_REGION_ASSIGN                    (1030)
+#define SM_REGION_BLOCK                     (1031)
+#define SM_REGION_FREE                      (1032)
+#define SM_REGION_METADATA_CREATE           (1033)
+#define SM_REGION_OWNER                     (1034)
+#define SM_REGION_STATE                     (1035)
 
-#define SBI_SM_OS_DELETE_ENCLAVE              2021
-
-#define SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE     2022
-
-#define SBI_SM_ENCLAVE_FETCH_FIELD            2023
-
-// ARCHI CONSTANTS
-
-#define XLENINT uint64_t
-#define SIZE_DRAM 0x80000000
-#define SIZE_PAGE 0x1000
-#define SIZE_KEY 0x20 // TODO
-#define SHIFT_PAGE 12
-#define NUM_CORES 2
-#define NUM_REGIONS 64
-#define MAILBOX_SIZE 128
-#define PTE_SIZE 8
-#define PN_OFFSET 9
-#define PPN2_OFFSET 26
-#define PAGE_ENTRY_ACL_OFFSET 10
-#define DRAM_START 0x80000000
-
-// CSR SPECIALS
-#define REGBYTES 8
-
-#define MIE_MEIE 0x800
-#define MIP_MSIP 0x8
-#define MIP_MTIP 0x80 
-#define MIP_STIP 0x20
-#define MIP_SSIP 0x2 
-
-#define MSTATUS_TVM_MASK 0x00100000
-#define MSTATUS_MPP_MASK 0x00001800
-#define MSTATUS_MPP_OFFSET 11
-#define MSTATUS_MPIE_MASK 0x00000080
-#define MSTATUS_SIE_MASK 0x00000002
-#define MSTATUS_UIE_MASK 0x00000001
-
-#define SATP_MODE_SHIFT 60
-
-#define INTEGER_CONTEXT_SIZE 256 // TODO: is sp byte aligned?
-
-#define MEATP_DEFAULT 0
-#define MEVBASE_DEFAULT 0xFFFFFFFFFFFFFFFF
-#define MEVMASK_DEFAULT 0
-#define MEMRBM_DEFAULT 0
-#define MEPARBASE_DEFAULT 0
-#define MEPARMASK_DEFAULT 0
-
-// HACKS
-
-#define MENTRY_IPI_OFFSET 0
-#define MENTRY_IPI_PENDING_OFFSET 0
-#define IPI_SOFT 0
-#define IPI_FENCE_I 0
-#define IPI_SFENCE_VMA 0
+#define SM_THREAD_ALLOCATE                  (1040)
+#define SM_THREAD_ASSIGN                    (1041)
+#define SM_THREAD_DELETE                    (1042)
+#define SM_THREAD_LOAD                      (1043)
 
 #endif // CONSTANTS_H

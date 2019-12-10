@@ -1,0 +1,101 @@
+SM_DIR=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+
+# Assumes: ${BUILD_DIR}
+
+# Assumes: ${CC}
+# Assumes: ${OBJCOPY}
+
+
+SM_SRC_DIR := $(SECURITY_MONITOR_DIR)/src
+PLATFORM_DIR := $(SECURITY_MONITOR_DIR)/platform
+COMMON_DIR := $(SECURITY_MONITOR_DIR)/common
+
+SM_COMMON_SRC := \
+	${PLATFORM_DIR}/entropy.S \
+	${PLATFORM_DIR}/purge.S \
+	${COMMON_DIR}/clib/sha512.c \
+	${COMMON_DIR}/ed25519/memcmp.c \
+	${COMMON_DIR}/ed25519/memcpy.c \
+	${COMMON_DIR}/ed25519/memset.c \
+
+SM_SRC := \
+	${PLATFORM_DIR}/enter_enclave.S \
+	${COMMON_DIR}/htif/htif.c \
+	${SM_SRC_DIR}/stacks.S \
+	${SM_SRC_DIR}/idpt.S \
+	${SM_SRC_DIR}/enclave_handler.S \
+	${SM_SRC_DIR}/os_handler/entry.S \
+	${SM_SRC_DIR}/init/sm_entry.S \
+	${SM_SRC_DIR}/api/get_public_field.c \
+	${SM_SRC_DIR}/api/tread_create.c \
+	${SM_SRC_DIR}/api/tread_delete.c \
+	${SM_SRC_DIR}/api/enclave_create.c \
+	${SM_SRC_DIR}/api/enclave_load_handler.c \
+	${SM_SRC_DIR}/api/enclave_load_page_table.c \
+	${SM_SRC_DIR}/api/enclave_load_page.c \
+	${SM_SRC_DIR}/api/enclave_load_thread.c \
+	${SM_SRC_DIR}/api/enclave_init.c \
+	${SM_SRC_DIR}/api/enclave_enter.c \
+	${SM_SRC_DIR}/api/enclave_delete.c \
+
+SM_ENCLAVE_HANDLER_SRC := \
+	${PLATFORM_DIR}/enclave_entry.S \
+	${PLATFORM_DIR}/exit_enclave.S \
+	${PLATFORM_DIR}/aex.S \
+	${SM_SRC_DIR}/enclave_handler/entry.S \
+	${SM_SRC_DIR}/api/get_public_field.c \
+	${SM_SRC_DIR}/api/accept_mail.c \
+	${SM_SRC_DIR}/api/send_mail.c \
+	${SM_SRC_DIR}/api/get_mail.c \
+	${SM_SRC_DIR}/api/get_key.c \
+	${SM_SRC_DIR}/api/enclave_exit.c \
+
+SM_INCLUDES := \
+	-I ${COMMON_DIR} \
+	-I $(SM_SRC_DIR) \
+	-I $(S_ECALL_DIR) \
+	-I $(E_ECALL_DIR) \
+	-I $(COMMON_DIR) \
+
+mkdir -p $(SM_BUILD)
+echo $(SM_OBJS)
+echo $(SM_SRC)
+cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(CFLAGS) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/$*.o -o $@
+
+
+.PHONY: security_monitor_test_elfs
+security_monitor_test_elfs: $(TEST_ELFS)
+
+.PHONY: security_monitor_objs
+security_monitor_objs: $(OBJS)
+
+%.task: $(SM_BUILD)/%.elf
+	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $^
+
+.PHONY: security_monitor_tests
+security_monitor_tests: $(TEST_TASKS)
+	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
+	@echo "The tests were: $(TEST_NAMES)"
+
+${BUILD_DIR}/sm_enclave_handler.elf: $(SM_ENCLAVE_HANDLER_SRC) ${SM_SRC_DIR}/security_monitor.lds
+	mkdir -p ${BUILD_DIR}
+	$(CC) -T ${SM_SRC_DIR}/sm_enclave_handler.lds -march=rv64g -mabi=lp64 -nostdlib -nostartfiles -fno-common -std=gnu11 -static -fPIC -O0 -Wall ${SM_INCLUDES} $(SM_ENCLAVE_HANDLER_SRC) -o $@
+
+${BUILD_DIR}/sm.elf: ${BUILD_DIR}/sm_enclave_handler.bin ${BUILD_DIR}/sm_idpt.bin
+	mkdir -p ${BUILD_DIR}
+	$(CC) -T ${SM_SRC_DIR}/sm.lds -march=rv64g -mabi=lp64 -nostdlib -nostartfiles -fno-common -std=gnu11 -static -O0 -Wall ${SM_INCLUDES} $(SM_E_HANDLER_SRC) -o $@
+
+${BUILD_DIR}/sm.enclave_handler.bin: ${BUILD_DIR}/sm.enclave_handler.elf
+	${OBJCOPY}
+
+
+${BUILD_DIR}/idpt.bin: ${SM_SCRIPTS_DIR}/idpt.py
+	python ${SM_SCRIPTS_DIR}/idpt.py $@
+
+
+${BUILD_DIR}/sm.bin: ${BUILD_DIR}/sm.elf
+	${OBJCOPY} --only-section=.sm.*
+
+
+.PHONY: sm
+sm: ${BUILD_DIR}/sm.bin ${BUILD_DIR}/sm.elf ${BUILD_DIR}/sm.enclave_handler.elf

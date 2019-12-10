@@ -1,41 +1,41 @@
+#include <stdbool.h>
 #include <sm.h>
-#include <data_structures.h>
 
-extern void resume_hart_after_init_globals(void);
+extern void * payload_ptr;
 
-__attribute__((section(".sm.globals"))) security_monitor_globals_t sm_globals;
+#ifndef SIGNING_ENCLAVE_MEASUREMENT
+  #define SIGNING_ENCLAVE_MEASUREMENT {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#endif
 
-__attribute__((section(".sm.text.init"))) void initialize_security_monitor_globals() {
-   // INIT CORES
+void sm_init(void) {
+  // INIT CORES
+  // TODO: If this is not core 0 wait for an IPI
 
-   for(int i = 0; i < NUM_CORES; i++) {
-      sm_globals.cores[i].owner = 0;
-      sm_globals.cores[i].has_enclave_schedule = false;
-      sm_globals.cores[i].cur_thread = 0;
-      sm_globals.cores[i].lock.flag = 0;
-   }
+  // Initialize globals data structure
+  sm_state->sm.
+  sm_state->os.
 
-   // INIT REGIONS
-   
-   aquireLock(sm_globals.regions[0].lock); // TODO get the lock
-   sm_globals.regions[0].type = security_monitor_region;
-   sm_globals.regions[0].owner = 1;
-   sm_globals.regions[0].state = dram_region_owned;
-   releaseLock(sm_globals.regions[0].lock); // TODO get the lock
-   
-   for(int i = 1; i < NUM_REGIONS; i++) {
-      aquireLock(sm_globals.regions[i].lock); // TODO get the lock
-      sm_globals.regions[i].type = untrusted_region;
-      sm_globals.regions[i].owner = 0;
-      sm_globals.regions[i].state = dram_region_free;
-      releaseLock(sm_globals.regions[i].lock); // TODO get the lock
-   }
+  // Initialize signing enclave measurement
+  const uint8_t signing_enclave_measurement[64] = SIGNING_ENCLAVE_MEASUREMENT;
+  memcpy( sm_state->signing_enclave_measurement, signing_enclave_measurement, sizeof(signing_enclave_measurement) );
 
-   // TODO: update signing enclave measurement
+  // Initialize cores
+  for(int i=0; i<NUM_CORES; i++) {
+    sm_state->cores[i].owner_eid = EID_OS;
+    sm_state->cores[i].owner_thread = THREAD_OS;
+    sm_state->cores[i].is_enclaved = false;
+    platform_lock_release( sm_state->cores[i].lock );
+  }
 
-   // TODO: Send IPI to other core to wake them up
+  // Initialize regions
+  for(int i=0; i<NUM_REGIONS; i++) {
+    sm_state->regions[i].type = REGION_TYPE_UNTRUSTED;
+    sm_state->regions[i].owner = EID_OS;
+    sm_state->regions[i].state = REGION_STATE_OWNED;
+    platform_lock_release( sm_state->regions[i].lock );
+  }
 
-   resume_hart_after_init_globals();
+  // TODO: Send IPI to other core to wake them up
+
+  platform_boot_os( payload_ptr );
 }
-
-

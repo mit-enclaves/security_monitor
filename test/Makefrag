@@ -1,0 +1,79 @@
+SM_TEST_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+
+UNIT_TESTS_DIR := $(SM_TEST_DIR)/unit_tests
+
+TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR)/test_*)))
+TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
+TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
+TEST_IDPT := $(SM_BUILD)/idpt.bin
+
+SM_INCLUDES := \
+	-I ${SECURITY_MONITOR_DIR} \
+	-I $(SM_SRC_DIR) \
+	-I $(S_ECALL_DIR) \
+	-I $(E_ECALL_DIR) \
+	-I $(COMMON_DIR) \
+
+TEST_INCLUDE := -I $(SM_BUILD) -I $(TEST_DIR)
+
+CFLAGS += $(SM_INCLUDE) $(TEST_INCLUDE)
+
+ASFLAGS := $(CFLAGS)
+
+SM_SRC := \
+	$(SM_SRC_DIR)/init.S \
+	$(SM_SRC_DIR)/init/init.c \
+	$(SM_SRC_DIR)/sm_stack.S \
+	$(S_TRAP_DIR)/entry.S \
+	$(SM_SRC_DIR)/sm_util/sm_util.c \
+	$(wildcard $(S_TRAP_DIR)/trap_*.S) \
+	$(wildcard $(S_TRAP_DIR)/trap_hacks.c) \
+	$(wildcard $(S_TRAP_DIR)/interrupt_*.S) \
+	$(wildcard $(S_ECALL_DIR)/ecall_s_*.c) \
+	$(COMMON_DIR)/clib/memcpy.c \
+	$(COMMON_DIR)/clib/memset.c \
+	$(COMMON_DIR)/sha3/sha3.c \
+
+SM_ENCLAVE_HANDLER_SRC := \
+	$(E_TRAP_DIR)/entry.S \
+	$(wildcard $(E_TRAP_DIR)/*.S) \
+	$(wildcard $(E_TRAP_DIR)/*.c) \
+	$(COMMON_DIR)/clib/memcpy.c \
+	$(COMMON_DIR)/clib/memset.c \
+
+SM_OBJS := $(addprefix ,$(addsuffix .o, $(basename $(SM_SRC))))
+
+TEST_SRC := $(TEST_DIR)/os/sm_api_os.c
+TEST_SRC += $(TEST_DIR)/os/os_stack.S
+TEST_SRC += $(TEST_DIR)/os/os_pt.S
+TEST_SRC += $(TEST_DIR)/enclave/sm_api_enclave.c
+TEST_SRC += $(TEST_DIR)/enclave/enclave_code.S
+TEST_SRC += $(TEST_DIR)/htif/htif.c
+
+TEST_OBJS := $(addsuffix .o, $(basename $(TEST_SRC)))
+
+OBJS := $(SM_OBJS) $(TEST_OBJS) $(wildcard $(UNIT_TESTS_DIR)/*.o)
+
+$(TEST_IDPT): $(TEST_DIR)/make_idpt.py
+	mkdir -p $(SM_BUILD)
+	cd $(SM_BUILD) && python $(TEST_DIR)/make_idpt.py
+
+$(SM_BUILD)/%.elf: $(TEST_IDPT) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/%.o
+	mkdir -p $(SM_BUILD)
+	echo $(SM_OBJS)
+	echo $(SM_SRC)
+	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(CFLAGS) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/$*.o -o $@
+
+.PHONY: security_monitor_test_elfs
+security_monitor_test_elfs: $(TEST_ELFS)
+
+.PHONY: security_monitor_objs
+security_monitor_objs: $(OBJS)
+
+%.task: $(SM_BUILD)/%.elf
+	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $^
+
+.PHONY: security_monitor_tests
+security_monitor_tests: $(TEST_TASKS)
+	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
+	@echo "The tests were: $(TEST_NAMES)"
