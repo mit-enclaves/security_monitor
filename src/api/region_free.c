@@ -1,6 +1,7 @@
 #include <sm.h>
 
 api_result_t sm_region_free ( region_id_t region_id ) {
+
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
   // Validate inputs
@@ -42,7 +43,7 @@ api_result_t sm_region_free ( region_id_t region_id ) {
     // The owner is a valid enclave
     if ( !lock_region(addr_to_region_id(region_metadata->owner)) ) {
       unlock_region( region_id );
-      return result;
+      return MONITOR_CONCURRENT_CALL;
     }
 
   }
@@ -54,14 +55,18 @@ api_result_t sm_region_free ( region_id_t region_id ) {
 
   // Remove the region from owner's page map
   if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    sm->untrusted_regions[region_id] = false;
+    sm->untrusted_regions.flags[region_id] = false;
   } else {
     enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(region_metadata->owner);
-    enclave_metadata->regions[region_id] = false;
+    enclave_metadata->regions.flags[region_id] = false;
   }
 
-  // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
-  memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
+  if (CLEAN_REGIONS_ON_FREE) {
+    // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
+    memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
+
+    // Else the enclave's regions are erased when they are blocked at enclave deletion, and the enclave is responsible for cleaning any regions it itself blocks.
+  }
 
   // Mark the selected region as free
   region_metadata->state = REGION_STATE_FREE;

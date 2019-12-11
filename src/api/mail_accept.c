@@ -1,6 +1,7 @@
 #include <sm.h>
 
 api_result_t sm_mail_accept (mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
+  
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
   // Validate inputs

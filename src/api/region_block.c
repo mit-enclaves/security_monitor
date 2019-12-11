@@ -26,12 +26,12 @@ api_result_t sm_region_block ( region_id_t region_id ) {
     return MONITOR_CONCURRENT_CALL;
   }
 
-  if ( sm->regions[region_id].state != REGION_STATE_OWNED ) {
+  if ( region_metadata->state != REGION_STATE_OWNED ) {
     unlock_region( region_id );
     return MONITOR_INVALID_STATE;
   }
 
-  if ( sm->regions[region_id].owner != caller ) {
+  if ( region_metadata->owner != caller ) {
     unlock_region( region_id );
     return MONITOR_ACCESS_DENIED;
   }
@@ -42,7 +42,7 @@ api_result_t sm_region_block ( region_id_t region_id ) {
   // ----------------------
 
   // Block the selected region
-  sm->regions[region_id].state = REGION_STATE_BLOCKED;
+  region_metadata->state = REGION_STATE_BLOCKED;
 
   // Release locks
   unlock_region( region_id );

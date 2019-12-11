@@ -1,40 +1,60 @@
 #include <sm.h>
 
-TODO
+api_result_t sm_region_metadata_create (region_id_t region_id) {
 
-api_result_t sm_region_metadata_create (dram_region_id_t id) {
-   // Check argument validity
-   if(id >= NUM_REGIONS) {
-      return monitor_invalid_value;
-   }
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   // Get a pointer to the DRAM region datastructure
-   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
+  // Validate inputs
+  // ---------------
 
-   if(!lock_acquire(r_ptr->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+  /*
+    - region_id must be valid
+    - the region must be in FREE state
+  */
 
-   // The DRAM region must be free
-   if(r_ptr->state != dram_region_free) {
-      lock_release(r_ptr->lock); // Release Lock
-      return monitor_invalid_state;
-   }
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-   // Set the DRAM region type and state
-   r_ptr->type  = metadata_region;
-   r_ptr->state = dram_region_owned;
+  sm_state_t * sm = get_sm_state_ptr();
+  sm_region_t * region_metadata = &sm->regions[region_id];
 
-   // Initialize the metadata page map
-   metadata_page_map_t page_map = (metadata_page_map_t) REGION_BASE(id);
+  // <TRANSACTION>
+  if ( !lock_region(region_id) ) {
+    return MONITOR_CONCURRENT_CALL;
+  }
 
-   uint64_t init_value = metadata_free;
+  if ( region_metadata->state != REGION_STATE_FREE ) {
+    unlock_region(region_id);
+    return MONITOR_INVALID_STATE;
+  }
 
-   for(int i = 0; i < NUM_METADATA_PAGES_PER_REGION; i++) {
-      page_map[i] = init_value;
-   }
+  // NOTE: Inputs are now deemed valid.
 
-   lock_release(r_ptr->lock); // Release Lock
+  // Apply state transition
+  // ----------------------
+  metadata_region_t * metadata_region = region_id_to_addr(region_id);
 
-   return monitor_ok;
+  // Erase the region if it is not already erased
+  if (!CLEAN_REGIONS_ON_FREE) {
+    // Erase the metadata region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
+    memset( metadata_region, 0x00, REGION_SIZE );
+  }
+
+  // Initialize the page_info structure
+  int s = get_metadata_start_page();
+  for (int i=0; i<NUM_REGION_PAGES; i++) {
+    metadata_region->page_info[i] = (i<s) ? METADATA_PAGE_INVALID : METADATA_PAGE_FREE;
+  }
+
+  // Update region metadata
+  region_metadata->owner = OWNER_SM;
+  region_metadata->type = REGION_TYPE_METADATA;
+  region_metadata->state = REGION_STATE_OWNED;
+
+  // Release locks
+  unlock_region( region_id );
+  // </TRANSACTION>
+
+  return MONITOR_OK;
 }

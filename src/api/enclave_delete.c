@@ -57,8 +57,10 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
       // Block the region
       sm->regions[i].state = REGION_STATE_BLOCKED;
 
-      // Erase the region - we erase regions during free(), which departs a bit from the Sanctum paper
-      //memset( region_id_to_addr(i), 0x00, REGION_SIZE);
+      if (!CLEAN_REGIONS_ON_FREE) {
+        // Erase the region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
+        memset( region_id_to_addr(i), 0x00, REGION_SIZE );
+      }
     }
   }
 

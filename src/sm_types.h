@@ -79,6 +79,13 @@ typedef struct thread_metadata_t {
   platform_core_state_t aex_state;
 } thread_metadata_t;
 
+typedef enum { // NOTE must fit into 12 bits
+  METADATA_PAGE_INVALID = 0,
+  METADATA_PAGE_FREE = 1,
+  METADATA_PAGE_ENCLAVE = 2,
+  METADATA_PAGE_THREAD = 3,
+} metadata_page_t;
+
 typedef uint8_t page_t[PAGE_SIZE];
 
 typedef uint8_t page_map_t[NUM_REGION_PAGES];

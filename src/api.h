@@ -13,7 +13,9 @@ typedef phys_ptr_t thread_id_t;
 typedef uint64_t region_id_t;
 typedef uint64_t mailbox_id_t;
 
-#define OWNER_UNTRUSTED (0)
+// reserved, "special" enclave_id values. These must not be valid (this implementation requires enclave_id_t be page-aligned, so these values are safe).
+#define OWNER_UNTRUSTED (1)
+#define OWNER_SM        (2)
 
 // ### SM API Return values
 typedef enum {
@@ -91,13 +93,6 @@ typedef enum {
   REGION_TYPE_METADATA = 2,
   REGION_TYPE_SM = 3,
 } region_type_t;
-
-typedef enum { // NOTE must fit into 12 bits
-  METADATA_PAGE_INVALID = 0,
-  METADATA_PAGE_FREE = 1,
-  METADATA_PAGE_ENCLAVE = 2,
-  METADATA_PAGE_THREAD = 3,
-} metadata_page_t;
 
 
 // APIs: SM Enclave-related calls

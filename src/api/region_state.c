@@ -1,23 +1,40 @@
 #include <sm.h>
 
-TODO
+region_state_t sm_region_state (region_id_t region_id) {
 
-dram_region_state_t sm_region_state (dram_region_id_t id) {
-   // Check argument validity
-   if(id >= NUM_REGIONS) {
-      return monitor_invalid_value;
-   }
+    // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   // Get a pointer to the DRAM region datastructure
-   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
+    // Validate inputs
+    // ---------------
 
-   if(!lock_acquire(r_ptr->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+    /*
+      - region_id must be valid
+    */
 
-   dram_region_type_t state = r_ptr->state;
+    if ( !is_valid_region_id(region_id) ) {
+      return MONITOR_INVALID_VALUE;
+    }
 
-   lock_release(r_ptr->lock); // Release Lock
+    sm_state_t * sm = get_sm_state_ptr();
+    sm_region_t * region_metadata = &sm->regions[region_id];
 
-   return state;
+    // <TRANSACTION>
+    if ( !lock_region(region_id) ) {
+      return MONITOR_CONCURRENT_CALL;
+    }
+
+    // NOTE: Inputs are now deemed valid.
+
+    // Apply state transition
+    // ----------------------
+
+    // NOTE: this API call does not cause any state changes
+
+    region_state_t region_state = region_metadata->state;
+
+    // Release locks
+    unlock_region( region_id );
+    // </TRANSACTION>
+
+    return region_state;
 }

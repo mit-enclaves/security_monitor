@@ -1,13 +1,15 @@
 #ifndef SM_PARAMETERS_H
 #define SM_PARAMETERS_H
 
+#include <stdbool.h>
+
 // SM Parameters:
 // --------------
 
 #define STACK_SIZE    (0x1000)
 #define MAILBOX_SIZE  (0x1000)
 #define NUM_UNTRUSTED_MAILBOXES (16)
-
+#define CLEAN_REGIONS_ON_FREE   (true)
 /* Note: make sure the parameterization below is consistent with the target hardware platform! */
 
 // Multicore configuration

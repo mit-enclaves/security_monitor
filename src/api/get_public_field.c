@@ -1,6 +1,7 @@
 #include <sm.h>
 
 api_result_t sm_get_public_field (public_field_t field, phys_ptr_t out_buffer) {
+  
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
   // Validate inputs
