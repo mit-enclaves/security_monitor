@@ -1,8 +1,8 @@
 #include <sm.h>
 
-TODO
+TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region.
 
-api_result_t sm_mail_send (uint64_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
+api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -20,7 +20,7 @@ api_result_t sm_mail_send (uint64_t mailbox_id, enclave_id_t recipient, phys_ptr
   */
 
   sm_state_t * sm = get_sm_state_ptr();
-  enclave_id_t caller = sm->cores[get_core_id()].owner;
+  enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
   mailbox_t * mailbox;
 
   hash_t measurement;
@@ -47,11 +47,11 @@ api_result_t sm_mail_send (uint64_t mailbox_id, enclave_id_t recipient, phys_ptr
       return MONITOR_INVALID_VALUE;
     }
 
-    enclave_t * enclave_metadata = (enclave_t *)(recipient);
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
     mailbox = &enclave_metadata->mailboxes[mailbox_id];
 
 
-    enclave_t * enclave_metadata = (enclave_t *)(recipient);
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
 
     if ( !lock_region( addr_to_region_id(caller) ) ) {
       return MONITOR_CONCURRENT_CALL;
@@ -71,7 +71,7 @@ api_result_t sm_mail_send (uint64_t mailbox_id, enclave_id_t recipient, phys_ptr
     memset( &measurement, 0x00, sizeof(measurement) );
 
   } else { // an enclave
-    enclave_t * enclave_metadata = (enclave_t *)(caller);
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
 
     if ( !lock_region( addr_to_region_id(caller) ) ) {
       return MONITOR_CONCURRENT_CALL;

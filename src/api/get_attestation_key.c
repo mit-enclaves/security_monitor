@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_get_attestation_key ( uintptr_t out_buffer ) {
+api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -27,14 +27,14 @@ api_result_t sm_get_attestation_key ( uintptr_t out_buffer ) {
 
   sm_state_t * sm = get_sm_state_ptr();
   sm_region_t * region_metadata = &sm->regions[region_id];
-  enclave_id_t caller = sm->cores[get_core_id()].owner;
+  enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
 
   // <TRANSACTION>
   if ( !lock_region(addr_to_region_id(caller)) ) {
     return MONITOR_CONCURRENT_CALL;
   }
 
-  enclave_t * enclave_metadata = (enclave_t *)(caller);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
   if ( 0 != memcmp(&enclave_metadata->measurement, &sm->signing_enclave_measurement, sizeof(hash_t) ) ) {
     return MONITOR_ACCESS_DENIED;
   }

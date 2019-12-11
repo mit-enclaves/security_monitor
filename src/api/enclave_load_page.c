@@ -2,7 +2,7 @@
 
 TODO
 
-api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t sm_enclave_load_page (enclave_id_t enclave_id, phys_ptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
    // Check that ACL is valid and is a leaf ACL
@@ -36,8 +36,8 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
    inputs.virtual_addr = virtual_addr;
    inputs.acl = acl;
 
-   sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
-   sha3_update(&(((enclave_t *) enclave_id)->sha3_ctx), (const void *) os_addr, PAGE_SIZE);
+   sha3_update(&(((enclave_metadata_t *) enclave_id)->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
+   sha3_update(&(((enclave_metadata_t *) enclave_id)->sha3_ctx), (const void *) os_addr, PAGE_SIZE);
 
    lock_release(er_info->lock);
 

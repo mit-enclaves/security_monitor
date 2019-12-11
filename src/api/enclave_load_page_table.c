@@ -2,7 +2,7 @@
 
 TODO
 
-api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, uintptr_t phys_addr,
+api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, phys_ptr_t phys_addr,
       uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    if(level > 3) {
@@ -36,7 +36,7 @@ api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, uintptr_t phys
    inputs.level = level;
    inputs.acl = acl;
 
-   enclave_t *enclave = (enclave_t *) enclave_id;
+   enclave_metadata_t *enclave = (enclave_metadata_t *) enclave_id;
    sha3_update(&(enclave->sha3_ctx), &(inputs), sizeof(struct inputs_load_pt_t));
 
    lock_release(er_info->lock);

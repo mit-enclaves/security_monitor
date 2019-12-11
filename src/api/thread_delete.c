@@ -52,7 +52,7 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
       return monitor_concurrent_call;
    }
 
-   ((enclave_t *) owner_id)->thread_count--;
+   ((enclave_metadata_t *) owner_id)->thread_count--;
 
    releaseLock(er_ptr->lock);
 

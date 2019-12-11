@@ -13,6 +13,8 @@ typedef phys_ptr_t thread_id_t;
 typedef uint64_t region_id_t;
 typedef uint64_t mailbox_id_t;
 
+#define OWNER_UNTRUSTED (0)
+
 // ### SM API Return values
 typedef enum {
    // API call succeeded.
@@ -120,8 +122,12 @@ typedef enum { // NOTE must fit into 12 bits
 // on debug enclaves.
 //
 // All arguments become a part of the enclave's measurement.
-api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base,
-      uintptr_t ev_mask, uint64_t num_mailboxes, bool debug);
+api_result_t sm_enclave_create (
+  enclave_id_t enclave_id,
+  uintptr_t ev_base,
+  uintptr_t ev_mask,
+  uint64_t num_mailboxes,
+  bool debug);
 
 // Frees up all DRAM regions and the metadata associated with an enclave.
 //
@@ -170,8 +176,12 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id);
 //
 // `virtual_addr`, `level` and `acl` become a part of the enclave's
 // measurement.
-api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, uintptr_t phys_addr,
-      uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
+api_result_t sm_enclave_load_page_table (
+  enclave_id_t enclave_id,
+  phys_ptr_t phys_addr,
+  uintptr_t virtual_addr,
+  uint64_t level,
+  uintptr_t acl);
 
 // Allocates and initializes a page in the enclave's main DRAM region.
 //
@@ -183,8 +193,12 @@ api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, uintptr_t phys
 //
 // `virtual_addr`, `acl`, and the contents of the page at `os_addr` become a
 // part of the enclave's measurement.
-api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
-      uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
+api_result_t sm_enclave_load_page (
+  enclave_id_t enclave_id,
+  uintptr_t phys_addr,
+  uintptr_t virtual_addr,
+  uintptr_t os_addr,
+  uintptr_t acl);
 
 // Returns the number of pages used by an enclave metadata structure.
 uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
@@ -200,7 +214,7 @@ uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 // `phys_addr` must point into a buffer large enough to store the attestation
 // key. The entire buffer must be contained in a single DRAM region that
 // belongs to the enclave.
-api_result_t sm_get_attestation_key (uintptr_t phys_addr);
+api_result_t sm_get_attestation_key (phys_ptr_t phys_addr);
 
 // Reads the monitor's requested public field.
 //
@@ -209,7 +223,7 @@ api_result_t sm_get_attestation_key (uintptr_t phys_addr);
 // `phys_addr` must point into a buffer large enough to store the requested
 // field. The buffer must be contained in a single DRAM region that
 // belongs to the enclave.
-api_result_t sm_get_public_field (public_field_t field, uintptr_t phys_addr);
+api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr);
 
 
 // APIs: SM Mail-related calls
@@ -218,7 +232,9 @@ api_result_t sm_get_public_field (public_field_t field, uintptr_t phys_addr);
 // Prepares a mailbox to receive a message from another enclave.
 //
 // The mailbox will discard any message that it might contain.
-api_result_t sm_mail_accept (mailbox_id_t mailbox_id, enclave_id_t expected_sender);
+api_result_t sm_mail_accept (
+  mailbox_id_t mailbox_id,
+  enclave_id_t expected_sender);
 
 // Attempts to read a message received in a mailbox.
 //
@@ -239,8 +255,10 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, uintptr_t phys_addr);
 //
 // The structure contains the destination enclave's expected identity. The
 // monitor will refuse to deliver the message
-api_result_t sm_mail_send (enclave_id_t enclave_id, mailbox_id_t mailbox_id,
-      uintptr_t phys_addr);
+api_result_t sm_mail_send (
+  enclave_id_t enclave_id,
+  mailbox_id_t mailbox_id,
+  phys_ptr_t phys_addr);
 
 
 // APIs: SM Region-related calls
@@ -343,9 +361,13 @@ api_result_t sm_thread_delete (thread_id_t thread_id);
 //
 // This must be called after the enclave's root page table is set by a call to
 // load_page_table().
-api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
-    uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
-    uintptr_t fault_stack);
+api_result_t sm_thread_load (
+  enclave_id_t enclave_id,
+  thread_id_t thread_id,
+  uintptr_t entry_pc,
+  uintptr_t entry_stack,
+  uintptr_t fault_pc,
+  uintptr_t fault_stack);
 
 // Returns the number of pages used by a thread metadata structure.
 uint64_t sm_thread_metadata_pages();

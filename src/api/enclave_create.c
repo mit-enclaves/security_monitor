@@ -1,4 +1,8 @@
+#include "api.h"
 #include <sm.h>
+#include <cryptography.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, bool debug) {
 
@@ -25,7 +29,7 @@ api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uint
   sm_state_t * sm = get_sm_state_ptr();
   uint64_t page_id = addr_to_region_page_id(enclave_id);
   uint64_t region_id = addr_to_region_id(enclave_id);
-  enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
   sm_region_t * region_metadata = &sm->regions[region_id];
   metadata_region_t * region = region_id_to_addr(region_id);
 

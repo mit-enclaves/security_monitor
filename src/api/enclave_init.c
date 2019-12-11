@@ -18,12 +18,12 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
     return result;
   }
 
-  sm_state * sm = get_sm_state_ptr();
+  sm_state_t * sm = get_sm_state_ptr();
   uint64_t region_id = addr_to_region_id(enclave_id);
-  enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   // Make sure the enclave is in correct state:
-  if (enclave->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED) {
+  if (enclave_metadata->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED) {
     unlock_region( region_id );
     return MONITOR_INVALID_STATE;
   }
@@ -37,11 +37,11 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
   hash_finalize( &enclave_metadata->hash_context, &enclave_metadata->measurement );
 
   // Initialize Enclave
-  enclave->init_state = ENCLAVE_STATE_INITIALIZED;
+  enclave_metadata->init_state = ENCLAVE_STATE_INITIALIZED;
 
   // Release locks
   unlock_region( region_id );
   // </TRANSACTION>
 
-  return monitor_ok;
+  return MONITOR_OK;
 }

@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_mail_accept (uint64_t mailbox_id, enclave_id_t expected_sender) {
+api_result_t sm_mail_accept (mailbox_id_t mailbox_id, enclave_id_t expected_sender) {
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
   // Validate inputs
@@ -12,7 +12,7 @@ api_result_t sm_mail_accept (uint64_t mailbox_id, enclave_id_t expected_sender) 
   */
 
   sm_state_t * sm = get_sm_state_ptr();
-  enclave_id_t caller = sm->cores[get_core_id()].owner;
+  enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
   mailbox_t * mailbox;
 
   // <TRANSACTION>
@@ -28,7 +28,7 @@ api_result_t sm_mail_accept (uint64_t mailbox_id, enclave_id_t expected_sender) 
     mailbox = &sm->untrusted_mailboxes[mailbox_id];
 
   } else { // an enclave
-    enclave_t * enclave_metadata = (enclave_t *)(caller);
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
 
     if ( !lock_region( addr_to_region_id(caller) ) ) {
       return MONITOR_CONCURRENT_CALL;
@@ -45,14 +45,11 @@ api_result_t sm_mail_accept (uint64_t mailbox_id, enclave_id_t expected_sender) 
 
   // Apply state transition
   // ----------------------
-
-  if (caller == OWNER_UNTRUSTED) {
-
   mailbox->state = ENCLAVE_MAILBOX_STATE_EMPTY;
   mailbox->expected_sender = expected_sender;
 
   // Release locks
-  if ( new_owner == OWNER_UNTRUSTED ) {
+  if ( caller == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();
   } else {
     unlock_region( addr_to_region_id(caller) );

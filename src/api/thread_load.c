@@ -12,7 +12,7 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
       return monitor_invalid_value;
    }
 
-   enclave_t * enclave = (enclave_t *) enclave_id;
+   enclave_metadata_t * enclave = (enclave_metadata_t *) enclave_id;
 
    // Check that the enclave is not initialized.
    if(enclave->initialized) {

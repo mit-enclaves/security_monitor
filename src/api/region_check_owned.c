@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_region_check_owned ( uint64_t region_id) {
+api_result_t sm_region_check_owned ( region_id_t region_id) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -19,7 +19,7 @@ api_result_t sm_region_check_owned ( uint64_t region_id) {
 
   sm_state_t * sm = get_sm_state_ptr();
   sm_region_t * region_metadata = &sm->regions[region_id];
-  enclave_id_t caller = sm->cores[get_core_id()].owner;
+  enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
 
   // <TRANSACTION>
   if ( !lock_region(region_id) ) {

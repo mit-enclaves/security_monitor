@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
+api_result_t sm_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -39,7 +39,7 @@ api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
     }
 
   } else {
-    api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+    api_result_t result = lock_region_iff_valid_enclave( new_owner );
     if ( MONITOR_OK != result ) {
       unlock_region( region_id );
       return result;
@@ -59,10 +59,10 @@ api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
 
   // Mark the newly gained region in the new owner's region map
   if ( new_owner == OWNER_UNTRUSTED ) {
-    sm->untrusted_regions[region_id] = true;
+    sm->untrusted_regions.flags[region_id] = true;
   } else {
-    enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
-    enclave_metadata->regions[region_id] = true;
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(new_owner);
+    enclave_metadata->regions.flags[region_id] = true;
   }
 
   // Release locks

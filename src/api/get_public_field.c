@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_get_public_field (public_field_t field, uintptr_t out_buffer) {
+api_result_t sm_get_public_field (public_field_t field, phys_ptr_t out_buffer) {
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
   // Validate inputs
@@ -12,6 +12,7 @@ api_result_t sm_get_public_field (public_field_t field, uintptr_t out_buffer) {
     - the output buffer region must belong to the caller
   */
 
+  sm_state_t * sm = get_sm_state_ptr();
   sm_keys_t * keys = get_sm_keys_ptr();
   size_t buffer_size = 0;
   uint8_t * buffer_src;
@@ -19,37 +20,37 @@ api_result_t sm_get_public_field (public_field_t field, uintptr_t out_buffer) {
   switch (field) {
     case PUBLIC_FIELD_PK_M:
       buffer_size = sizeof(keys->manufacturer_public_key);
-      buffer_src = &keys->manufacturer_public_key;
+      buffer_src = keys->manufacturer_public_key.bytes;
       break;
 
     case PUBLIC_FIELD_PK_D:
       buffer_size = sizeof(keys->device_public_key);
-      buffer_src = &keys->device_public_key;
+      buffer_src = keys->device_public_key.bytes;
       break;
 
     case PUBLIC_FIELD_PK_SM:
       buffer_size = sizeof(keys->software_public_key);
-      buffer_src = &keys->software_public_key;
+      buffer_src = keys->software_public_key.bytes;
       break;
 
     case PUBLIC_FIELD_H_SM:
       buffer_size = sizeof(hash_t);
-      buffer_src = &keys->software_measurement;
+      buffer_src = keys->software_measurement.bytes;
       break;
 
     case PUBLIC_FIELD_SIG_M:
-      buffer_size = sizeof(keys->device_certificate);
-      buffer_src = &keys->device_certificate;
+      buffer_size = sizeof(keys->device_signature);
+      buffer_src = keys->device_signature.bytes;
       break;
 
     case PUBLIC_FIELD_SIG_D:
       buffer_size = sizeof(keys->software_signature);
-      buffer_src = &keys->software_signature;
+      buffer_src = keys->software_signature.bytes;
       break;
 
     case PUBLIC_FIELD_H_AE:
       buffer_size = sizeof(sm->signing_enclave_measurement);
-      buffer_src = &sm->signing_enclave_measurement;
+      buffer_src = sm->signing_enclave_measurement.bytes;
       break;
 
     default:
@@ -65,9 +66,8 @@ api_result_t sm_get_public_field (public_field_t field, uintptr_t out_buffer) {
     return MONITOR_INVALID_VALUE;
   }
 
-  sm_state_t * sm = get_sm_state_ptr();
   sm_region_t * region_metadata = &sm->regions[region_id];
-  enclave_id_t caller = sm->cores[get_core_id()].owner;
+  enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
 
   // <TRANSACTION>
   if ( !lock_region(region_id) ) {

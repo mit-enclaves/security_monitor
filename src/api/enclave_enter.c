@@ -9,7 +9,7 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
       return monitor_invalid_value;
    }
 
-   enclave_t * enclave = (enclave_t *) enclave_id;
+   enclave_metadata_t * enclave = (enclave_metadata_t *) enclave_id;
 
    // Get a pointer to the DRAM region datastructure of the enclave metadata and aquire the lock
    dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);

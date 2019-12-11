@@ -13,7 +13,7 @@
 // --------
 
 typedef struct region_map_t {
-  bool region[NUM_REGIONS];
+  bool flags[NUM_REGIONS];
 } region_map_t;
 
 typedef enum {
@@ -22,7 +22,7 @@ typedef enum {
   ENCLAVE_MAILBOX_STATE_FULL = 2,
 } enclave_mailbox_state_t;
 
-typedef struct{
+typedef struct mailbox_t {
   enclave_mailbox_state_t state;
   enclave_id_t expected_sender;
   hash_t sender_measurement;
@@ -37,15 +37,15 @@ typedef enum {
   ENCLAVE_STATE_INITIALIZED = 4,
 } enclave_init_state_t;
 
-typedef struct {
+typedef struct enclave_metadata_t {
   // Initialization state
   enclave_init_state_t init_state;
   uintptr_t last_phys_addr_loaded;
   hash_context_t hash_context;
 
   // Parameters
-  uintptr_t evbase;
-  uintptr_t evmask;
+  uintptr_t ev_base;
+  uintptr_t ev_mask;
   int64_t num_mailboxes;
   bool debug;
 
@@ -56,9 +56,9 @@ typedef struct {
   int64_t num_threads;
   region_map_t regions;
   mailbox_t mailboxes[];
-} enclave_t;
+} enclave_metadata_t;
 
-typedef struct {
+typedef struct thread_metadata_t {
   // Parameters
   uintptr_t entry_pc;
   uintptr_t entry_sp;
@@ -77,13 +77,13 @@ typedef struct {
   // AEX - asynchronous enclave exit state
   bool aex_present;
   platform_core_state_t aex_state;
-} thread_t;
+} thread_metadata_t;
 
 typedef uint8_t page_t[PAGE_SIZE];
 
 typedef uint8_t page_map_t[NUM_REGION_PAGES];
 
-typedef union {
+typedef union metadata_region_t {
   page_map_t page_info;
   page_t pages[NUM_REGION_PAGES];
 } metadata_region_t;
@@ -111,6 +111,7 @@ typedef struct sm_state_t {
   sm_region_t regions[NUM_REGIONS];
   hash_t signing_enclave_measurement;
   region_map_t untrusted_regions;
+  mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
   platform_lock_t untrusted_state_lock;
 } sm_state_t;
 

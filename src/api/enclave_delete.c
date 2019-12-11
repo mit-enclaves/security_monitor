@@ -19,14 +19,14 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
     return result;
   }
 
-  sm_state * sm = get_sm_state_ptr();
+  sm_state_t * sm = get_sm_state_ptr();
   uint64_t page_id = addr_to_region_page_id(enclave_id);
   uint64_t region_id = addr_to_region_id(enclave_id);
-  enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
   sm_region_t * region_metadata = &sm->regions[region_id];
   metadata_region_t * region = region_id_to_addr(region_id);
   region_map_t locked_regions = (const region_map_t){ 0 };
-  locked_regions[region_id] = true;
+  locked_regions.flags[region_id] = true;
 
   // Fail if the enclave has any threads associated with it
   if( enclave_metadata->num_threads > 0 ) {
@@ -36,12 +36,12 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
 
   // Fail if one of the enclave's regions cannot be locked
   for ( int i=0; i<NUM_REGIONS; i++ ) {
-    if ( enclave_metadata->regions[i] == true ) {
+    if ( enclave_metadata->regions.flags[i] == true ) {
       if ( !lock_region(i) ) {
         unlock_regions( &locked_regions );
         return MONITOR_CONCURRENT_CALL;
       } else {
-        locked_regions[i] = true;
+        locked_regions.flags[i] = true;
       }
     }
   }
@@ -53,7 +53,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
 
   // Block and erase all regions belonging to the enclave (these are already locked above)
   for ( int i=0; i<NUM_REGIONS; i++ ) {
-    if ( enclave_metadata->regions[i] == true ) {
+    if ( enclave_metadata->regions.flags[i] == true ) {
       // Block the region
       sm->regions[i].state = REGION_STATE_BLOCKED;
 
@@ -64,8 +64,8 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
 
   // Clean enclave metadata page map
   uint64_t enclave_pages = sm_enclave_metadata_pages(enclave_metadata->num_mailboxes);
-  for ( i=0; i<enclave_pages; i++ ) {
-    region->page_map[i+page_id] = METADATA_PAGE_FREE;
+  for ( int i=0; i<enclave_pages; i++ ) {
+    region->page_info[i+page_id] = METADATA_PAGE_FREE;
   }
 
   // Clean enclave metadata
