@@ -10,16 +10,32 @@
 // --------------
 
 #define get_abs_addr(symbol) ({  \
-  void * __tmp;    \
-  asm volatile (          \
-    "lui %0, %hi(" #symbol ")" \
-    "addi %0, %lo(" #symbol ")" \
-    : "=r"(__tmp));       \
-  __tmp;                  \
+  void * __tmp; \
+  asm volatile ( \
+    "lui %0, %%hi(" #symbol ") \n" \
+    "addi %0, %0, %%lo(" #symbol ") \n" \
+    : "=r"(__tmp)); \
+  __tmp; \
 })
+
+/*
+#define get_abs_addr(reg) ({ void * __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+*/
 
 // Common minor operations
 // -----------------------
+
+// Global state accessors
+static inline sm_state_t * get_sm_state_ptr (void) {
+  return get_abs_addr(sm_state);
+}
+
+static inline sm_keys_t * get_sm_keys_ptr (void) {
+  return get_abs_addr(sm_keys);
+}
+
 
 // Region helpers
 static inline uint64_t addr_to_region_id (uintptr_t addr) {
@@ -46,6 +62,19 @@ static inline bool is_valid_page_id_in_region (uint64_t page_id) {
   return page_id < NUM_REGION_PAGES;
 }
 
+
+// Synchronization helpers
+static inline bool lock_region (region_id_t region_id) {
+  sm_state_t * sm = get_sm_state_ptr();
+  platform_lock_acquire(&sm->regions[region_id].lock);
+}
+
+static inline void unlock_region (region_id_t region_id) {
+  sm_state_t * sm = get_sm_state_ptr();
+  platform_lock_release(&sm->regions[region_id].lock);
+}
+
+
 // Metadata helpers
 api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages);
 
@@ -57,15 +86,6 @@ static inline bool lock_region_iff_valid_enclave (uintptr_t ptr) {
 
 static inline bool lock_region_iff_valid_thread (uintptr_t ptr) {
   return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD);
-}
-
-// Global state accessors
-static inline sm_state_t * get_sm_state_ptr (void) {
-  return get_abs_addr(sm_state);
-}
-
-static inline sm_keys_t * get_sm_keys_ptr (void) {
-  return get_abs_addr(sm_keys);
 }
 
 #endif // SECURITY_MONITOR_H

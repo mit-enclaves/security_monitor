@@ -1,6 +1,9 @@
 #include <sm.h>
 
 api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pages ) {
+  // Get a handler to SM global state
+  sm_state_t * sm = get_sm_state_ptr();
+
   // Check that ptr is page alligned
   if ( !is_page_aligned(ptr) ) {
     return MONITOR_INVALID_VALUE;
@@ -13,7 +16,7 @@ api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pa
   }
 
   // Check that the chosen page does not overlap with region page info structure.
-  uint64_t page_id = addr_to_region_page_id(enclave_id);
+  uint64_t page_id = addr_to_region_page_id( ptr );
   // region page info table is marked as METADATA_INVALID, so we do not need to explicitly check that page_id > sm_region_metadata_start().
 
   // Check that the requested pages do not span regions
@@ -36,7 +39,8 @@ api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pa
 
   // Check that each of the requested metadata pages is of type METADATA_PAGE_FREE
   for ( int i=0; i<num_pages; i++ ) {
-    if ( sm->regions[region_id].region->page_info[i] != METADATA_PAGE_FREE ) {
+    metadata_region_t * metadata_region = region_id_to_addr(region_id);
+    if ( metadata_region->page_info[i] != METADATA_PAGE_FREE ) {
       unlock_region( region_id );
       return MONITOR_INVALID_STATE;
     }

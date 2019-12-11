@@ -7,11 +7,11 @@
 // Lock
 // ----
 #define platform_lock_acquire(lock) ({ unsigned long __tmp; \
-      asm volatile ("amoswap.w.aq %[result], %[value], (%[address])": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&(lock.flag))); \
+      asm volatile ("amoswap.w.aq %[result], %[value], (%[address]) \n": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&((lock)->lock_flag))); \
       ~__tmp; })
 
 #define platform_lock_release(lock) ({ \
-      asm volatile ("amoswap.w.rl x0, x0, (%[address])":: [address] "r"(&(lock.flag))); })
+      asm volatile ("amoswap.w.rl x0, x0, (%[address]) \n":: [address] "r"(&((lock)->lock_flag))); })
 
 
 // Core context state

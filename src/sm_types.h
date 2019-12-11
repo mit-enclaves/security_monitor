@@ -90,14 +90,14 @@ typedef union {
 
 #define get_metadata_start_page() ( 1 + ( (sizeof(page_map_t)+PAGE_SIZE-1) / PAGE_SIZE ) )
 
-typedef struct {
+typedef struct sm_core_t {
   enclave_id_t owner;
   thread_id_t thread;
 
   platform_lock_t lock;
 } sm_core_t;
 
-typedef struct {
+typedef struct sm_region_t {
   enclave_id_t owner;
 
   region_type_t type;
