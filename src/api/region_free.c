@@ -33,7 +33,7 @@ api_result_t sm_region_free ( uint8_t region_id ) {
 
   // NOTE: regions of type SM could not have been blocked. Such regions cannot be ever freed.
   if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    if ( !lock_untrusted_region_map() ) {
+    if ( !lock_untrusted_state() ) {
       unlock_region( region_id );
       return MONITOR_CONCURRENT_CALL;
     }
@@ -60,8 +60,8 @@ api_result_t sm_region_free ( uint8_t region_id ) {
     enclave_metadata->regions[region_id] = false;
   }
 
-  // NOTE: Freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted.
-  // memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
+  // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
+  memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
 
   // Mark the selected region as free
   region_metadata->state = REGION_STATE_FREE;
@@ -69,7 +69,7 @@ api_result_t sm_region_free ( uint8_t region_id ) {
   // Release locks
   // (NOTE: owner field is conveniently not cleared until the region is re-assigned)
   if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    unlock_untrusted_region_map();
+    unlock_untrusted_state();
   } else { // a valid enclave
     unlock_region( addr_to_region_id(region_metadata->owner) );
   }

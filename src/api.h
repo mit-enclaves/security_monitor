@@ -4,9 +4,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// SM API Return values
+// SM API Types
 // --------------------
 
+typedef uint64_t phys_ptr_t;
+typedef phys_ptr_t enclave_id_t;
+typedef phys_ptr_t thread_id_t;
+typedef uint64_t region_id_t;
+typedef uint64_t mailbox_id_t;
+
+// ### SM API Return values
 typedef enum {
    // API call succeeded.
    MONITOR_OK = 0,
@@ -58,8 +65,6 @@ typedef enum {
    // monitor_unsupported response.
    MONITOR_UNSUPPORTED = 6,
 } api_result_t;
-
-typedef uint64_t region_id_t;
 
 typedef enum {
   PUBLIC_FIELD_PK_M = 0,
@@ -246,7 +251,7 @@ api_result_t sm_mail_send (enclave_id_t enclave_id, mailbox_id_t mailbox_id,
 // `new_owner` is the enclave ID of the enclave that will own the DRAM region.
 // 0 means that the DRAM region will be assigned to the OS.
 //
-api_result_t sm_region_assign (dram_region_id_t id, enclave_id_t new_owner);
+api_result_t sm_region_assign (region_id_t id, enclave_id_t new_owner);
 
 // Blocks a DRAM region that was previously owned by the caller.
 //
@@ -260,7 +265,7 @@ api_result_t sm_region_assign (dram_region_id_t id, enclave_id_t new_owner);
 //
 // Before issuing this call, the OS is responsible for wiping its own
 // confidential information from the DRAM region.
-api_result_t sm_region_block (dram_region_id_t id);
+api_result_t sm_region_block (region_id_t id);
 
 //namespace enclave {  // sanctum::api::enclave
 
@@ -269,7 +274,7 @@ api_result_t sm_region_block (dram_region_id_t id);
 // This is used by enclaves to confirm that they own a DRAM region when the OS
 // tells them that they do. The enclave should that assume something went wrong
 // if it sees any return value other than monitor_ok.
-api_result_t sm_region_check_owned (dram_region_id_t id);
+api_result_t sm_region_check_owned (region_id_t id);
 
 // Performs the TLB flushes needed to free a locked region.
 //
@@ -279,13 +284,13 @@ api_result_t sm_region_check_owned (dram_region_id_t id);
 api_result_t sm_region_flush ();
 
 // Frees a DRAM region that was previously blocked.
-api_result_t sm_region_free (dram_region_id_t id);
+api_result_t sm_region_free (region_id_t id);
 
 // Reserves a free DRAM region to hold enclave metadata.
 //
 // DRAM regions that hold enclave metadata can be freed directly by calling
 // free_dram_region(). Calling block_dram_region() on them will fail.
-api_result_t sm_region_metadata_create (dram_region_id_t dram_region);
+api_result_t sm_region_metadata_create (region_id_t dram_region);
 
 // Returns the number of addressable metadata pages in a DRAM metadata region.
 //
@@ -305,42 +310,18 @@ uint64_t sm_region_metadata_start();
 //
 // Returns null_enclave_id if the given DRAM region index is invalid, locked by
 // another operation, or if the region is not in the owned state.
-enclave_id_t sm_region_owner (dram_region_id_t id);
+enclave_id_t sm_region_owner (region_id_t id);
 
 // Returns the state of the DRAM region with the given index.
 //
 // Returns dram_region_invalid if the given DRAM region index is invalid.
 // Returns dram_region_locked if the given DRAM region is currently locked by
 // another API call.
-dram_region_state_t sm_region_state (dram_region_id_t id);
+region_state_t sm_region_state (region_id_t id);
 
 
 // APIs: SM Thread-related calls
 // -----------------------------
-
-// Creates a hardware thread using metadata pages assigned by the OS.
-//
-// `thread_id` is a thread ID used by the OS in an `assign_thread` call that
-// assigned metadata pages to this enclave. Enclaves can safely pass any value
-// supplied by the OS as a parameter to this call, but must be prepared to
-// handle an error code, which may occur if the OS supplies an incorrect value.
-//
-// `thread_info_addr` is the physical address of a thread_init_info_t structure
-// that will be used to initialize the thread's metadata. The address must be
-// page-aligned. The memory used for the thread_init_info_t structure can be
-// reused for other purposes once the API call returns.
-api_result_t sm_thread_accept (thread_id_t thread_id, uintptr_t thread_info_addr);
-
-// Allocates a thread metadata structure to be used by an enclave.
-//
-// `enclave_id` must be an enclave that has been initialized and has not yet
-// been killed.
-//
-// `thread_id` must be the physical address of the first page in a sequence of
-// free pages in the same DRAM metadata region. It becomes the thread's ID used
-// for subsequent API calls. The required number of free metadata pages can be
-// obtained by calling `thread_metadata_pages`.
-api_result_t sm_thread_assign (enclave_id_t enclave_id, thread_id_t thread_id);
 
 // Deallocates a thread info slot.
 //
@@ -369,8 +350,9 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
 // Returns the number of pages used by a thread metadata structure.
 uint64_t sm_thread_metadata_pages();
 
-// SM API Calls
-// ------------
+// SM API Syscall codes
+// --------------------
+// TODO: change this to an enum type?
 #define SM_ENCLAVE_CREATE                   (1000)
 #define SM_ENCLAVE_DELETE                   (1001)
 #define SM_ENCLAVE_ENTER                    (1002)
@@ -399,11 +381,9 @@ uint64_t sm_thread_metadata_pages();
 #define SM_REGION_OWNER                     (1038)
 #define SM_REGION_STATE                     (1039)
 
-#define SM_THREAD_ACCEPT                    (1040)
-#define SM_THREAD_ASSIGN                    (1041)
-#define SM_THREAD_DELETE                    (1042)
-#define SM_THREAD_LOAD                      (1043)
-#define SM_THREAD_METADATA_PAGES            (1044)
+#define SM_THREAD_DELETE                    (1040)
+#define SM_THREAD_LOAD                      (1041)
+#define SM_THREAD_METADATA_PAGES            (1042)
 
 
 #endif // SECURITY_MONITOR_API_COMMON_H

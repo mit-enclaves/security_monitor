@@ -1,5 +1,7 @@
 #include <sm.h>
 
+TODO
+
 api_result_t sm_thread_delete (thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)
 

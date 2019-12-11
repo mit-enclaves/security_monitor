@@ -1,5 +1,7 @@
 #include <sm.h>
 
+TODO
+
 api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
 
    // Check if enclave_id is valid

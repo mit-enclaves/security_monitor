@@ -1,5 +1,7 @@
 #include <sm.h>
 
+TODO
+
 api_result_t sm_enclave_load_handler (enclave_id_t enclave_id) {
    // TODO: Does phys_addr has to be alligned?
 

@@ -21,7 +21,7 @@ api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
 
   sm_state_t * sm = get_sm_state_ptr();
   sm_region_t * region_metadata = &sm->regions[region_id];
-  region_type_t =
+
   // <TRANSACTION>
   if ( !lock_region(region_id) ) {
     return MONITOR_CONCURRENT_CALL;
@@ -33,13 +33,13 @@ api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
   }
 
   if ( new_owner == OWNER_UNTRUSTED ) {
-    if ( !lock_untrusted_region_map() ) {
+    if ( !lock_untrusted_state() ) {
       unlock_region( region_id );
       return MONITOR_CONCURRENT_CALL;
     }
 
   } else {
-    api_result_t result = lock_region_iff_valid_metadata( enclave_id, METADATA_PAGE_ENCLAVE );
+    api_result_t result = lock_region_iff_valid_enclave( enclave_id );
     if ( MONITOR_OK != result ) {
       unlock_region( region_id );
       return result;
@@ -67,7 +67,7 @@ api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
 
   // Release locks
   if ( new_owner == OWNER_UNTRUSTED ) {
-    unlock_untrusted_region_map();
+    unlock_untrusted_state();
   } else {
     unlock_region( addr_to_region_id(new_owner) );
   }

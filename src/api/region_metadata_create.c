@@ -1,5 +1,7 @@
 #include <sm.h>
 
+TODO
+
 api_result_t sm_region_metadata_create (dram_region_id_t id) {
    // Check argument validity
    if(id >= NUM_REGIONS) {

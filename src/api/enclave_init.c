@@ -13,7 +13,7 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
   */
 
   // <TRANSACTION>
-  api_result_t result = lock_region_iff_valid_metadata( enclave_id, METADATA_PAGE_ENCLAVE );
+  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
   if ( MONITOR_OK != result ) {
     return result;
   }

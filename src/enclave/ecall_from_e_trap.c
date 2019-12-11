@@ -47,11 +47,6 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
       retval = sm_region_check_owned((dram_region_id_t) arg0);
       break;
 
-    // Threads
-    case SM_THREAD_ACCEPT:
-      retval = sm_thread_accept(arg0, arg1);
-      break;
-
     // All other calls are unsupported
     default:
       retval = MONITOR_UNSUPPORTED;

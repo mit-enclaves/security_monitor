@@ -1,5 +1,7 @@
 #include <sm.h>
 
+TODO
+
 enclave_id_t sm_region_owner (dram_region_id_t id) {
    // Check argument validity
    if(id >= NUM_REGIONS) {

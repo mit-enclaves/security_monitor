@@ -104,11 +104,6 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       retval = sm_region_state( (dram_region_id_t) arg0 );
       break;
 
-    // Threads
-    case SM_THREAD_ASSIGN:
-      retval = sm_thread_assign( arg0, arg1 );
-      break;
-
     case SM_THREAD_DELETE:
       retval = sm_thread_delete( arg0 );
       break;
