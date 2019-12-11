@@ -17,104 +17,113 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
 
   switch(code) {
     // Enclaves
-    case SBI_SM_OS_BLOCK_DRAM_REGION:
-      retval = ecall_os_block_dram_region((dram_region_id_t) arg0);
+    case SM_ENCLAVE_CREATE:
+      retval = ecall_create_enclave(arg0, arg1, arg2, arg3, (bool)arg4);
       break;
 
-    case SBI_SM_OS_SET_DMA_RANGE:
-      retval = monitor_unsupported;
-      break;
-
-    case SBI_SM_OS_DRAM_REGION_STATE:
-      retval = ecall_dram_region_state((dram_region_id_t) arg0);
-      break;
-
-    case SBI_SM_OS_DRAM_REGION_OWNER:
-      retval = ecall_dram_region_owner((dram_region_id_t) arg0);
-      break;
-
-    case SBI_SM_OS_ASSIGN_DRAM_REGION:
-      retval = ecall_assign_dram_region((dram_region_id_t) arg0, (enclave_id_t) arg1);
-      break;
-
-    case SBI_SM_OS_FREE_DRAM_REGION:
-      retval = ecall_free_dram_region((dram_region_id_t) arg0);
-      break;
-
-    case SBI_SM_OS_FLUSH_CACHED_DRAM_REGIONS:
-      retval = monitor_unsupported;
-      break;
-
-    case SBI_SM_OS_CREATE_METADATA_REGION:
-      retval = ecall_create_metadata_region((dram_region_id_t) arg0);
-      break;
-
-    case SBI_SM_OS_METADATA_REGION_PAGES:
-      retval = ecall_metadata_region_pages();
-      break;
-
-    case SBI_SM_OS_METADATA_REGION_START:
-      retval = ecall_metadata_region_start();
-      break;
-
-    case SBI_SM_OS_THREAD_METADATA_PAGES:
-      retval = ecall_thread_metadata_pages();
-      break;
-
-    case SBI_SM_OS_ENCLAVE_METADATA_PAGES:
-      retval = ecall_enclave_metadata_pages((int64_t) arg0);
-      break;
-
-    case SBI_SM_OS_CREATE_ENCLAVE:
-      retval = ecall_create_enclave(arg0, arg1, arg2, arg3, (bool) arg4);
-      break;
-
-    case SBI_SM_OS_LOAD_TRAP_HANDLER:
-      retval = ecall_load_trap_handler(arg0, arg1);
-      break;
-
-    case SBI_SM_OS_LOAD_PAGE_TABLE:
-      retval = ecall_load_page_table(arg0, arg1, arg2, (uint64_t) arg3, arg4);
-      break;
-
-    case SBI_SM_OS_LOAD_PAGE:
-      retval = ecall_load_page(arg0, arg1, arg2, arg3, arg4);
-      break;
-
-    case SBI_SM_OS_LOAD_THREAD:
-      retval = ecall_load_thread(arg0, arg1, arg2, arg3, arg4, arg5);
-      break;
-
-    case SBI_SM_OS_ASSIGN_THREAD:
-      retval = ecall_assign_thread(arg0, arg1);
-      break;
-
-    case SBI_SM_OS_INIT_ENCLAVE:
-      retval = ecall_init_enclave(arg0);
-      break;
-
-    case SBI_SM_OS_ENTER_ENCLAVE:
-      retval = ecall_enter_enclave(arg0, arg1, regs);
-      break;
-
-    case SBI_SM_OS_DELETE_THREAD:
-      retval = ecall_delete_thread(arg0);
-      break;
-
-    case SBI_SM_OS_DELETE_ENCLAVE:
+    case SM_ENCLAVE_DELETE:
       retval = ecall_delete_enclave(arg0);
       break;
 
-    case SBI_SM_OS_COPY_DEBUG_ENCLAVE_PAGE:
+    case SM_ENCLAVE_ENTER:
+      retval = ecall_enter_enclave(arg0, arg1, regs);
+      break;
+
+    case SM_ENCLAVE_INIT:
+      retval = ecall_init_enclave(arg0);
+      break;
+
+    case SM_ENCLAVE_LOAD_HANDLER:
+      retval = ecall_load_trap_handler(arg0, arg1);
+      break;
+
+    case SM_ENCLAVE_LOAD_PAGE_TABLE:
+      retval = ecall_load_page_table(arg0, arg1, arg2, (uint64_t) arg3, arg4);
+      break;
+
+    case SM_ENCLAVE_LOAD_PAGE:
+      retval = ecall_load_page(arg0, arg1, arg2, arg3, arg4);
+      break;
+
+    case SM_ENCLAVE_METADATA_PAGES:
+      retval = ecall_enclave_metadata_pages((int64_t) arg0);
+      break;
+
+    // Fields
+    case SM_GET_PUBLIC_FIELD:
       retval = monitor_unsupported;
       break;
 
-    case SBI_SM_ENCLAVE_FETCH_FIELD:
-      retval = monitor_unsupported;
+    // Mail
+    case SM_MAIL_ACCEPT:
+      retval = sm_mail_accept((mailbox_id_t) arg0, (enclave_id_t) arg1);
       break;
 
+    case SM_MAIL_RECEIVE:
+      retval = sm_mail_receive((mailbox_id_t) arg0, (uintptr_t) arg1);
+      break;
+
+    case SM_MAIL_SEND:
+      retval = sm_mail_send((enclave_id_t) arg0, (mailbox_id_t) arg1, (uintptr_t) arg2);
+      break;
+
+    // Regions
+    case SM_REGION_ASSIGN:
+      retval = sm_region_assign( (dram_region_id_t) arg0, (enclave_id_t) arg1 );
+      break;
+
+    case SM_REGION_BLOCK:
+      retval = sm_region_block( arg0 );
+      break;
+
+    case SM_REGION_FLUSH:
+      retval = sm_region_flush();
+      break;
+
+    case SM_REGION_FREE:
+      retval = sm_region_free( arg0 );
+      break;
+
+    case SM_REGION_METADATA_CREATE:
+      retval = sm_region_metadata_create( arg0 );
+      break;
+
+    case SM_REGION_METADATA_PAGES:
+      retval = sm_region_metadata_pages();
+      break;
+
+    case SM_REGION_METADATA_START:
+      retval = sm_region_metadata_start();
+      break;
+
+    case SM_REGION_OWNER:
+      retval = sm_region_owner( arg0 );
+      break;
+
+    case SM_REGION_STATE:
+      retval = sm_region_state( (dram_region_id_t) arg0 );
+      break;
+
+    // Threads
+    case SM_THREAD_ASSIGN:
+      retval = sm_thread_assign( arg0, arg1 );
+      break;
+
+    case SM_THREAD_DELETE:
+      retval = sm_thread_delete( arg0 );
+      break;
+
+    case SM_THREAD_LOAD:
+      retval = sm_thread_load( arg0, arg1, arg2, arg3, arg4, arg5 );
+      break;
+
+    case SM_THREAD_METADATA_PAGES:
+      retval = sm_thread_metadata_pages();
+      break;
+
+    // All other calls are unsupported
     default:
-      retval = ENOSYS;
+      retval = MONITOR_UNSUPPORTED;
       break;
   }
 

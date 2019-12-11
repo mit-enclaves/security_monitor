@@ -1,0 +1,47 @@
+#include <sm.h>
+
+api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pages ) {
+  // Check that ptr is page alligned
+  if ( !is_page_aligned(ptr) ) {
+    return MONITOR_INVALID_VALUE;
+  }
+
+  // Check that the requested region is indeed a region in RAM
+  uint64_t region_id = addr_to_region_id(ptr);
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
+
+  // Check that the chosen page does not overlap with region page info structure.
+  uint64_t page_id = addr_to_region_page_id(enclave_id);
+  // region page info table is marked as METADATA_INVALID, so we do not need to explicitly check that page_id > sm_region_metadata_start().
+
+  // Check that the requested pages do not span regions
+  if ( is_valid_page_id_in_region(page_id+num_pages-1) ) {
+    return MONITOR_INVALID_VALUE;
+  }
+
+  // Begin transation
+  // ----------------
+
+  if ( !lock_region( region_id ) ) {
+    return MONITOR_CONCURRENT_CALL;
+  }
+
+  // Check that the requested region is indeed a metadata region
+  if ( sm->regions[region_id].type != REGION_TYPE_METADATA ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
+
+  // Check that each of the requested metadata pages is of type METADATA_PAGE_FREE
+  for ( int i=0; i<num_pages; i++ ) {
+    if ( sm->regions[region_id].region->page_info[i] != METADATA_PAGE_FREE ) {
+      unlock_region( region_id );
+      return MONITOR_INVALID_STATE;
+    }
+  }
+
+  // All seems well; the region is now locked
+  return MONITOR_OK;
+}

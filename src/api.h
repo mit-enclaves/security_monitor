@@ -75,16 +75,15 @@ typedef enum {
   REGION_STATE_INVALID = 0,
   REGION_STATE_FREE = 1,
   REGION_STATE_BLOCKED = 2,
-  REGION_STATE_LOCKED = 3,
-  REGION_STATE_OWNED = 4,
-} dram_region_state_t;
+  REGION_STATE_OWNED = 3,
+} region_state_t;
 
 typedef enum {
   REGION_TYPE_UNTRUSTED = 0,
   REGION_TYPE_ENCLAVE = 1,
   REGION_TYPE_METADATA = 2,
   REGION_TYPE_SM = 3,
-} dram_region_type_t;
+} region_type_t;
 
 typedef enum { // NOTE must fit into 12 bits
   METADATA_PAGE_INVALID = 0,
@@ -108,8 +107,8 @@ typedef enum { // NOTE must fit into 12 bits
 // addresses this range get translated using the enclave page tables, and must
 // point into enclave memory.
 //
-// `mailbox_count` is the number of mailboxes that the enclave will have. Valid
-// mailbox IDs for this enclave will range from 0 to mailbox_count - 1.
+// `num_mailboxes` is the number of mailboxes that the enclave will have. Valid
+// mailbox IDs for this enclave will range from 0 to num_mailboxes - 1.
 //
 // `debug` is set for debug enclaves. A security monitor that supports
 // enclave debugging implements copy_debug_enclave_page, which can only be used
@@ -117,7 +116,7 @@ typedef enum { // NOTE must fit into 12 bits
 //
 // All arguments become a part of the enclave's measurement.
 api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base,
-      uintptr_t ev_mask, uint64_t mailbox_count, bool debug);
+      uintptr_t ev_mask, uint64_t num_mailboxes, bool debug);
 
 // Frees up all DRAM regions and the metadata associated with an enclave.
 //
@@ -183,7 +182,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
 
 // Returns the number of pages used by an enclave metadata structure.
-uint64_t sm_enclave_metadata_pages (uint64_t mailbox_count);
+uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 
 // APIs: Getters for SM values
 // ---------------------------
@@ -279,7 +278,7 @@ api_result_t sm_region_check_owned (dram_region_id_t id);
 // has occurred.
 api_result_t sm_region_flush ();
 
-// Frees a DRAM region that was previously locked.
+// Frees a DRAM region that was previously blocked.
 api_result_t sm_region_free (dram_region_id_t id);
 
 // Reserves a free DRAM region to hold enclave metadata.

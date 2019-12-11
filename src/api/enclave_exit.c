@@ -1,7 +1,15 @@
 #include <sm.h>
 
 void sm_enclave_exit () {
-  TODO: perform an enclave AEX
+
+  // Restore untrusted CPU context
+  TODO
+
+  // Unlock thread
+  TODO
+
+  // Resume untrusted context
+  TODO
 
   return; // unreachable
 }

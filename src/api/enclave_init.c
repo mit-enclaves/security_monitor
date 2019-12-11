@@ -2,32 +2,46 @@
 
 api_result_t sm_enclave_init (enclave_id_t enclave_id) {
 
-   if(!is_valid_enclave(enclave_id)) {
-      return monitor_invalid_value;
-   }
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   enclave_t * enclave = (enclave_t *) enclave_id;
+  // Validate inputs
+  // ---------------
 
-   // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
+  /*
+    - enclave_id must point to a valid enclave such that:
+      - the enclave has had its handler, page tables, and at least 1 page of data loded.
+  */
 
-   if(!lock_acquire(er_info->lock)) {
-      return monitor_concurrent_call;
-   }
+  // <TRANSACTION>
+  api_result_t result = lock_region_iff_valid_metadata( enclave_id, METADATA_PAGE_ENCLAVE );
+  if ( MONITOR_OK != result ) {
+    return result;
+  }
 
-   // Check that the enclave is not initialized.
-   if(enclave->initialized) {
-      lock_release(er_info->lock);
-      return monitor_invalid_state;
-   }
+  sm_state * sm = get_sm_state_ptr();
+  uint64_t region_id = addr_to_region_id(enclave_id);
+  enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
 
-   // Initialize Enclave
-   enclave->initialized = true;
+  // Make sure the enclave is in correct state:
+  if (enclave->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
 
-   // Output the measurement
-   sha3_final(&(enclave->measurement),&(enclave->sha3_ctx));
+  // NOTE: Inputs are now deemed valid.
 
-   lock_release(er_info->lock);
+  // Apply state transition
+  // ----------------------
 
-   return monitor_ok;
+  // Finalize enclave measurement
+  hash_finalize( &enclave_metadata->hash_context, &enclave_metadata->measurement );
+
+  // Initialize Enclave
+  enclave->init_state = ENCLAVE_STATE_INITIALIZED;
+
+  // Release locks
+  unlock_region( region_id );
+  // </TRANSACTION>
+
+  return monitor_ok;
 }

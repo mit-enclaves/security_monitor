@@ -1,77 +1,79 @@
 #include <sm.h>
 
-api_result_t sm_region_assign (dram_region_id_t id, enclave_id_t new_owner) {
-   // Check arguments validity
-   if(id >= NUM_REGIONS) {
-      return monitor_invalid_value;
-   }
+api_result_t sm_region_assign ( uint64_t region_id, enclave_id_t new_owner) {
 
-   bool is_enclave = (new_owner != 0);
-   // Check new_owner is a valid enclave
-   if(is_enclave && !is_valid_enclave(new_owner)){
-      return monitor_invalid_value;
-   }
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   // Check that new_owner is not initialized
-   if(is_enclave) {
-      // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(SM_GLOBALS.regions[REGION_IDX(new_owner)]);
+  // Validate inputs
+  // ---------------
 
-      if(!lock_acquire(n_ow_ptr->lock)) {
-         return monitor_concurrent_call;
-      }
+  /*
+    - region_id must be valid
+    - selected region must be in REGION_STATE_FREE state
+    - new_owner must be OWNER_UNTRUSTED or a valid enclave
+      - if the new owner is OWNER_UNTRUSTED, its region map must be lockable
+      - if the new owner is a valid enclave, it must be lockable
+  */
 
-      // Check that new_owner (if an enclave) is not initialized.
-      if(((enclave_t *) new_owner)->initialized) {
-         lock_release(n_ow_ptr->lock);
-         return monitor_invalid_state;
-      }
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-      lock_release(n_ow_ptr->lock);
-   }
+  sm_state_t * sm = get_sm_state_ptr();
+  sm_region_t * region_metadata = &sm->regions[region_id];
+  region_type_t =
+  // <TRANSACTION>
+  if ( !lock_region(region_id) ) {
+    return MONITOR_CONCURRENT_CALL;
+  }
 
-   // Get a pointer to the DRAM region datastructure
-   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
+  if ( region_metadata->state != REGION_STATE_FREE ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
 
-   if(!lock_acquire(r_ptr->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+  if ( new_owner == OWNER_UNTRUSTED ) {
+    if ( !lock_untrusted_region_map() ) {
+      unlock_region( region_id );
+      return MONITOR_CONCURRENT_CALL;
+    }
 
-   // The DRAM region must be free
-   if(r_ptr->state != dram_region_free) {
-      lock_release(r_ptr->lock); // Release Lock
-      return monitor_invalid_state;
-   }
+  } else {
+    api_result_t result = lock_region_iff_valid_metadata( enclave_id, METADATA_PAGE_ENCLAVE );
+    if ( MONITOR_OK != result ) {
+      unlock_region( region_id );
+      return result;
+    }
 
-   // Set the new owner and update the owner's bitmap
-   if(is_enclave){
-      // Get a pointer to the DRAM region datastructure of the new_owner
-      dram_region_t *n_ow_ptr = &(SM_GLOBALS.regions[REGION_IDX(new_owner)]);
+  }
 
-      if(!lock_acquire(n_ow_ptr->lock)) {
-         return monitor_concurrent_call;
-      }
+  // NOTE: Inputs are now deemed valid.
 
-      ((enclave_t *) new_owner)->dram_bitmap |= (1ul << id);
+  // Apply state transition
+  // ----------------------
 
-      lock_release(n_ow_ptr->lock);
+  // Transfer ownership of the region
+  region_metadata->owner = new_owner;
+  region_metadata->type = (new_owner==OWNER_UNTRUSTED) ? REGION_TYPE_UNTRUSTED : REGION_TYPE_ENCLAVE;
+  region_metadata->state = REGION_STATE_OWNED;
 
-      r_ptr->owner = new_owner;
-      r_ptr->type  = enclave_region;
-   }
-   else{
-      XLENINT mmrbm = read_csr(CSR_MMRBM);
-      mmrbm |= (1ul << id);
-      write_csr(CSR_MMRBM, mmrbm);
+  // Mark the newly gained region in the new owner's region map
+  if ( new_owner == OWNER_UNTRUSTED ) {
+    sm->untrusted_regions[region_id] = true;
+  } else {
+    enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
+    enclave_metadata->regions[region_id] = true;
+  }
 
-      r_ptr->owner = 0;
-      r_ptr->type  = untrusted_region;
-   }
+  // Release locks
+  if ( new_owner == OWNER_UNTRUSTED ) {
+    unlock_untrusted_region_map();
+  } else {
+    unlock_region( addr_to_region_id(new_owner) );
+  }
 
-   // Update the DRAM region state
-   r_ptr->state = dram_region_owned;
+  unlock_region( region_id );
+  // </TRANSACTION>
 
-   lock_release(r_ptr->lock); // Release Lock
-
-   return monitor_ok;
+  return MONITOR_OK;
 }

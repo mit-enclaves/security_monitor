@@ -6,6 +6,7 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
   uintptr_t code = regs[17];
   uint64_t arg0 = regs[10];
   uint64_t arg1 = regs[11];
+  uintptr_t arg2 = regs[12];
 
   uint64_t retval;
 
@@ -34,7 +35,6 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
       break;
 
     case SM_MAIL_SEND:
-      uintptr_t arg2 = regs[12];
       retval = sm_mail_send((enclave_id_t) arg0, (mailbox_id_t) arg1, (uintptr_t) arg2);
       break;
 

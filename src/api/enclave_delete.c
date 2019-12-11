@@ -2,83 +2,78 @@
 
 api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
 
-   if(!is_valid_enclave(enclave_id)) {
-      return monitor_invalid_value;
-   }
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   enclave_t * enclave = (enclave_t *) enclave_id;
+  // Validate inputs
+  // ---------------
 
-   // Get a pointer to the DRAM region datastructure of the enclave metadata
-   dram_region_t *er_info = &(SM_GLOBALS.regions[REGION_IDX(enclave_id)]);
+  /*
+    - enclave_id must point to a valid enclave such that:
+      - the enclave has no threads
+      - all of the enclave's regions can be locked.
+  */
 
-   if(!lock_acquire(er_info->lock)) {
-      return monitor_concurrent_call;
-   }
+  // <TRANSACTION>
+  api_result_t result = lock_region_iff_valid_metadata( enclave_id, METADATA_PAGE_ENCLAVE );
+  if ( MONITOR_OK != result ) {
+    return result;
+  }
 
-   // Check if enclave is has threads initialized
-   if(enclave->thread_count != 0) {
-      lock_release(er_info->lock);
-      return monitor_invalid_state;
-   }
+  sm_state * sm = get_sm_state_ptr();
+  uint64_t page_id = addr_to_region_page_id(enclave_id);
+  uint64_t region_id = addr_to_region_id(enclave_id);
+  enclave_t * enclave_metadata = (enclave_t *)(enclave_id);
+  sm_region_t * region_metadata = &sm->regions[region_id];
+  metadata_region_t * region = region_id_to_addr(region_id);
+  region_map_t locked_regions = (const region_map_t){ 0 };
+  locked_regions[region_id] = true;
 
-   // Free the DRAM regions
+  // Fail if the enclave has any threads associated with it
+  if( enclave_metadata->num_threads > 0 ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
 
-   for(int i = 0; i < NUM_REGIONS; i++) {
-
-      if((enclave->dram_bitmap >> i) & 1ul) {
-
-         // Get a pointer to the DRAM region datastructure
-         dram_region_t *r_info = &(SM_GLOBALS.regions[i]);
-
-         if(!lock_acquire(r_info->lock)) {
-            return monitor_concurrent_call;
-         } // Acquire Lock
-
-         if((r_info->owner != enclave_id) ||
-               (r_info->type != enclave_region) ||
-               (r_info->state != dram_region_blocked)) {
-            lock_release(r_info->lock);
-            lock_release(er_info->lock);
-            return monitor_invalid_state;
-         }
-
-         // TODO: zero the region?
-
-         lock_release(r_info->lock);
-
-         api_result_t ret = ecall_free_dram_region((dram_region_id_t) i);
-
-         if(ret != monitor_ok) {
-            lock_release(er_info->lock);
-            return ret;
-         }
-
-         else {
-            enclave->dram_bitmap &= ~(1ul << i);
-         }
+  // Fail if one of the enclave's regions cannot be locked
+  for ( int i=0; i<NUM_REGIONS; i++ ) {
+    if ( enclave_metadata->regions[i] == true ) {
+      if ( !lock_region(i) ) {
+        unlock_regions( &locked_regions );
+        return MONITOR_CONCURRENT_CALL;
+      } else {
+        locked_regions[i] = true;
       }
-   }
+    }
+  }
 
-   // Clean the metadata
+  // NOTE: Inputs are now deemed valid.
 
-   uint64_t mailbox_count = enclave->mailbox_count;
-   uint64_t size_e = sizeof(enclave_t) + (sizeof(mailbox_t) * mailbox_count);
+  // Apply state transition
+  // ----------------------
 
-   memset((void *) enclave_id, 0, size_e);
+  // Block and erase all regions belonging to the enclave (these are already locked above)
+  for ( int i=0; i<NUM_REGIONS; i++ ) {
+    if ( enclave_metadata->regions[i] == true ) {
+      // Block the region
+      sm->regions[i].state = REGION_STATE_BLOCKED;
 
-   // Clean the metadata page map
+      // Erase the region
+      memset( region_id_to_addr(i), 0x00, REGION_SIZE);
+    }
+  }
 
-   uint64_t num_metadata_pages = ecall_enclave_metadata_pages(mailbox_count);
+  // Clean enclave metadata page map
+  uint64_t enclave_pages = sm_enclave_metadata_pages(enclave_metadata->num_mailboxes);
+  for ( i=0; i<enclave_pages; i++ ) {
+    region->page_map[i+page_id] = METADATA_PAGE_FREE;
+  }
 
-   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(enclave_id);
+  // Clean enclave metadata
+  memset(enclave_metadata, 0x0, enclave_pages*PAGE_SIZE);
 
-   for(int i = METADATA_IDX(enclave_id);
-         i < (METADATA_IDX(enclave_id) + num_metadata_pages);
-         i++) {
-      page_map[i] = 0;
-   }
+  // Release locks
+  unlock_regions( &locked_regions );
+  // </TRANSACTION>
 
-   lock_release(er_info->lock);
-
-   return monitor_ok;
+  return MONITOR_OK;
 }

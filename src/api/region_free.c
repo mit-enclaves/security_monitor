@@ -1,43 +1,81 @@
 #include <sm.h>
 
-api_result_t sm_region_free (dram_region_id_t id) {
-   // Check argument validity
-   if(id >= NUM_REGIONS) {
-      return monitor_invalid_value;
-   }
+api_result_t sm_region_free ( uint8_t region_id ) {
+  // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
-   // Get a pointer to the DRAM region datastructure
-   dram_region_t *r_ptr = &(SM_GLOBALS.regions[id]);
+  // Validate inputs
+  // ---------------
 
-   if(!lock_acquire(r_ptr->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+  /*
+    - region_id must be valid
+    - the region must be in BLOCKED state
+    - the owner must be either OWNER_UNTRUSTED or a valid enclave
+      - if OWNER_UNTRUSTED, the untrusted region map must be lockable
+      - if enclave, the enclave metadata region must be lockable
+  */
 
-   // The DRAM region must be blocked
-   if(r_ptr->state != dram_region_blocked) {
-      lock_release(r_ptr->lock); // Release Lock
-      return monitor_invalid_state;
-   }
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
 
-   // If the DRAM region belongs to the OS
-   // remove it from the OS bitmap
-   if(r_ptr->type == untrusted_region) {
-      XLENINT mmrbm = read_csr(CSR_MMRBM);
-      mmrbm &= ~(1ul << id);
-      write_csr(CSR_MMRBM, mmrbm);
-   }
-   // If the DRAM region belongs to an enclave
-   // remove it from the enclave bitmap
-   else if(r_ptr->type == enclave_region) {
-      XLENINT memrbm = ((enclave_t *) r_ptr->owner)->dram_bitmap;
-      memrbm &= ~(1ul << id);
-      ((enclave_t *) r_ptr->owner)->dram_bitmap = memrbm;
-   }
+  sm_state_t * sm = get_sm_state_ptr();
+  sm_region_t * region_metadata = &sm->regions[region_id];
 
-   // Update the DRAM region state
-   r_ptr->state = dram_region_free;
+  // <TRANSACTION>
+  if ( !lock_region(region_id) ) {
+    return MONITOR_CONCURRENT_CALL;
+  }
 
-   lock_release(r_ptr->lock); // Release Lock
+  if ( region_metadata->state != REGION_STATE_BLOCKED ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
 
-   return monitor_ok;
+  // NOTE: regions of type SM could not have been blocked. Such regions cannot be ever freed.
+  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
+    if ( !lock_untrusted_region_map() ) {
+      unlock_region( region_id );
+      return MONITOR_CONCURRENT_CALL;
+    }
+
+  } else {
+    // The owner is a valid enclave
+    if ( !lock_region(addr_to_region_id(region_metadata->owner)) ) {
+      unlock_region( region_id );
+      return result;
+    }
+
+  }
+
+  // NOTE: Inputs are now deemed valid.
+
+  // Apply state transition
+  // ----------------------
+
+  // Remove the region from owner's page map
+  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
+    sm->untrusted_regions[region_id] = false;
+  } else {
+    enclave_t * enclave_metadata = (enclave_t *)(region_metadata->owner);
+    enclave_metadata->regions[region_id] = false;
+  }
+
+  // NOTE: Freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted.
+  // memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
+
+  // Mark the selected region as free
+  region_metadata->state = REGION_STATE_FREE;
+
+  // Release locks
+  // (NOTE: owner field is conveniently not cleared until the region is re-assigned)
+  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
+    unlock_untrusted_region_map();
+  } else { // a valid enclave
+    unlock_region( addr_to_region_id(region_metadata->owner) );
+  }
+
+  unlock_region( region_id );
+  // </TRANSACTION>
+
+  return MONITOR_OK;
 }

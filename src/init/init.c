@@ -26,6 +26,8 @@ void sm_init(void) {
     platform_lock_release( &sm_state->regions[i].lock );
   }
 
+  TODO: mark any before the end of the SM as of type REGION_TYPE_SM, making them impossible to free and re-allocate
+
   // Initialize untrusted metadata : untrusted SW is allowed access to all regions.
   for ( int i=0; i<NUM_REGIONS; i++ ) {
     sm_state->untrusted_regions[i] = true;

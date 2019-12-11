@@ -24,6 +24,8 @@ define assert(expr, message) \
 
 // TODO: ENUMs fit in their respective bit fields
 
+// TODO: region_type_t fits into uint8_t
+
 assert(NUM_CORES == 1, "One core is currently supported - see TODOs")
 assert(NUM_REGIONS <= 64, "Up to XLEN=64 regions are supported here")
 
@@ -98,28 +100,27 @@ typedef struct {
   platform_core_state_t aex_state;
 } thread_t;
 
-typedef uintptr_t metadata_page_map_entry_t;
 typedef uint8_t page_t[PAGE_SIZE];
 
 typedef union {
-  metadata_page_map_entry_t page_info[NUM_REGION_PAGES];
+  uint8_t page_info[NUM_REGION_PAGES];
   page_t pages[NUM_REGION_PAGES];
-} metadata_page_t;
+} metadata_region_t;
 
 typedef struct {
-   enclave_id_t owner;
-   thread_id_t thread;
+  enclave_id_t owner;
+  thread_id_t thread;
 
-   atomic_flag_t lock;
+  platform_lock_t lock;
 } core_t;
 
 typedef struct {
-   enclave_id_t owner;
+  enclave_id_t owner;
 
-   dram_region_type_t type;
-   dram_region_state_t state;
+  region_type_t type;
+  region_state_t state;
 
-   platform_lock_t lock;
+  platform_lock_t lock;
 } sm_region_t;
 
 typedef struct sm_state_t {
@@ -127,6 +128,7 @@ typedef struct sm_state_t {
   sm_region_t regions[NUM_REGIONS];
   hash_t signing_enclave_measurement;
   region_map_t untrusted_regions;
+  platform_lock_t untrusted_regions_lock;
 } sm_state_t;
 
 // Common minor operations
@@ -140,6 +142,10 @@ static inline uint64_t addr_to_region_id (uintptr_t addr) {
   return ((addr-RAM_BASE) & REGION_MASK) >> REGION_SHIFT; // will return an illegally large number in case of an address outside RAM. CAUTION!
 }
 
+static inline uint8_t * region_id_to_addr (uint64_t region_id) {
+  return RAM_BASE + (region_id << REGION_SHIFT);
+}
+
 static inline bool is_valid_region_id (uint64_t region_id) {
   return (region_id < NUM_REGIONS);
 }
@@ -150,10 +156,6 @@ static inline bool addr_to_region_page_id (uintptr_t addr) {
 
 static inline bool is_valid_page_id_in_region (uint64_t page_id) {
   return page_id < NUM_REGION_PAGES;
-}
-
-static inline uint64_t make_page_info(enclave_id_t enclave_id, uint64_t metadata_page_type) {
-  return ( enclave_id | (metadata_page_type & PAGE_MASK) );
 }
 
 static inline sm_state_t * get_sm_state_ptr (void) {
