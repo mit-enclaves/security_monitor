@@ -41,7 +41,7 @@ The SM is parameterized via [parameters.h](src/parameters.h).
 #### Processor system configuration
 
 | Parameter      | Default      | Description  |
-| -------------- | ------------:| ------------:|
+| -------------- | ------------:|:------------ |
 | `RAM_BASE`     | `0x80000000` |
 | `RAM_SIZE`     | `0x80000000` |
 | `REGION_SHIFT` | `25`         |
