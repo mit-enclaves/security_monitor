@@ -54,7 +54,7 @@ SECTIONS
 
 SECTIONS
 {
-  . = PAYLOAD_ADDRESS;
+  . = PAYLOAD_ENTRY;
   .payload (NOLOAD) : {
     PROVIDE( payload_entry = . );
   }
