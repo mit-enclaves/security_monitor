@@ -1,6 +1,4 @@
-#include <errno.h> // TODO only include ENOSYS?
-#include <ecall_s.h>
-#include <sm_util/sm_util.h>
+#include <sm.h>
 
 // SM CALLS FROM OS (these come from S-mode)
 

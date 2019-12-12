@@ -1,6 +1,6 @@
 #include <sm.h>
 
-TODO 
+#error not implemented
 
 api_result_t sm_enclave_load_page (enclave_id_t enclave_id, phys_ptr_t phys_addr,
       uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {

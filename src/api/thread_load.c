@@ -1,5 +1,7 @@
 #include <sm.h>
 
+#error not implemented
+
 TODO lock the thread metadata region iff free pages available
 
 Lock the thread's enclave metadata region (if different)

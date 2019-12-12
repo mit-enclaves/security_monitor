@@ -17,6 +17,9 @@ typedef uint64_t mailbox_id_t;
 #define OWNER_UNTRUSTED (1)
 #define OWNER_SM        (2)
 
+// reserved, "special" thread_id values. These must not be valid.
+#define ENCLAVE_THREAD_NONE (1)
+
 // ### SM API Return values
 typedef enum {
    // API call succeeded.
@@ -91,7 +94,6 @@ typedef enum {
   REGION_TYPE_UNTRUSTED = 0,
   REGION_TYPE_ENCLAVE = 1,
   REGION_TYPE_METADATA = 2,
-  REGION_TYPE_SM = 3,
 } region_type_t;
 
 

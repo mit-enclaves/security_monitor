@@ -51,11 +51,3 @@ SECTIONS
     *(.got.*)
   } > SM
 }
-
-SECTIONS
-{
-  . = PAYLOAD_ENTRY;
-  .payload (NOLOAD) : {
-    PROVIDE( payload_entry = . );
-  }
-}

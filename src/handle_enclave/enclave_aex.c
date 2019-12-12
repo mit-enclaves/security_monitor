@@ -1,5 +1,7 @@
 #include <sm.h>
 
+#error not implemented
+
 api_result_t enclave_exit () {
   TODO: perform an enclave exit
 

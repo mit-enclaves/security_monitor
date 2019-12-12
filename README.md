@@ -21,7 +21,7 @@ The SM is parameterized via [parameters.h](src/parameters.h).
 #### SM configuration:
 
 | Parameter                 | Default  | Description  |
-| ------------------------- | --------:| ------------:|
+| ------------------------- | --------:|:------------ |
 | `STACK_SIZE`              | `0x1000` | Memory reserved for the SM's machine-mode stack, included within the SM's footprint in memory. |
 | `MAILBOX_SIZE`            | `0x100`  | The size of the largest mail message - SM's primitive for explicit message passing across protection domains. |
 | `NUM_UNTRUSTED_MAILBOXES` | `8`      | The number of mailboxes allocated to the untrusted software domain (the operating system and its processes). |
@@ -30,13 +30,13 @@ The SM is parameterized via [parameters.h](src/parameters.h).
 #### Placement of the SM in memory:
 
 | Parameter       | Default      | Description  |
-| --------------- | ------------:| ------------:|
+| --------------- | ------------:|:------------ |
 | `SM_STATE_ADDR` | `0x80001000` | Address in physical memory where the SM state structure resides. |
 | `SM_STATE_LEN`  | `0x3000`     | Number of bytes reserved for the SM state. This will vary depending on the number of untrusted mailboxes specified in the SM's parameters. |
 | `SM_ADDR`       | `0x80004000` | The base address of the SM in physical memory. This is also the SM's entry address at boot. |
 | `HANDLER_LEN`   | `0x2000`     | Number of bytes reserved for the SM enclave handler. TODO: this need not be a parameter. |
 | `SM_LEN`        | `0x5000`     | Number of bytes reserved for the SM. The SM uses this this to set up the machine's protection primitives to guard itself from other software. |
-| `PAYLOAD_ENTRY` | `0x80010000` | The entry point for untrusted software (the OS). |
+| `UNTRUSTED_ENTRY` | `0x80010000` | The entry point for untrusted software (the OS). |
 
 #### Processor system configuration
 

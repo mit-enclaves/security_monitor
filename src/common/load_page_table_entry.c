@@ -1,3 +1,10 @@
+#error not implemented
+
+#define PTE_V (1ul)
+#define PTE_R (1ul << 1)
+#define PTE_W (1ul << 2)
+#define PTE_X (1ul << 3)
+
 static api_result_t enclave_load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    // Check that phys_addr is page alligned

@@ -1,6 +1,6 @@
 #include <sm.h>
 
-TODO 
+#error not implemented
 
 void sm_enclave_exit () {
 

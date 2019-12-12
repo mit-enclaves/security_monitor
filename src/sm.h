@@ -66,6 +66,16 @@ static inline void unlock_untrusted_state () {
   platform_lock_release(&sm->untrusted_state_lock);
 }
 
+static inline bool lock_core (uint64_t core_id) {
+  sm_state_t * sm = get_sm_state_ptr();
+  return platform_lock_acquire(&sm->cores[core_id].lock);
+}
+
+static inline void unlock_core (uint64_t core_id) {
+  sm_state_t * sm = get_sm_state_ptr();
+  platform_lock_release(&sm->cores[core_id].lock);
+}
+
 static inline bool lock_region (region_id_t region_id) {
   sm_state_t * sm = get_sm_state_ptr();
   return platform_lock_acquire(&sm->regions[region_id].lock);

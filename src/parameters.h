@@ -18,7 +18,7 @@
 #define HANDLER_LEN         0x2000
 #define SM_LEN              0x5000
 
-#define PAYLOAD_ENTRY   0x80010000
+#define UNTRUSTED_ENTRY 0x80010000
 
 // Machine configuration
 #define RAM_BASE        0x80000000

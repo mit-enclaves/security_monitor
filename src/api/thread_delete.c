@@ -1,5 +1,7 @@
 #include <sm.h>
 
+#error not implemented
+
 TODO lock the thread metadata region iff valid thread id
 
 If the thread is scheduled, error
