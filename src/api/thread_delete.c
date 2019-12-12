@@ -1,6 +1,17 @@
 #include <sm.h>
 
-TODO
+TODO lock the thread metadata region iff valid thread id
+
+If the thread is scheduled, error
+
+Lock the thread's enclave metadata region (if different)
+
+Decrement the enclave's thread counter
+
+Erase the thread data structure
+
+Update the page metadata region page map
+
 
 api_result_t sm_thread_delete (thread_id_t thread_id) {
    // TODO: check that thread_id is a valid thread_id (owner?)

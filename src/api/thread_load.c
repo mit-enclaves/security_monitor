@@ -1,6 +1,26 @@
 #include <sm.h>
 
-TODO
+TODO lock the thread metadata region iff free pages available
+
+Lock the thread's enclave metadata region (if different)
+
+If the enclave is in incorrect state, error (should be page loaded)
+
+entry pc should be in owned region
+
+entry stack should be in owned region
+
+fault pc should be in owned region
+
+fault stack should be in owned region
+
+---
+
+Create the thread data structure
+
+Hahsh the arguments into enclave state
+
+Increment the enclave's thread counter
 
 api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
     uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,

@@ -18,7 +18,6 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
     return result;
   }
 
-  sm_state_t * sm = get_sm_state_ptr();
   uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 

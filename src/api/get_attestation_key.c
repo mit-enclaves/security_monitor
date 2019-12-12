@@ -62,7 +62,7 @@ api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
   // ----------------------
 
   // Copy the secret attestation key into the specified buffer
-  sm_keys_t * keys = get_sm_keys_ptr();
+  sm_keys_t * keys = &sm->keys;
   memcpy( (uint8_t *)out_buffer, &keys->software_secret_key, buffer_size );
 
   // Release locks

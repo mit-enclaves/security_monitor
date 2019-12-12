@@ -37,6 +37,12 @@ api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pa
     return MONITOR_INVALID_STATE;
   }
 
+  // Check that the requested region is owned (not blocked)
+  if ( sm->regions[region_id].state != REGION_STATE_OWNED ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
+
   // Check that each of the requested metadata pages is of type METADATA_PAGE_FREE
   for ( int i=0; i<num_pages; i++ ) {
     metadata_region_t * metadata_region = region_id_to_addr(region_id);

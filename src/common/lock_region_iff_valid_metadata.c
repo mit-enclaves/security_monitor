@@ -32,6 +32,12 @@ api_result_t lock_region_iff_valid_metadata( uintptr_t ptr, metadata_page_t meta
     return MONITOR_INVALID_STATE;
   }
 
+  // Check that the requested region is owned (not blocked)
+  if ( sm->regions[region_id].state != REGION_STATE_OWNED ) {
+    unlock_region( region_id );
+    return MONITOR_INVALID_STATE;
+  }
+
   // Check that each of the requested metadata page is of type metadata_type
   metadata_region_t * metadata_region = region_id_to_addr(region_id);
   if ( metadata_region->page_info[page_id] != metadata_type ) {

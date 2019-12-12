@@ -1,6 +1,6 @@
 #include <sm.h>
 
-TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region.
+TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
 
 api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
 

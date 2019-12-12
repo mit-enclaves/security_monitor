@@ -1,34 +1,21 @@
+#include "parameters.h"
+
 OUTPUT_ARCH( "riscv" )
 ENTRY( sm_entry )
 
 MEMORY
 {
-  HTIF (w) :      ORIGIN = 0x80000000,  LENGTH = 0x1000
-  GLOBALS (w) :   ORIGIN = 0x80001000,  LENGTH = 0x1000
-  SM (wx) :       ORIGIN = 0x80002000,  LENGTH = 0x8000E000
-  PAYLOAD (wx) :  ORIGIN = 0x80200000,  LENGTH = 0x7FE00000
+  SM_STATE (w) :  ORIGIN = SM_STATE_ADDR, LENGTH = SM_STATE_LEN
+  SM (wx) :       ORIGIN = SM_ADDR,       LENGTH = SM_LEN
 }
 
 SECTIONS
 {
-  . = ORIGIN(HTIF);
-  .htif (NOLOAD) : {
-    *(.htif)
-  } > HTIF
-}
-
-SECTIONS
-{
-  . = ORIGIN(GLOBALS);
-  .keys : {
-    PROVIDE( sm_keys = . );
-    *(.sm.keys)
-  } > GLOBALS
-
-  .global.state : {
+  . = ORIGIN(SM_STATE);
+  .sm_state : {
     PROVIDE( sm_state = . );
     *(.sm.state)
-  } > GLOBALS
+  } > SM_STATE
 }
 
 SECTIONS
@@ -67,8 +54,8 @@ SECTIONS
 
 SECTIONS
 {
-  . = ORIGIN(PAYLOAD);
+  . = PAYLOAD_ADDRESS;
   .payload (NOLOAD) : {
     PROVIDE( payload_entry = . );
-  } > PAYLOAD
+  }
 }

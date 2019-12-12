@@ -8,7 +8,7 @@
 
 // Helpful macros
 // --------------
-
+/* We don't need this anymore probably
 #define get_abs_addr(symbol) ({  \
   void * __tmp; \
   asm volatile ( \
@@ -17,23 +17,15 @@
     : "=r"(__tmp)); \
   __tmp; \
 })
-
-/*
-#define get_abs_addr(reg) ({ void * __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
 */
+
 
 // Common minor operations
 // -----------------------
 
 // Global state accessors
 static inline sm_state_t * get_sm_state_ptr (void) {
-  return get_abs_addr(sm_state);
-}
-
-static inline sm_keys_t * get_sm_keys_ptr (void) {
-  return get_abs_addr(sm_keys);
+  return (sm_state_t *)SM_STATE_ADDR;
 }
 
 
@@ -66,7 +58,7 @@ static inline bool is_valid_page_id_in_region (uint64_t page_id) {
 // Synchronization helpers
 static inline bool lock_untrusted_state () {
   sm_state_t * sm = get_sm_state_ptr();
-  platform_lock_acquire(&sm->untrusted_state_lock);
+  return platform_lock_acquire(&sm->untrusted_state_lock);
 }
 
 static inline void unlock_untrusted_state () {
@@ -76,7 +68,7 @@ static inline void unlock_untrusted_state () {
 
 static inline bool lock_region (region_id_t region_id) {
   sm_state_t * sm = get_sm_state_ptr();
-  platform_lock_acquire(&sm->regions[region_id].lock);
+  return platform_lock_acquire(&sm->regions[region_id].lock);
 }
 
 static inline void unlock_region (region_id_t region_id) {
@@ -85,7 +77,6 @@ static inline void unlock_region (region_id_t region_id) {
 }
 
 static inline void unlock_regions (region_map_t * locked_regions) {
-  sm_state_t * sm = get_sm_state_ptr();
   for (int i=0; i<NUM_REGIONS; i++) {
     if (locked_regions->flags[i]) {
       unlock_region(i);

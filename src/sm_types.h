@@ -12,6 +12,8 @@
 // SM Types
 // --------
 
+typedef boot_image_header_t sm_keys_t;
+
 typedef struct region_map_t {
   bool flags[NUM_REGIONS];
 } region_map_t;
@@ -114,6 +116,7 @@ typedef struct sm_region_t {
 } sm_region_t;
 
 typedef struct sm_state_t {
+  sm_keys_t keys;
   sm_core_t cores[NUM_CORES];
   sm_region_t regions[NUM_REGIONS];
   hash_t signing_enclave_measurement;
@@ -121,7 +124,5 @@ typedef struct sm_state_t {
   mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
   platform_lock_t untrusted_state_lock;
 } sm_state_t;
-
-typedef boot_image_header_t sm_keys_t;
 
 #endif // SECURITY_MONITOR_H

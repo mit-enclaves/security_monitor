@@ -1,0 +1,30 @@
+#include "parameters.h"
+
+OUTPUT_ARCH( "riscv" )
+ENTRY( enclave_handler_entry )
+
+MEMORY
+{
+  ENCLAVE_HANDLER (wx) :  ORIGIN = 0x80000000,  LENGTH = HANDLER_LEN
+}
+
+SECTIONS
+{
+  . = ORIGIN(ENCLAVE_HANDLER);
+  .enclave_handler.text : {
+    PROVIDE( enclave_handler_entry = . );
+    KEEP( *(.text.entry) )
+    *(.text.*)
+    *(.text)
+  } > ENCLAVE_HANDLER
+
+  .enclave_handler.rodata : {
+    *(.rodata)  /* read-only data */
+    *(.rodata.*)
+  } > ENCLAVE_HANDLER
+
+  .enclave_handler.got : {
+    *(.got)   /* global offset table */
+    *(.got.*)
+  } > ENCLAVE_HANDLER
+}

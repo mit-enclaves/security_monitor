@@ -1,101 +1,100 @@
 SM_DIR=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # Assumes: ${BUILD_DIR}
-
 # Assumes: ${CC}
 # Assumes: ${OBJCOPY}
 
+SM_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -O0 -Wall
 
-SM_SRC_DIR := $(SECURITY_MONITOR_DIR)/src
-PLATFORM_DIR := $(SECURITY_MONITOR_DIR)/platform
-COMMON_DIR := $(SECURITY_MONITOR_DIR)/common
+SM_LDFLAGS := -nostartfiles -nostdlib -static
+
+SM_SRC_DIR := $(SM_DIR)/src
+PLATFORM_DIR := $(SM_DIR)/platform
+COMMON_DIR := $(SM_DIR)/common
 
 SM_COMMON_SRC := \
-	${PLATFORM_DIR}/entropy.S \
-	${PLATFORM_DIR}/purge.S \
-	${COMMON_DIR}/clib/sha512.c \
-	${COMMON_DIR}/ed25519/memcmp.c \
-	${COMMON_DIR}/ed25519/memcpy.c \
-	${COMMON_DIR}/ed25519/memset.c \
+	${COMMON_DIR}/clib/memcpy.c \
+
+SM_LD = ${SM_SRC_DIR}/sm.lds
+
+SM_PARAMETERS = $(SM_SRC_DIR)/parameters.h
 
 SM_SRC := \
-	${PLATFORM_DIR}/enter_enclave.S \
-	${COMMON_DIR}/htif/htif.c \
-	${SM_SRC_DIR}/stacks.S \
-	${SM_SRC_DIR}/idpt.S \
-	${SM_SRC_DIR}/enclave_handler.S \
-	${SM_SRC_DIR}/os_handler/entry.S \
-	${SM_SRC_DIR}/init/sm_entry.S \
-	${SM_SRC_DIR}/api/get_public_field.c \
-	${SM_SRC_DIR}/api/tread_create.c \
-	${SM_SRC_DIR}/api/tread_delete.c \
+	${SM_COMMON_SRC} \
+	${COMMON_DIR}/clib/memset.c \
+	${COMMON_DIR}/ed25519/sha512.c \
+	${SM_SRC_DIR}/common/lock_region_iff_free_metadata_pages.c \
+	${SM_SRC_DIR}/common/lock_region_iff_valid_metadata.c \
+	${SM_SRC_DIR}/common/sm_state.c \
 	${SM_SRC_DIR}/api/enclave_create.c \
-	${SM_SRC_DIR}/api/enclave_load_handler.c \
-	${SM_SRC_DIR}/api/enclave_load_page_table.c \
-	${SM_SRC_DIR}/api/enclave_load_page.c \
-	${SM_SRC_DIR}/api/enclave_load_thread.c \
-	${SM_SRC_DIR}/api/enclave_init.c \
-	${SM_SRC_DIR}/api/enclave_enter.c \
 	${SM_SRC_DIR}/api/enclave_delete.c \
-
-SM_ENCLAVE_HANDLER_SRC := \
-	${PLATFORM_DIR}/enclave_entry.S \
-	${PLATFORM_DIR}/exit_enclave.S \
-	${PLATFORM_DIR}/aex.S \
-	${SM_SRC_DIR}/enclave_handler/entry.S \
+	${SM_SRC_DIR}/api/enclave_init.c \
+	${SM_SRC_DIR}/api/enclave_metadata_pages.c \
 	${SM_SRC_DIR}/api/get_public_field.c \
-	${SM_SRC_DIR}/api/accept_mail.c \
-	${SM_SRC_DIR}/api/send_mail.c \
-	${SM_SRC_DIR}/api/get_mail.c \
-	${SM_SRC_DIR}/api/get_key.c \
-	${SM_SRC_DIR}/api/enclave_exit.c \
+	${SM_SRC_DIR}/api/mail_accept.c \
+	${SM_SRC_DIR}/api/region_assign.c \
+	${SM_SRC_DIR}/api/region_block.c \
+	${SM_SRC_DIR}/api/region_check_owned.c \
+	${SM_SRC_DIR}/api/region_free.c \
+	${SM_SRC_DIR}/api/region_metadata_create.c \
+	${SM_SRC_DIR}/api/region_metadata_pages.c \
+	${SM_SRC_DIR}/api/region_metadata_start.c \
+	${SM_SRC_DIR}/api/region_owner.c \
+	${SM_SRC_DIR}/api/region_state.c \
+	${SM_SRC_DIR}/api/thread_metadata_pages.c \
+
+# platform stacks
+# platform idpt
+# platform helpers
+# enter
+# exit
+# load
+# mail
+# flush
+# thread
+
+SM_ENCLAVE_LD = ${SM_SRC_DIR}/sm.enclave.lds
+
+SM_ENCLAVE_SRC := \
+	${SM_COMMON_SRC} \
+	${COMMON_DIR}/clib/memcmp.c \
+	${SM_SRC_DIR}/api/get_attestation_key.c \
+	${SM_SRC_DIR}/api/get_public_field.c \
+	${SM_SRC_DIR}/api/mail_accept.c \
+	${SM_SRC_DIR}/api/region_block.c \
+	${SM_SRC_DIR}/api/region_check_owned.c \
+
+# platform helpers
+# mail
 
 SM_INCLUDES := \
-	-I ${COMMON_DIR} \
-	-I $(SM_SRC_DIR) \
-	-I $(S_ECALL_DIR) \
-	-I $(E_ECALL_DIR) \
-	-I $(COMMON_DIR) \
+	${COMMON_DIR} \
+	$(PLATFORM_DIR) \
+	$(SM_SRC_DIR) \
 
-mkdir -p $(SM_BUILD)
-echo $(SM_OBJS)
-echo $(SM_SRC)
-cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(CFLAGS) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/$*.o -o $@
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
+# Preprocessor fills out linker script constants
+%.lds : %.lds.in $(SM_PARAMETERS)
+	$(CC) -E -x c $(addprefix -I , $(SM_INCLUDES)) $^ | grep -v '^#' > $@
+
+# TODO: add idpt and handler binary
+$(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -o $@
+
+.INTERMEDIATE: $(SM_LD)
+
+$(BUILD_DIR)/sm.enclave.elf: $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
+
+.INTERMEDIATE: $(SM_ENCLAVE_LD)
 
 .PHONY: security_monitor_test_elfs
 security_monitor_test_elfs: $(TEST_ELFS)
 
-.PHONY: security_monitor_objs
-security_monitor_objs: $(OBJS)
-
-%.task: $(SM_BUILD)/%.elf
-	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $^
-
-.PHONY: security_monitor_tests
-security_monitor_tests: $(TEST_TASKS)
-	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
-	@echo "The tests were: $(TEST_NAMES)"
-
-${BUILD_DIR}/sm_enclave_handler.elf: $(SM_ENCLAVE_HANDLER_SRC) ${SM_SRC_DIR}/security_monitor.lds
-	mkdir -p ${BUILD_DIR}
-	$(CC) -T ${SM_SRC_DIR}/sm_enclave_handler.lds -march=rv64g -mabi=lp64 -nostdlib -nostartfiles -fno-common -std=gnu11 -static -fPIC -O0 -Wall ${SM_INCLUDES} $(SM_ENCLAVE_HANDLER_SRC) -o $@
-
-${BUILD_DIR}/sm.elf: ${BUILD_DIR}/sm_enclave_handler.bin ${BUILD_DIR}/sm_idpt.bin
-	mkdir -p ${BUILD_DIR}
-	$(CC) -T ${SM_SRC_DIR}/sm.lds -march=rv64g -mabi=lp64 -nostdlib -nostartfiles -fno-common -std=gnu11 -static -O0 -Wall ${SM_INCLUDES} $(SM_E_HANDLER_SRC) -o $@
-
-${BUILD_DIR}/sm.enclave_handler.bin: ${BUILD_DIR}/sm.enclave_handler.elf
-	${OBJCOPY}
-
-
-${BUILD_DIR}/idpt.bin: ${SM_SCRIPTS_DIR}/idpt.py
-	python ${SM_SCRIPTS_DIR}/idpt.py $@
-
-
-${BUILD_DIR}/sm.bin: ${BUILD_DIR}/sm.elf
-	${OBJCOPY} --only-section=.sm.*
-
-
 .PHONY: sm
-sm: ${BUILD_DIR}/sm.bin ${BUILD_DIR}/sm.elf ${BUILD_DIR}/sm.enclave_handler.elf
+sm: $(BUILD_DIR)/sm.elf
+
+.PHONY: sm.handler
+sm.handler: $(BUILD_DIR)/sm.enclave.elf

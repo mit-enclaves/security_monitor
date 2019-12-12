@@ -23,7 +23,6 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   uint64_t page_id = addr_to_region_page_id(enclave_id);
   uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
-  sm_region_t * region_metadata = &sm->regions[region_id];
   metadata_region_t * region = region_id_to_addr(region_id);
   region_map_t locked_regions = (const region_map_t){ 0 };
   locked_regions.flags[region_id] = true;
