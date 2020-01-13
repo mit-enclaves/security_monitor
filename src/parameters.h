@@ -7,7 +7,7 @@
 #define STACK_SIZE    (0x1000)
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
-#define CLEAN_REGIONS_ON_FREE   (1)
+#define CLEAN_REGIONS_ON_FREE   (true)
 /* Note: make sure the parameterization below is consistent with the target hardware platform! */
 
 // Placemetn of SM in memory

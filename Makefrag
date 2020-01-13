@@ -26,6 +26,7 @@ SM_SRC := \
 	${SM_SRC_DIR}/common/lock_region_iff_free_metadata_pages.c \
 	${SM_SRC_DIR}/common/lock_region_iff_valid_metadata.c \
 	${SM_SRC_DIR}/common/sm_state.c \
+	${SM_SRC_DIR}/init/init.S \
 	${SM_SRC_DIR}/init/init.c \
 	${SM_SRC_DIR}/api/enclave_create.c \
 	${SM_SRC_DIR}/api/enclave_delete.c \
