@@ -2,7 +2,7 @@
 
 #error not implemented
 
-TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
+// TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
 
 api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
 
@@ -13,7 +13,7 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
 
   /*
     - recipient must be either OWNER_UNTRUSTED or valid enclave
-    - if the recipient is an enclave, it msut be initialized
+    - if the recipient is an enclave, it must be initialized
     - mailbox_id must be valid
     - the recipient mailbox must be expecting this sender
     - the recipient mailbox must be empty
@@ -25,10 +25,13 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
   mailbox_t * mailbox;
 
-  hash_t measurement;
-
   // <TRANSACTION>
+
+  // recipient must be either OWNER_UNTRUSTED or valid enclave
+  // Lock the recepient's regions
   if (recipient == OWNER_UNTRUSTED) {
+
+    // mailbox_id must be valid
     if (mailbox_id >= NUM_UNTRUSTED_MAILBOXES) {
       return MONITOR_INVALID_VALUE;
     }
@@ -45,45 +48,80 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
       return result;
     }
 
+    // mailbox_id must be valid
     if ( mailbox_id >= enclave_metadata->num_mailboxes ) {
+      unlock_region( addr_to_region_id(recipient));
       return MONITOR_INVALID_VALUE;
     }
 
     enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
-    mailbox = &enclave_metadata->mailboxes[mailbox_id];
-
-
-    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
-
-    if ( !lock_region( addr_to_region_id(caller) ) ) {
-      return MONITOR_CONCURRENT_CALL;
-    }
-
-    if (enclave_metadata->num_mailboxes >= NUM_UNTRUSTED_MAILBOXES) {
-      return MONITOR_INVALID_VALUE;
+    // if the recipient is an enclave, it must be initialized
+    if(enclave_metadata->init_state != ENCLAVE_STATE_INITIALIZED) {
+      unlock_region( addr_to_region_id(recipient));
+      return MONITOR_INVALID_STATE;
     }
 
     mailbox = &enclave_metadata->mailboxes[mailbox_id];
+
   }
 
+  // Lock the caller's regions
+  // TODO lock all regions?
+  if(caller != recipient) {
 
+    if(caller == OWNER_UNTRUSTED) {
+      if ( !lock_untrusted_state() ) {
+        // Unlock recipient's region (the recipient is an enclave)
+        unlock_region( addr_to_region_id(recipient));
 
-
-  if (caller == OWNER_UNTRUSTED) {
-    memset( &measurement, 0x00, sizeof(measurement) );
-
-  } else { // an enclave
-    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
-
-    if ( !lock_region( addr_to_region_id(caller) ) ) {
+        return MONITOR_CONCURRENT_CALL;
+      }
+    }
+    else if (!lock_region( addr_to_region_id(caller))) {
+      // Unlock recipient's region
+      if (recipient == OWNER_UNTRUSTED) {
+        unlock_untrusted_state();
+      } else {
+        unlock_region(addr_to_region_id(recipient));
+      }
       return MONITOR_CONCURRENT_CALL;
     }
+  }
 
-    if (enclave_metadata->num_mailboxes >= NUM_UNTRUSTED_MAILBOXES) {
-      return MONITOR_INVALID_VALUE;
+  // the recipient mailbox must be expecting this sender
+  // the recipient mailbox must be empty
+
+  if ((mailbox->expected_sender != caller) || (mailbox->state != ENCLAVE_MAILBOX_STATE_EMPTY)) {
+    if (recepient == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(recepient));
     }
+    if (caller == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(caller));
+    }
+    return MONITOR_INVALID_STATE
+  }
 
-    mailbox = &enclave_metadata->mailboxes[mailbox_id];
+  // the message buffer must fit entirely in one region
+  // the message buffer region must belong to the caller
+
+  if ((addr_to_region_id(in_message) != addr_to_region_id(in_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
+    (sm_region_owner(addr_to_region_id(in_message)) != caller)) {
+
+    if (recepient == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(recepient));
+    }
+    if (caller == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(caller));
+    }
+    return MONITOR_INVALID_STATE
   }
 
   // NOTE: Inputs are now deemed valid.
@@ -91,13 +129,30 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   // Apply state transition
   // ----------------------
 
+  // Copy the sender's Measurement
   if (caller == OWNER_UNTRUSTED) {
+    memset(&mailbox->sender_measurement, 0x00, sizeof(hash_t) );
 
-  mailbox->state = ENCLAVE_MAILBOX_STATE_EMPTY;
-  mailbox->expected_sender = expected_sender;
+  } else { // an enclave
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
+
+    memcpy(&mailbox->sender_measurement, &enclave_metadata->measurement, sizeof(hash_t));
+  }
+
+  // Copy the message
+  memcpy(&mailbox->message, &in_message, sizeof(uint8_t) * MAILBOX_SIZE)
+
+  // Update the mailbox's state
+  mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;
+
 
   // Release locks
-  if ( new_owner == OWNER_UNTRUSTED ) {
+  if ( recepient == OWNER_UNTRUSTED ) {
+    unlock_untrusted_state();
+  } else {
+    unlock_region( addr_to_region_id(recepient) );
+  }
+  if ( caller == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();
   } else {
     unlock_region( addr_to_region_id(caller) );
