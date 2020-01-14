@@ -29,6 +29,10 @@
 
 #define NUM_CORES     (1)
 
+// SATP configuration
+#define SATP_MODE_SV39 (8ul)
+#define SATP_MODE (60)
+
 // Paged virtual memory configuration
 #define PAGE_SHIFT    (12)
 #define PTE_SIZE      (8)

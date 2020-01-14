@@ -14,6 +14,17 @@
 #define NUM_REGIONS (RAM_SIZE / REGION_SIZE)
 #define NUM_REGION_PAGES (1<<(REGION_SHIFT-PAGE_SHIFT))
 
+#define PTE_V (1ul)
+#define PTE_R (1ul << 1)
+#define PTE_W (1ul << 2)
+#define PTE_X (1ul << 3)
+
+#define PN_MASK ((1ul << PN_OFFSET) - 1)
+#define PPN2_MASK ((1ul << PPN2_OFFSET) - 1)
+#define ACL_MASK ((1ul << PAGE_ENTRY_ACL_OFFSET) - 1)
+#define SATP_PPN_MASK ((PPN2_MASK << (PN_OFFSET * 2)) | (PN_MASK << PN_OFFSET) | PN_MASK)
+#define PPNs_MASK (SATP_PPN_MASK << PAGE_ENTRY_ACL_OFFSET)
+
 // Validate parameterization
 // -------------------------
 

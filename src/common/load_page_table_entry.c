@@ -1,27 +1,5 @@
 #include <sm.h>
 
-#define PTE_V (1ul)
-#define PTE_R (1ul << 1)
-#define PTE_W (1ul << 2)
-#define PTE_X (1ul << 3)
-
-#define SATP_MODE_SV39 (8ul)
-#define SATP_MODE (60)
-
-#define PTE_SIZE (8)
-#define PN_OFFSET (9)
-#define PPN2_OFFSET (26)
-#define PAGE_ENTRY_ACL_OFFSET (10)
-
-#define PN_MASK ((1ul << PN_OFFSET) - 1)
-#define PPN2_MASK ((1ul << PPN2_OFFSET) - 1)
-#define ACL_MASK ((1ul << PAGE_ENTRY_ACL_OFFSET) - 1)
-#define SATP_PPN_MASK ((PPN2_MASK << (PN_OFFSET * 2)) | (PN_MASK << PN_OFFSET) | PN_MASK)
-#define PPNs_MASK (SATP_PPN_MASK << PAGE_ENTRY_ACL_OFFSET)
-
-
-#DEFINE SATP_PPN_MASK
-
 static api_result_t enclave_load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
   // Validate inputs
