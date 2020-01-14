@@ -1,8 +1,6 @@
 #include <sm.h>
 
-#error not implemented
-
-// TODO: need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
+// Need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
 
 api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
 
@@ -66,14 +64,13 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
 
   }
 
-  // Lock the caller's regions
-  // TODO lock all regions?
-  if(caller != recipient) {
+  // Lock the caller's region
+  if((caller != recipient) && (addr_to_region_id(caller) != addr_to_region_id(recipient))) {
 
     if(caller == OWNER_UNTRUSTED) {
-      if ( !lock_untrusted_state() ) {
+      if (!lock_untrusted_state()) {
         // Unlock recipient's region (the recipient is an enclave)
-        unlock_region( addr_to_region_id(recipient));
+        unlock_region(addr_to_region_id(recipient));
 
         return MONITOR_CONCURRENT_CALL;
       }
@@ -103,7 +100,7 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
     } else {
       unlock_region(addr_to_region_id(caller));
     }
-    return MONITOR_INVALID_STATE
+    return MONITOR_INVALID_STATE;
   }
 
   // the message buffer must fit entirely in one region
@@ -122,7 +119,22 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
     } else {
       unlock_region(addr_to_region_id(caller));
     }
-    return MONITOR_INVALID_STATE
+    return MONITOR_INVALID_STATE;
+  }
+
+  // Lock the buffer region
+  if(!lock_region(addr_to_region_id(in_message))) {
+    if (recepient == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(recepient));
+    }
+    if (caller == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(caller));
+    }
+    return MONITOR_CONCURRENT_CALL;
   }
 
   // NOTE: Inputs are now deemed valid.
@@ -157,6 +169,7 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   } else {
     unlock_region( addr_to_region_id(caller) );
   }
+  unlock_region(addr_to_region_id(in_message));
   // </TRANSACTION>
 
   return MONITOR_OK;
