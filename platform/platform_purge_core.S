@@ -1,5 +1,5 @@
 .option norvc
-.section .text
+.section .text.platform_purge_core
 
 # void platform_purge_core (void); // uarch state only
 .globl platform_purge_core

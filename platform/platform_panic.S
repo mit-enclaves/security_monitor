@@ -5,7 +5,7 @@
 #endif
 
 .option norvc
-.section .text
+.section .text.platform_panic
 
 # void platform_panic (uint64_t error_code) __attribute__((noreturn));
 .globl platform_panic

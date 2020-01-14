@@ -5,7 +5,7 @@
 #endif
 
 .option norvc
-.section .text
+.section .text.platform_wait_for_interrupt
 
 # void platform_wait_for_interrupt ();
 .globl platform_wait_for_interrupt

@@ -1,6 +1,6 @@
 #include <sm_constants.h>
 
-.section ".rodata"
+.section .rodata.idpt
 
 #ifndef IDPT_FILE
   #error idpt.bin path not defined

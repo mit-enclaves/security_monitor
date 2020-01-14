@@ -1,5 +1,5 @@
 .option norvc
-.section .text
+.section .text.platform_core_init
 
 # void platform_core_init ();
 .globl platform_core_init

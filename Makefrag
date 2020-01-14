@@ -17,6 +17,8 @@ COMMON_DIR := $(SM_DIR)/common
 
 SM_COMMON_SRC := \
 	$(COMMON_DIR)/clib/memcpy.c \
+	$(SM_SRC_DIR)/common/syscall_helpers.S \
+	$(PLATFORM_DIR)/platform_panic.S \
 
 SM_LD = $(SM_SRC_DIR)/sm.lds
 
@@ -28,7 +30,6 @@ SM_SRC := \
 	$(COMMON_DIR)/ed25519/sha512.c \
 	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/stacks.S \
-	$(PLATFORM_DIR)/platform_panic.S \
 	$(PLATFORM_DIR)/platform_init.S \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
@@ -58,6 +59,8 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/region_state.c \
 	$(SM_SRC_DIR)/api/thread_metadata_pages.c \
+	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
+	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
 
 # enter
 # exit
@@ -84,6 +87,7 @@ SM_ENCLAVE_SRC := \
 
 # platform helpers
 # mail
+# aex
 
 SM_INCLUDES := \
 	$(COMMON_DIR) \

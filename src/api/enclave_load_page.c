@@ -2,8 +2,7 @@
 
 #error not implemented
 
-api_result_t sm_enclave_load_page (enclave_id_t enclave_id, phys_ptr_t phys_addr,
-      uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
+api_result_t sm_enclave_load_page (enclave_id_t enclave_id, phys_ptr_t phys_addr, uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
 
    // Check that ACL is valid and is a leaf ACL
    if(((acl & PTE_V) == 0) ||

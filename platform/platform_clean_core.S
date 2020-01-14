@@ -1,5 +1,5 @@
 .option norvc
-.section .text
+.section .text.clean_core
 
 # void platform_clean_core(void); // arch state only
 .globl platform_clean_core

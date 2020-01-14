@@ -1,5 +1,5 @@
 .option norvc
-.section .text
+.section .text.platform_jump_to_untrusted
 
 # void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc, uint64_t virtual_sp ) __attribute__((noreturn));
 .globl platform_jump_to_untrusted

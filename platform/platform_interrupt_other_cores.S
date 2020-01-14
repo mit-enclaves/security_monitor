@@ -5,7 +5,7 @@
 #endif
 
 .option norvc
-.section .text
+.section .text.platform_interrupt_other_cores
 
 # void platform_interrupt_other_cores ();
 .globl platform_interrupt_other_cores

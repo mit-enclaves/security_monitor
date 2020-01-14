@@ -1,6 +1,6 @@
 #include <sm_constants.h>
 
-.section ".data"
+.section .data.stacks
 
 .align PAGE_SHIFT
 
