@@ -36,25 +36,26 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
       return MONITOR_INVALID_VALUE;
     }
 
-    if ( !lock_untrusted_state() ) {
+    if (!lock_untrusted_state()) {
       return MONITOR_CONCURRENT_CALL;
     }
 
     mailbox = &sm->untrusted_mailboxes[mailbox_id];
 
   } else { // an enclave
-    api_result_t result = lock_region_iff_valid_enclave( recipient );
+    api_result_t result = lock_region_iff_valid_enclave(recipient);
     if ( MONITOR_OK != result ) {
       return result;
     }
 
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
+
     // mailbox_id must be valid
-    if ( mailbox_id >= enclave_metadata->num_mailboxes ) {
-      unlock_region( addr_to_region_id(recipient));
+    if (mailbox_id >= enclave_metadata->num_mailboxes) {
+      unlock_region(addr_to_region_id(recipient));
       return MONITOR_INVALID_VALUE;
     }
 
-    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(recipient);
     // if the recipient is an enclave, it must be initialized
     if(enclave_metadata->init_state != ENCLAVE_STATE_INITIALIZED) {
       unlock_region( addr_to_region_id(recipient));
@@ -140,11 +141,10 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   }
 
   // Copy the message
-  memcpy(&mailbox->message, &in_message, sizeof(uint8_t) * MAILBOX_SIZE)
+  memcpy(&mailbox->message, &in_message, sizeof(uint8_t) * MAILBOX_SIZE);
 
   // Update the mailbox's state
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;
-
 
   // Release locks
   if ( recepient == OWNER_UNTRUSTED ) {
