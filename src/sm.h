@@ -101,11 +101,11 @@ api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pa
 api_result_t lock_region_iff_valid_metadata( uintptr_t ptr, metadata_page_t metadata_type );
 
 static inline bool lock_region_iff_valid_enclave (uintptr_t ptr) {
-  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE);
+  return (MONITOR_OK == lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE));
 }
 
 static inline bool lock_region_iff_valid_thread (uintptr_t ptr) {
-  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD);
+  return (MONITOR_OK == lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD));
 }
 
 #endif // SECURITY_MONITOR_H
