@@ -37,4 +37,6 @@ void platform_delegate_to_untrusted ( uint64_t virtual_pc, uint64_t  ) __attribu
 void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc, uint64_t virtual_sp ) __attribute__((noreturn));
 void platform_jump_to_enclave ( enclave_id_t enclave_id, uint64_t virtual_pc, uint64_t ) __attribute__((noreturn));
 
+void platform_protect_enclave_sm_handler(unintptr_t phys_addr, uint64_t size_handler);
+
 #endif // SM_PLATFORM_H
