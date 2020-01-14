@@ -1,6 +1,6 @@
 #include <sm.h>
 
-#error not implemented
+// Need to lock ALL of the caller's metadata region, the message buffer and sender_measurement regions (if different)
 
 api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement) {
 
@@ -95,6 +95,29 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
     return MONITOR_INVALID_STATE
   }
 
+  // Lock the message buffer region
+  if(!lock_region(addr_to_region_id(out_message))) {
+    if (caller == OWNER_UNTRUSTED) {
+      unlock_untrusted_state();
+    } else {
+      unlock_region(addr_to_region_id(caller));
+    }
+    return MONITOR_CONCURRENT_CALL;
+  }
+
+  // Lock the measurement buffer region if different from the message buffer region
+  if (addr_to_region_id(out_sender_measurement) != addr_to_region_id(out_message)) {
+    if(!lock_region(addr_to_region_id(out_sender_measurement))) {
+      if (caller == OWNER_UNTRUSTED) {
+        unlock_untrusted_state();
+      } else {
+        unlock_region(addr_to_region_id(caller));
+      }
+      unlock_region(addr_to_region_id(out_message));
+      return MONITOR_CONCURRENT_CALL;
+    }
+  }
+
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
@@ -115,6 +138,8 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
   } else {
     unlock_region( addr_to_region_id(caller) );
   }
+  unlock_region(addr_to_region_id(out_message));
+  unlock_region(addr_to_region_id(out_sender_measurement));
   // </TRANSACTION>
 
   return MONITOR_OK;
