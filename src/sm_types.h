@@ -48,7 +48,7 @@ typedef struct enclave_metadata_t {
   // Parameters
   uintptr_t ev_base;
   uintptr_t ev_mask;
-  uintprt_t eptbr;
+  uintptr_t eptbr;
   int64_t num_mailboxes;
   bool debug;
 
