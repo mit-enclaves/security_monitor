@@ -5,7 +5,7 @@ import sys
 
 # This scripts constructs a set of identity page tables with all but the MEGA_PAGE_START - MEGA_PAGE_END mapped as giga pages.
 # These pages are mega pages via a second level page table (PT_1).
-# These page tables are written to reside before address 0x100000000 
+# These page tables are written to reside before address 0x100000000
 
 leaf_permissions = 0b11101111 # D A G (not U) X W R V
 node_permissions = 0b00000001 # Node
@@ -30,9 +30,14 @@ SIZE_PAGE_TABLE = (NUMBER_MEGA_PAGES + NUMBER_GIGA_PAGES) * size_pte
 END_PAGE_TABLE_ADDRESS = 0x100000000
 START_PAGE_TABLE_ADDRESS = END_PAGE_TABLE_ADDRESS - SIZE_PAGE_TABLE
 
-name_file = 'idpt.bin'
-if (len(sys.argv) == 2):
-    name_file = sys.argv[1]
+def print_usage():
+    print "Usage: %s <output file path>" % (sys.argv[0])
+
+if (len(sys.argv) != 2):
+    print_usage()
+    sys.exit(1)
+
+name_file = sys.argv[1]
 
 with open(name_file, 'wb') as f:
 
@@ -57,7 +62,7 @@ with open(name_file, 'wb') as f:
         # if this assert fails, you need to find a different way to pack the int pte into 8 bytes in little-endian order
         assert( len(bytes_to_write) == size_pte)
         f.write(bytes_to_write)
-    
+
 
     # Generate the mega page table (PT_0) for pages starting at 0x80000000
     for i in range(NUMBER_MEGA_PAGES):

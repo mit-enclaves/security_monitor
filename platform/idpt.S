@@ -1,13 +1,12 @@
-#include <sm.h>
+#include <sm_constants.h>
 
 .section ".rodata"
 .globl idpt_ptr
 
 #ifndef IDPT_FILE
-  #define IDPT_FILE "idpt.bin"
+  #error idpt.bin path not defined
 #endif
 
 .align PAGE_SHIFT
-
 idpt:
-.incbin IDPT_FILE
+  .incbin IDPT_FILE

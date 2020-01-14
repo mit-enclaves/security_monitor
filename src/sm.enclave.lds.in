@@ -11,20 +11,19 @@ MEMORY
 SECTIONS
 {
   . = ORIGIN(ENCLAVE_HANDLER);
-  .enclave_handler.text : {
+  .enclave_handler : {
     PROVIDE( enclave_handler_entry = . );
     KEEP( *(.text.entry) )
     *(.text.*)
     *(.text)
-  } > ENCLAVE_HANDLER
-
-  .enclave_handler.rodata : {
     *(.rodata)  /* read-only data */
     *(.rodata.*)
   } > ENCLAVE_HANDLER
 
+  /* global offset table : make sure this is *not* emitted
   .enclave_handler.got : {
-    *(.got)   /* global offset table */
+    *(.got)
     *(.got.*)
-  } > ENCLAVE_HANDLER
+  }
+  */
 }
