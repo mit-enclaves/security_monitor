@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <csr/csr.h>
 #include <sm.h>
 
 extern void * payload_ptr;
@@ -10,7 +11,9 @@ extern void * payload_ptr;
 void sm_init(void) {
   sm_state_t * sm = get_sm_state_ptr();
 
-  if (mhartid == 0) {
+  // IMPORTANT: this will be run by *all* cores
+
+  if (read_csr(mhartid) == 0) {
     // Initialize core metadata
     for ( int i=0; i<NUM_CORES; i++ ) {
       sm->cores[i].owner = OWNER_UNTRUSTED;
