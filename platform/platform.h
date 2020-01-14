@@ -16,10 +16,10 @@
 
 // Core state
 // ----------
-void platform_save_core( platform_core_state_t * core_state );
-void platform_load_core( const platform_core_state_t * core_state );
-void platform_clean_core(void);
-void platform_purge_core (void);
+//void platform_save_core( platform_core_state_t * core_state );
+//void platform_load_core( const platform_core_state_t * core_state );
+void platform_clean_core(void); // arch state only
+void platform_purge_core (void); // uarch state only
 
 // Platform control and utilities
 // ------------------------------
@@ -31,12 +31,18 @@ void platform_purge_core (void);
 #define write_reg(reg, val) ({ \
   asm volatile ("ld " #reg ", %0" :: "rK"(val)); })
 
+void platform_init ();
+void platform_core_init ();
 
-void platform_panic (uint64_t error_code) __attribute__((noreturn));
+void platform_interrupt_other_cores ();
+void platform_wait_for_interrupt ();
+
 void platform_delegate_to_untrusted ( uint64_t virtual_pc, uint64_t  ) __attribute__((noreturn));
 void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc, uint64_t virtual_sp ) __attribute__((noreturn));
 void platform_jump_to_enclave ( enclave_id_t enclave_id, uint64_t virtual_pc, uint64_t ) __attribute__((noreturn));
 
 void platform_protect_enclave_sm_handler(unintptr_t phys_addr, uint64_t size_handler);
+
+void platform_panic (uint64_t error_code) __attribute__((noreturn));
 
 #endif // SM_PLATFORM_H

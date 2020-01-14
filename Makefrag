@@ -17,6 +17,8 @@ COMMON_DIR := $(SM_DIR)/common
 
 SM_COMMON_SRC := \
 	$(COMMON_DIR)/clib/memcpy.c \
+	$(SM_SRC_DIR)/common/syscall_helpers.S \
+	$(PLATFORM_DIR)/platform_panic.S \
 
 SM_LD = $(SM_SRC_DIR)/sm.lds
 
@@ -28,9 +30,17 @@ SM_SRC := \
 	$(COMMON_DIR)/ed25519/sha512.c \
 	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/stacks.S \
+	$(PLATFORM_DIR)/platform_init.S \
+	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
+	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
+	$(PLATFORM_DIR)/platform_core_init.S \
+	$(PLATFORM_DIR)/platform_clean_core.S \
+	$(PLATFORM_DIR)/platform_purge_core.S \
+	$(PLATFORM_DIR)/platform_jump_to_untrusted.S \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
+	$(SM_SRC_DIR)/common/enclave_handler.S \
 	$(SM_SRC_DIR)/init/init.S \
 	$(SM_SRC_DIR)/init/init.c \
 	$(SM_SRC_DIR)/api/enclave_create.c \
@@ -49,11 +59,9 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/region_state.c \
 	$(SM_SRC_DIR)/api/thread_metadata_pages.c \
+	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
+	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
 
-# init
-# platform stacks
-# platform idpt
-# platform helpers
 # enter
 # exit
 # load
@@ -69,6 +77,8 @@ HANDLER_BIN = $(BUILD_DIR)/sm.enclave.bin
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(COMMON_DIR)/clib/memcmp.c \
+	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
+	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/api/get_attestation_key.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/mail_accept.c \
@@ -77,6 +87,7 @@ SM_ENCLAVE_SRC := \
 
 # platform helpers
 # mail
+# aex
 
 SM_INCLUDES := \
 	$(COMMON_DIR) \
@@ -92,7 +103,7 @@ $(BUILD_DIR):
 
 # TODO: add idpt and handler binary
 $(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(IDPT_BIN) $(HANDLER_BIN)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D IDPT_FILE=\"$(IDPT_BIN)\" -o $@
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D IDPT_FILE=\"$(IDPT_BIN)\" -D ENCLAVE_HANDLER_FILE=\"$(HANDLER_BIN)\" -o $@
 
 .INTERMEDIATE: $(SM_LD)
 

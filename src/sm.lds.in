@@ -34,20 +34,9 @@ SECTIONS
   } > SM
 
   .sm.data : {
-    *(.bss)   /* uninitialized data */
-    *(.bss.*)
     *(.data)  /* initialized data */
     *(.data.*)
-  } > SM
-
-  .sm.enclave_handler : {
-    PROVIDE( sm_enclave_handler_start = . );
-    *(.sm.enclave_handler)
-    PROVIDE( sm_enclave_handler_end = . );
-  } > SM
-
-  .sm.got : {
-    *(.got)   /* global offset table */
-    *(.got.*)
+    *(.bss)   /* uninitialized data */
+    *(.bss.*)
   } > SM
 }

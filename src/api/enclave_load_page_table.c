@@ -2,8 +2,7 @@
 
 #error not implemented
 
-api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, phys_ptr_t phys_addr,
-      uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
+api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, phys_ptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
 
    if(level > 3) {
       return monitor_invalid_value;

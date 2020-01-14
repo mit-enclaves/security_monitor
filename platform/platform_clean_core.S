@@ -1,8 +1,8 @@
 .option norvc
-section .text
+.section .text.clean_core
 
+# void platform_clean_core(void); // arch state only
 .globl platform_clean_core
-
 platform_clean_core:
   # li x0, 0 # x0 is a zero constant, do not clean
   # li x1, 0 # x1 is $ra, do not clean
@@ -36,4 +36,4 @@ platform_clean_core:
   li x29, 0
   li x30, 0
   li x31, 0
-  return
+  ret

@@ -48,7 +48,7 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
   }
 
   // Check that the handlers fit in one region
-  uint64_t size_handler = ((uint64_t) &_enclave_trap_handler_end) - ((uint64_t) &_enclave_trap_handler_start);
+  uint64_t size_handler = ((uint64_t) &enclave_handler_end) - ((uint64_t) &enclave_handler_start);
 
   uintptr_t end_phys_addr = phys_addr + size_handler;
 
@@ -78,10 +78,10 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
   platform_protect_enclave_sm_handler(phys_addr, size_handler);
 
   // Copy the handlers
-  memcpy((void *) phys_addr, (void *) &_enclave_trap_handler_start, size_handler);
+  memcpy((void *) phys_addr, (void *) &enclave_handler_start, size_handler);
 
   // Update the measurement
-  hash_extend(&enclave_metadata->hash_context, (void *) &_enclave_trap_handler_start, size_handler);
+  hash_extend(&enclave_metadata->hash_context, (void *) &enclave_handler_start, size_handler);
 
   return monitor_ok;
 }

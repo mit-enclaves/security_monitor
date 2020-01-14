@@ -1,9 +1,11 @@
 #include <sm_constants.h>
 
-.section ".data"
-.globl stack_base, stack_ptr
+.section .data.stacks
 
 .align PAGE_SHIFT
+
+.globl stack_base, stack_ptr
+
 stack_base:
-.skip (STACK_SIZE*NUM_CORES)
+  .skip (STACK_SIZE*NUM_CORES)
 stack_ptr:
