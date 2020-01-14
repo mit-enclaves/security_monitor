@@ -13,7 +13,7 @@ void sm_init(void) {
 
   // IMPORTANT: this will be run by *all* cores
 
-  if (read_csr(mhartid) == 0) {
+  if (platform_get_core_id() == 0) {
     // Initialize core metadata
     for ( int i=0; i<NUM_CORES; i++ ) {
       sm->cores[i].owner = OWNER_UNTRUSTED;

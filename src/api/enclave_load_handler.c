@@ -2,6 +2,11 @@
 
 #error not implemented
 
+#TODO: this call needs to also get a phys_addr such that
+- phys_addr is in the enclave's region
+- phys_addr + sizeof(handler) is in the SAME region
+- phys_addr is > prev max address (which is zero since nothing was prev loaded)
+
 api_result_t sm_enclave_load_handler (enclave_id_t enclave_id) {
    // TODO: Does phys_addr has to be alligned?
 
@@ -40,7 +45,7 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id) {
    dram_region_t *r_info = &(SM_GLOBALS.regions[REGION_IDX(phys_addr)]);
 
    // Check that the handlers fit in a DRAM region owned by the enclave
-   uint64_t size_handler = ((uint64_t) &_enclave_metadata_trap_handler_end) - ((uint64_t) &_enclave_metadata_trap_handler_start);
+   uint64_t size_handler = ((uint64_t) &enclave_handler_end) - ((uint64_t) &enclave_handler_start);
 
    uintptr_t end_phys_addr = phys_addr + size_handler;
 
@@ -76,10 +81,10 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id) {
 
 
    // Copy the handlers
-   memcpy((void *) phys_addr, (void *) &_enclave_metadata_trap_handler_start, size_handler);
+   memcpy((void *) phys_addr, (void *) &enclave_handler_start, size_handler);
 
    // Update the measurement
-   sha3_update(&(enclave->sha3_ctx), (void *) &_enclave_metadata_trap_handler_start, size_handler);
+   sha3_update(&(enclave->sha3_ctx), (void *) &enclave_handler_start, size_handler);
 
    lock_release(er_info->lock);
    lock_release(r_info->lock);

@@ -2,7 +2,7 @@
 
 #error not implemented
 
-void sm_enclave_exit () {
+void sm_enclave_exit () { // TODO: noreturn
 
   // Lock caller's metadata region
 

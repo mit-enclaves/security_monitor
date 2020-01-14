@@ -1,9 +1,9 @@
 #include <sm.h>
 
-#error not implemented
+void enclave_aex () {
+  // TODO: Save context and signal AEX has occured
+  // TODO: Include an API to check for presence of AEX
+  // TODO: Include an API to restore API context, or copy it into the calling thread.
 
-api_result_t enclave_exit () {
-  TODO: perform an enclave exit
-
-  return monitor_ok; // unreachable
+  enclave_exit();
 }

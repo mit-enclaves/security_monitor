@@ -1,6 +1,9 @@
-#include <constants.h>
+#include <sm_constants.h>
 
 # TODO: Make sure stack never grows above 4KB !!
+# ^ Do this via static analysis of the program
+
+# TODO: add emulation for misaligned accesses, etc.
 
 # Trap vector (table) for events originating from enclave
 # ================================================================
