@@ -25,6 +25,10 @@
 #define SATP_PPN_MASK ((PPN2_MASK << (PN_OFFSET * 2)) | (PN_MASK << PN_OFFSET) | PN_MASK)
 #define PPNs_MASK (SATP_PPN_MASK << PAGE_ENTRY_ACL_OFFSET)
 
+#define MIP_STIP            (1 << IRQ_S_TIMER)
+#define MIP_HTIP            (1 << IRQ_H_TIMER)
+#define MIP_MTIP            (1 << IRQ_M_TIMER)
+
 // Validate parameterization
 // -------------------------
 

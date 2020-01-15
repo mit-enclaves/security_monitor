@@ -43,4 +43,17 @@
 // Register file parameters
 #define REGBYTES      (8)
 
+// MIP CSR Fields
+#define IRQ_S_SOFT   (1)
+#define IRQ_H_SOFT   (2)
+#define IRQ_M_SOFT   (3)
+#define IRQ_S_TIMER  (5)
+#define IRQ_H_TIMER  (6)
+#define IRQ_M_TIMER  (7)
+#define IRQ_S_EXT    (9)
+#define IRQ_H_EXT    (10)
+#define IRQ_M_EXT    (11)
+#define IRQ_COP      (12)
+#define IRQ_HOST     (13)
+
 #endif // SM_PARAMETERS_H
