@@ -126,3 +126,6 @@ sm.handler: $(BUILD_DIR)/sm.enclave.elf
 
 .PHONY: sm
 sm: $(BUILD_DIR)/sm.elf
+
+$(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
+	$(OBJCOPY) -O binary --only-section=.sm  $< $@

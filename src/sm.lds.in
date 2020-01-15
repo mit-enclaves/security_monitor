@@ -21,21 +21,18 @@ SECTIONS
 SECTIONS
 {
   . = ORIGIN(SM);
-  .sm.text : {
+  sm : {
     PROVIDE( sm_entry = . );
     KEEP( *(.text.entry) )
     *(.text.*)
     *(.text)
-  } > SM
 
-  .sm.rodata : {
     *(.rodata)  /* read-only data */
     *(.rodata.*)
-  } > SM
 
-  .sm.data : {
     *(.data)  /* initialized data */
     *(.data.*)
+
     *(.bss)   /* uninitialized data */
     *(.bss.*)
   } > SM

@@ -11,6 +11,9 @@ OBJCOPY=riscv64-unknown-elf-objcopy
 QEMU=${TOOLS_DIR}/qemu/bin/qemu-system-riscv64
 QEMU_FLAGS= -machine sanctum -m 2G -nographic -S -gdb tcp::1234
 
+.PHONY: all
+all: $(BUILD_DIR)/sm.bin
+	
 PYTHON=python
 include $(TOP_DIR)/Makefrag
 

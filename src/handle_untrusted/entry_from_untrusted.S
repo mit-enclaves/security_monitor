@@ -121,10 +121,13 @@ trap_vector_from_untrusted:
   csrr a0, mcause
   j platform_panic
 
-// TODO: check old SM implemetation - there was some cleverness here
-// I think there we set the S timer interrupt, causing the SM to immediately catch that event, and delegated the S timer interrupt to S
+// We set the S timer interrupt, causing the SM to immediately catch that event, and delegated the S timer interrupt to S
 .handle_mtimer_interrupt:
-  j .delegate_to_s
+  li t0, MIP_MTIP
+  csrc mie, t0
+  li t0, MIP_STIP
+  csrs mip, t0
+  j .perform_mret
 
 .delegate_to_s:
   # delegate trap/interrupt to S mode
