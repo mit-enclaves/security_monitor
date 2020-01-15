@@ -1,7 +1,5 @@
 #include <sm.h>
 
-#error not implemented
-
 api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_addr) {
   // TODO: Does phys_addr has to be alligned? Yes
 
@@ -81,7 +79,7 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
   memcpy((void *) phys_addr, (void *) &enclave_handler_start, size_handler);
 
   // Update the measurement
-  hash_extend(&enclave_metadata->hash_context, (void *) &enclave_handler_start, size_handler);
+  hash_extend(&enclave_metadata->hash_context, &enclave_handler_start, size_handler);
 
-  return monitor_ok;
+  return MONITOR_OK;
 }

@@ -155,7 +155,7 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id);
 // Copies the SM trap handler code into a newly created enclave.
 //
 // `enclave_id` must identify an enclave that has not yet been initialized, and one that has not yet had any other load opeartion performed.
-api_result_t sm_enclave_load_handler (enclave_id_t enclave_id);
+api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_addr);
 
 // Allocates a page in the enclave's main DRAM region for page tables.
 //

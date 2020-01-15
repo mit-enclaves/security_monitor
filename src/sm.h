@@ -19,6 +19,10 @@
 })
 */
 
+// Extern symbols defined in assembly
+
+extern uintptr_t enclave_handler_start;
+extern uintptr_t enclave_handler_end;
 
 // Common minor operations
 // -----------------------
@@ -107,5 +111,14 @@ static inline bool lock_region_iff_valid_enclave (uintptr_t ptr) {
 static inline bool lock_region_iff_valid_thread (uintptr_t ptr) {
   return (MONITOR_OK == lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD));
 }
+
+
+// Page Table helper
+
+api_result_t load_page_table_entry (enclave_id_t enclave_id,
+  uintptr_t phys_addr,
+  uintptr_t virtual_addr,
+  uint64_t level,
+  uintptr_t acl);
 
 #endif // SECURITY_MONITOR_H
