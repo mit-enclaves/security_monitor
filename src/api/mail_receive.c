@@ -66,7 +66,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
     } else {
       unlock_region(addr_to_region_id(caller));
     }
-    return MONITOR_INVALID_STATE
+    return MONITOR_INVALID_STATE;
   }
 
   // the message buffer must fit entirely in one region
@@ -79,7 +79,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
     } else {
       unlock_region(addr_to_region_id(caller));
     }
-    return MONITOR_INVALID_STATE
+    return MONITOR_INVALID_STATE;
   }
 
   // the measurement buffer must fit entirely in one region
@@ -92,7 +92,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
     } else {
       unlock_region(addr_to_region_id(caller));
     }
-    return MONITOR_INVALID_STATE
+    return MONITOR_INVALID_STATE;
   }
 
   // Lock the message buffer region

@@ -26,7 +26,7 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   // <TRANSACTION>
 
   // recipient must be either OWNER_UNTRUSTED or valid enclave
-  // Lock the recepient's regions
+  // Lock the recipient's regions
   if (recipient == OWNER_UNTRUSTED) {
 
     // mailbox_id must be valid
@@ -90,10 +90,10 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   // the recipient mailbox must be empty
 
   if ((mailbox->expected_sender != caller) || (mailbox->state != ENCLAVE_MAILBOX_STATE_EMPTY)) {
-    if (recepient == OWNER_UNTRUSTED) {
+    if (recipient == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
     } else {
-      unlock_region(addr_to_region_id(recepient));
+      unlock_region(addr_to_region_id(recipient));
     }
     if (caller == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
@@ -109,10 +109,10 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   if ((addr_to_region_id(in_message) != addr_to_region_id(in_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
     (sm_region_owner(addr_to_region_id(in_message)) != caller)) {
 
-    if (recepient == OWNER_UNTRUSTED) {
+    if (recipient == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
     } else {
-      unlock_region(addr_to_region_id(recepient));
+      unlock_region(addr_to_region_id(recipient));
     }
     if (caller == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
@@ -124,10 +124,10 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
 
   // Lock the buffer region
   if(!lock_region(addr_to_region_id(in_message))) {
-    if (recepient == OWNER_UNTRUSTED) {
+    if (recipient == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
     } else {
-      unlock_region(addr_to_region_id(recepient));
+      unlock_region(addr_to_region_id(recipient));
     }
     if (caller == OWNER_UNTRUSTED) {
       unlock_untrusted_state();
@@ -159,10 +159,10 @@ api_result_t sm_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;
 
   // Release locks
-  if ( recepient == OWNER_UNTRUSTED ) {
+  if ( recipient == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();
   } else {
-    unlock_region( addr_to_region_id(recepient) );
+    unlock_region( addr_to_region_id(recipient) );
   }
   if ( caller == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();

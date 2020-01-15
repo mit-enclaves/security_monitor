@@ -240,7 +240,7 @@ api_result_t sm_mail_accept (
 // `phys_addr` must point into a buffer large enough to store a
 // mailbox_identity_t structure. The entire buffer must be contained in a
 // single DRAM region that belongs to the enclave.
-api_result_t sm_mail_receive (mailbox_id_t mailbox_id, uintptr_t phys_addr);
+api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement);
 
 // Sends a message to another enclave's mailbox.
 //

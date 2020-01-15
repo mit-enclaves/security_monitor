@@ -3,3 +3,6 @@ build
 
 # Dependent tools
 tools
+
+# vim files
+*.swp
