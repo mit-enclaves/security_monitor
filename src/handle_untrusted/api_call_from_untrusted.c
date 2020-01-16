@@ -23,37 +23,25 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       retval = sm_enclave_delete( arg0 );
       break;
 
-    // TODO
-    /*
     case SM_ENCLAVE_ENTER:
       retval = sm_enclave_enter( arg0, arg1, regs );
       break;
-    */
 
     case SM_ENCLAVE_INIT:
       retval = sm_enclave_init( arg0 );
       break;
 
-    // TODO
-    /*
     case SM_ENCLAVE_LOAD_HANDLER:
       retval = sm_enclave_load_handler( arg0, arg1 );
       break;
-    */
 
-    // TODO
-    /*
     case SM_ENCLAVE_LOAD_PAGE_TABLE:
       retval = sm_enclave_load_page_table( arg0, arg1, arg2, (uint64_t)arg3, arg4 );
       break;
-    */
 
-    // TODO
-    /*
     case SM_ENCLAVE_LOAD_PAGE:
       retval = sm_enclave_load_page( arg0, arg1, arg2, arg3, arg4 );
       break;
-    */
 
     case SM_ENCLAVE_METADATA_PAGES:
       retval = sm_enclave_metadata_pages( (int64_t)arg0 );
@@ -69,19 +57,13 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       retval = sm_mail_accept( (mailbox_id_t) arg0, (enclave_id_t) arg1 );
       break;
 
-    // TODO
-    /*
     case SM_MAIL_RECEIVE:
       retval = sm_mail_receive( (mailbox_id_t) arg0, (uintptr_t) arg1 );
       break;
-    */
 
-    // TODO
-    /*
     case SM_MAIL_SEND:
       retval = sm_mail_send( (enclave_id_t) arg0, (mailbox_id_t) arg1, (uintptr_t) arg2 );
       break;
-    */
 
     // Regions
     case SM_REGION_ASSIGN:
@@ -123,19 +105,13 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       retval = sm_region_state( (region_id_t) arg0 );
       break;
 
-      // TODO
-      /*
     case SM_THREAD_DELETE:
       retval = sm_thread_delete( arg0 );
       break;
-    */
 
-    // TODO
-    /*
     case SM_THREAD_LOAD:
       retval = sm_thread_load( arg0, arg1, arg2, arg3, arg4, arg5 );
       break;
-    */
 
     case SM_THREAD_METADATA_PAGES:
       retval = sm_thread_metadata_pages();

@@ -142,7 +142,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id);
 //
 // `thread_id` must identify a hardware thread that was created but is not
 // executing on any core.
-api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id);
+api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs); // TODO rename the handles etc...
 
 // Ends the currently running enclave thread and returns control to the OS.
 api_result_t sm_enclave_exit ();

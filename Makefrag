@@ -47,6 +47,8 @@ SM_SRC := \
 	$(SM_SRC_DIR)/init/init.c \
 	$(SM_SRC_DIR)/api/enclave_create.c \
 	$(SM_SRC_DIR)/api/enclave_delete.c \
+	$(SM_SRC_DIR)/api/enclave_enter.c \
+	$(SM_SRC_DIR)/api/enclave_exit.c \
 	$(SM_SRC_DIR)/api/enclave_init.c \
 	$(SM_SRC_DIR)/api/enclave_load_handler.c \
 	$(SM_SRC_DIR)/api/enclave_load_page_table.c \

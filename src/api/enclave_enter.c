@@ -22,7 +22,7 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
 
   sm_state_t * sm = get_sm_state_ptr();
 
-  uint64_t core_id = read_csr(CSR_MHARTID);
+  uint64_t core_id = read_csr(mhartid);
   sm_core_t *core_metadata = &(sm->cores[core_id]);
 
   uint64_t region_id_enclave = addr_to_region_id(enclave_id);
@@ -101,9 +101,6 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
 
   //// Prepare the core and mret
 
-  // Set the enclave sp and pc
-  write_csr(CSR_MEPC, thread_metadata->entry_pc);
-
   // Update MSTATUS
   uint64_t mstatus_tmp = read_csr(mstatus);
 
@@ -114,21 +111,29 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   mstatus_tmp &= (~MSTATUS_SIE_MASK);
   mstatus_tmp |= MSTATUS_UIE_MASK;
 
-  write_csr(CSR_MSTATUS, mstatus_tmp);
+  write_csr(mstatus, mstatus_tmp);
 
-  // Set the page table
-  swap_csr(CSR_MEATP, enclave_metadata->eptbr);
+  // Swap the page table root
+  swap_csr(satp, enclave_metadata->eptbr);
 
   // Setup the platform's memory protection mechanisms
   platform_protect_memory_enter_enclave(enclave_metadata);
 
   // Set trap handler
-  swap_csr(CSR_MTVEC, thread_metadata->fault_pc);
+  swap_csr(mtvec, thread_metadata->fault_pc);
 
+  // Set pc
+  write_csr(mepc, thread_metadata->entry_pc);
   // Set sp
-  write_csr(CSR_MSCRATCH, thread_metadata->entry_sp);
+  write_csr(mscratch, thread_metadata->entry_sp);
   asm volatile ("csrrw sp, mscratch, sp");
-  swap_csr(CSR_MSCRATCH, thread_metadata->fault_sp);
+  swap_csr(mscratch, thread_metadata->fault_sp);
+
+  // Release locks
+  unlock_region(region_id_enclave);
+  unlock_region(region_id_thread);
+  unlock_core(core_id);
+  // </TRANSACTION>
 
   // Clean State
 
