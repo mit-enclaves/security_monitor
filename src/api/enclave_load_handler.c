@@ -1,7 +1,6 @@
 #include <sm.h>
 
 api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_addr) {
-  // TODO: Does phys_addr has to be alligned? Yes
 
   // Validate inputs
   // ---------------

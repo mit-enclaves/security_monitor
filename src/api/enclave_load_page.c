@@ -11,7 +11,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
 
   /*
     - enclave_id must be valid
-    - enclave must be in state
+    - enclave must be in state ENCLAVE_STATE_PAGE_TABLES_LOADED or ENCLAVE_STATE_PAGE_DATA_LOADED
     - phys_addr must be page alligned
     - phys_addr must be greater than the last physical address loaded
     - phys_addr must point to a region owned by the enclave
@@ -34,6 +34,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
   uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
+  // enclave must be in state ENCLAVE_STATE_PAGE_TABLES_LOADED or ENCLAVE_STATE_PAGE_DATA_LOADED
   if((enclave_metadata->init_state != ENCLAVE_STATE_PAGE_TABLES_LOADED)
     && (enclave_metadata->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED)) {
     unlock_region(region_id);

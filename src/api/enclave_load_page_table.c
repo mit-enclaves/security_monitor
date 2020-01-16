@@ -11,14 +11,13 @@ api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id,
 
   /*
     - enclave_id must be valid
-    - enclave must be in state
+    - enclave must be in state ENCLAVE_STATE_HANDLER_LOADED or ENCLAVE_STATE_PAGE_TABLES_LOADED
     - phys_addr must be page alligned
     - phys_addr must be greater than the last physical address loaded
     - phys_addr must point to a region owned by the enclave
     - virtual addr must be within the enclave evrange
     - level must be no greater than 3
     - acl must be valid
-    -
   */
 
   // Lock the enclave's metadata's region and the phys_addr region
@@ -33,6 +32,7 @@ api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id,
   uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
+  // enclave must be in state ENCLAVE_STATE_HANDLER_LOADED or ENCLAVE_STATE_PAGE_TABLES_LOADED
   if((enclave_metadata->init_state != ENCLAVE_STATE_HANDLER_LOADED)
     && (enclave_metadata->init_state != ENCLAVE_STATE_PAGE_TABLES_LOADED)) {
     unlock_region(region_id);
@@ -51,7 +51,7 @@ api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id,
     return MONITOR_INVALID_VALUE;
   }
 
-  // Check that phys_addr points into a DRAM region owned by the enclave
+  // phys_addr must point to a region owned by the enclave
   if(sm_region_owner(addr_to_region_id(phys_addr)) != enclave_id){
     unlock_region(region_id);
     return MONITOR_INVALID_STATE;
