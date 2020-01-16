@@ -50,7 +50,7 @@ static inline bool is_page_aligned (uintptr_t addr) {
   return ((addr & PAGE_MASK) == 0);
 }
 
-static inline bool addr_to_region_page_id (uintptr_t addr) {
+static inline uint64_t addr_to_region_page_id (uintptr_t addr) {
   return ((addr & REGION_MASK) >> PAGE_SHIFT);
 }
 
@@ -101,15 +101,16 @@ static inline void unlock_regions (region_map_t * locked_regions) {
 
 // Metadata helpers
 api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages);
+api_result_t lock_region_iff_free_metadata_pages_and_not_locked (uintptr_t ptr, uint64_t num_pages, bool not_locked);
 
 api_result_t lock_region_iff_valid_metadata( uintptr_t ptr, metadata_page_t metadata_type );
 
-static inline bool lock_region_iff_valid_enclave (uintptr_t ptr) {
-  return (MONITOR_OK == lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE));
+static inline api_result_t lock_region_iff_valid_enclave (uintptr_t ptr) {
+  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE);
 }
 
-static inline bool lock_region_iff_valid_thread (uintptr_t ptr) {
-  return (MONITOR_OK == lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD));
+static inline api_result_t lock_region_iff_valid_thread (uintptr_t ptr) {
+  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD);
 }
 
 

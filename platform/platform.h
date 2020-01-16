@@ -14,6 +14,10 @@
 #define platform_lock_release(lock) ({ \
       asm volatile ("amoswap.w.rl x0, x0, (%[address]) \n" :: [address] "r"(&((lock)->lock_flag))); })
 
+static inline bool platform_lock_state(platform_lock_t *lock) {
+  return ((lock->lock_flag) != 0);
+}
+
 // Core state
 // ----------
 //void platform_save_core( platform_core_state_t * core_state );

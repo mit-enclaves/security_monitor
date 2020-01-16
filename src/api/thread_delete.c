@@ -1,73 +1,74 @@
 #include <sm.h>
 
-#error not implemented
-
-TODO lock the thread metadata region iff valid thread id
-
-If the thread is scheduled, error
-
-Lock the thread's enclave metadata region (if different)
-
-Decrement the enclave's thread counter
-
-Erase the thread data structure
-
-Update the page metadata region page map
-
-
 api_result_t sm_thread_delete (thread_id_t thread_id) {
-   // TODO: check that thread_id is a valid thread_id (owner?)
 
-   dram_region_t * tr_ptr = &(SM_GLOBALS.regions[REGION_IDX((uintptr_t) thread_id)]);
+  // Validate inputs
+  // ---------------
 
-   if(!aquireLock(tr_ptr->lock)) {
-      return monitor_concurrent_call;
-   } // Acquire Lock
+  /*
+    - thread_id must be valid
+    - the tread must not be scheduled
+  */
 
-   metadata_page_map_t page_map = (metadata_page_map_t) METADATA_PM_PTR(thread_id);
+  // Note, the thread owner is deemed valid
 
-   enclave_id_t owner_id = (page_map[METADATA_IDX(thread_id)]) >> ENTRY_OWNER_ID_OFFSET;
+  // Lock the thread_id region
 
-   // Check thread_id validity
-   api_result_t ret = is_valid_thread(owner_id, thread_id);
+  // <TRANSACTION>
+  // thread_id must be valid
+  api_result_t result = lock_region_iff_valid_thread(thread_id);
+  if ( MONITOR_OK != result ) {
+    return result;
+  }
 
-   if(ret != monitor_ok) {
-      releaseLock(tr_ptr->lock); // Release Lock
-      return ret;
-   }
+  uint64_t region_id_thread = addr_to_region_id(thread_id);
+  thread_metadata_t *thread_metadata = (thread_metadata_t *) thread_id;
 
-   // Check that thread is not scheduled
-   thread_t *thread = (thread_t *) thread_id;
+  enclave_id_t enclave_id = thread_metadata->owner;
+  uint64_t region_id_enclave = addr_to_region_id(enclave_id);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
-   if(aquireLock(thread->is_scheduled)) {
-      releaseLock(tr_ptr->lock);
-      return monitor_invalid_state;
-   }
 
-   uint64_t num_metadata_pages = ecall_thread_metadata_pages();
+  // Lock the thread's owner/enclave metadata region (if different)
+  if(region_id_enclave != region_id_thread) {
+    if(!lock_region(region_id_enclave)) {
+      unlock_region(region_id_thread);
+      return MONITOR_CONCURRENT_CALL;
+    }
+  }
 
-   // Clean the metadata page map
-   for(int i = METADATA_IDX(thread_id);
-         i < (METADATA_IDX(thread_id) + num_metadata_pages);
-         i++) {
-      page_map[i] = 0;
-   }
+  // the tread must not be scheduled
+  if(platform_lock_state(&(thread_metadata->is_scheduled))) {
+    unlock_region(region_id_enclave);
+    unlock_region(region_id_thread);
+    return MONITOR_INVALID_STATE;
+  }
 
-   // Clean the metadata it-self
-   memset((void *) thread_id, 0, sizeof(thread_t));
+  // NOTE: Inputs are now deemed valid.
 
-   releaseLock(tr_ptr->lock);
+  // Apply state transition
+  // ----------------------
 
-   // Decrease the owning enclave's thread_count
-   dram_region_t *er_ptr = &(SM_GLOBALS.regions[REGION_IDX(owner_id)]);
+  // Decrement the enclave's thread counter
+  enclave_metadata->num_threads--;
 
-   if(!aquireLock(er_ptr->lock)) {
-      return monitor_concurrent_call;
-   }
+  // Erase the thread data structure
+  memset((void *) thread_id, 0, sizeof(thread_metadata_t));
 
-   ((enclave_metadata_t *) owner_id)->thread_count--;
+  // Clean the metadata page map
+  metadata_region_t * region = region_id_to_addr(region_id_thread);
 
-   releaseLock(er_ptr->lock);
+  uint64_t num_metadata_pages = sm_thread_metadata_pages();
+  uint64_t page_id = addr_to_region_page_id(thread_id);
 
-   return monitor_ok;
+  for(int i = 0; i < num_metadata_pages; i++) {
+    region->page_info[page_id + i] = METADATA_PAGE_FREE;
+  }
+
+  // Release locks
+  unlock_region(region_id_enclave);
+  unlock_region(region_id_thread);
+  // </TRANSACTION>
+
+  return MONITOR_OK;
 }

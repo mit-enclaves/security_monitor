@@ -62,6 +62,9 @@ typedef struct enclave_metadata_t {
 } enclave_metadata_t;
 
 typedef struct thread_metadata_t {
+  // Owner
+  enclave_id_t owner;
+
   // Parameters
   uintptr_t entry_pc;
   uintptr_t entry_sp;
@@ -75,6 +78,8 @@ typedef struct thread_metadata_t {
   platform_core_state_t untrusted_state;
 
   // Enclave state buffer in the event of a trap/interrupt/fault
+  uintptr_t fault_pc;
+  uintptr_t fault_sp;
   platform_core_state_t fault_state;
 
   // AEX - asynchronous enclave exit state
