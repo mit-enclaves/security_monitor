@@ -46,6 +46,7 @@ void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc
 void platform_jump_to_enclave ( enclave_id_t enclave_id, uint64_t virtual_pc, uint64_t ) __attribute__((noreturn));
 
 void platform_protect_enclave_sm_handler(uintptr_t phys_addr, uint64_t size_handler);
+void platform_protect_memory_enter_enclave(enclave_metadata_t *enclave_metadata);
 
 void platform_panic (uint64_t error_code) __attribute__((noreturn));
 

@@ -53,7 +53,7 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
   enclave_metadata->num_threads--;
 
   // Erase the thread data structure
-  memset((void *) thread_id, 0, sizeof(thread_metadata_t));
+  memset((void *) thread_id,  0x00, sizeof(thread_metadata_t));
 
   // Clean the metadata page map
   metadata_region_t * region = region_id_to_addr(region_id_thread);

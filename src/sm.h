@@ -104,6 +104,7 @@ api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pa
 api_result_t lock_region_iff_free_metadata_pages_and_not_locked (uintptr_t ptr, uint64_t num_pages, bool not_locked);
 
 api_result_t lock_region_iff_valid_metadata( uintptr_t ptr, metadata_page_t metadata_type );
+api_result_t lock_region_iff_valid_metadata_pages_and_not_locked( uintptr_t ptr, metadata_page_t metadata_type,  bool not_locked);
 
 static inline api_result_t lock_region_iff_valid_enclave (uintptr_t ptr) {
   return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE);
@@ -111,6 +112,9 @@ static inline api_result_t lock_region_iff_valid_enclave (uintptr_t ptr) {
 
 static inline api_result_t lock_region_iff_valid_thread (uintptr_t ptr) {
   return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD);
+}
+static inline api_result_t lock_region_iff_valid_thread_and_not_locked (uintptr_t ptr, bool not_locked) {
+  return lock_region_iff_valid_metadata_pages_and_not_locked( ptr, METADATA_PAGE_THREAD, not_locked);
 }
 
 

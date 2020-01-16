@@ -33,6 +33,14 @@
 #define SATP_MODE_SV39 (8ul)
 #define SATP_MODE (60)
 
+// MSTATUS configuration
+#define MSTATUS_TVM_MASK   (0x00100000)
+#define MSTATUS_MPP_MASK   (0x00001800)
+#define MSTATUS_MPP_OFFSET (11)
+#define MSTATUS_MPIE_MASK  (0x00000080)
+#define MSTATUS_SIE_MASK   (0x00000002)
+#define MSTATUS_UIE_MASK   (0x00000001)
+
 // Paged virtual memory configuration
 #define PAGE_SHIFT    (12)
 #define PTE_SIZE      (8)
@@ -41,6 +49,7 @@
 #define PAGE_ENTRY_ACL_OFFSET (10)
 
 // Register file parameters
+#define NUM_REGISTERS (32)
 #define REGBYTES      (8)
 
 // MIP CSR Fields
