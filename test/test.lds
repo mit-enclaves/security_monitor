@@ -1,14 +1,16 @@
-#include "test_parameters.h"
+
+
+
 
 OUTPUT_ARCH( "riscv" )
 ENTRY( boot_entry )
 
 MEMORY
 {
-  BOOT (x) :     ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
-  SM_STATE (w) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
-  SM (wx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
-  PAYLOAD (wx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
+  BOOT (x) : ORIGIN = 0x1000, LENGTH = 0x10000
+  SM_STATE (w) : ORIGIN = 0x80001000, LENGTH = 0x3000
+  SM (wx) : ORIGIN = 0x80004000, LENGTH = 0x10000
+  PAYLOAD (wx) : ORIGIN = 0x80010000, LENGTH = 0x8000000
 }
 
 SECTIONS
@@ -27,7 +29,7 @@ SECTIONS
 {
   . = ORIGIN(SM_STATE);
   .sm.state : {
-    *(.sm.state) /* Your payload goes here */
+    *(.sm.state)
   } > SM_STATE
 }
 
@@ -36,7 +38,7 @@ SECTIONS
   . = ORIGIN(SM);
   .sm : {
     PROVIDE( sm_entry = . );
-    *(.sm) /* Your payload goes here */
+    *(.sm)
   } > SM
 }
 
@@ -72,17 +74,17 @@ SECTIONS
     *(.htif.fromhost)
   } > PAYLOAD
 
-  .region1 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
+  .region1 ALIGN(0x2000000) (NOLOAD) : {
     PROVIDE( region1 = . );
     BYTE(1)
   } > PAYLOAD
 
-  .region2 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
+  .region2 ALIGN(0x2000000) (NOLOAD) : {
     PROVIDE( region2 = . );
     BYTE(1)
   } > PAYLOAD
 
-  .region3 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
+  .region3 ALIGN(0x2000000) (NOLOAD) : {
     PROVIDE( region3 = . );
     BYTE(1)
   } > PAYLOAD

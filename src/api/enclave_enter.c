@@ -2,12 +2,12 @@
 
 api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
 
-  TODO: lock enclave metadata region with add_locked_region
-  TODO: lock thread metadata region with add_locked_region
+  //TODO: lock enclave metadata region with add_locked_region
+  //TODO: lock thread metadata region with add_locked_region
 
-  TODO: thread_metadata->is_scheduled = true
+  //TODO: thread_metadata->is_scheduled = true
 
-  TODO: release locks with unlock_regions
+  //TODO: release locks with unlock_regions
 
   // Validate inputs
   // ---------------

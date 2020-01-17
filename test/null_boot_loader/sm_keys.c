@@ -2,7 +2,7 @@
 
 // TODO: initialize this
 
-sm_keys_t sm_keys  ((section (".boot.keys")));
+sm_keys_t sm_keys __attribute__ ((section (".sm.state"))) = {0};
 
 /*
 sm_keys_t:

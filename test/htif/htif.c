@@ -34,6 +34,7 @@ void print_int(uint64_t n) {
    return;
 }
 
+/*
 void print_api_r(api_result_t res) {
    switch(res) {
       case monitor_ok:
@@ -62,3 +63,4 @@ void print_api_r(api_result_t res) {
    }
    return;
 }
+*/

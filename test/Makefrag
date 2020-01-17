@@ -1,79 +1,41 @@
 SM_TEST_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
-UNIT_TESTS_DIR := $(SM_TEST_DIR)/unit_tests
+SM_TEST_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -O0 -Wall
 
-TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR)/test_*)))
-TEST_ELFS := $(addprefix $(SM_BUILD)/, $(addsuffix .elf, $(HW_TEST_NAMES)))
-TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
-TEST_IDPT := $(SM_BUILD)/idpt.bin
+SM_TEST_LDFLAGS := -nostartfiles -nostdlib -static
 
-SM_INCLUDES := \
-	-I ${SECURITY_MONITOR_DIR} \
-	-I $(SM_SRC_DIR) \
-	-I $(S_ECALL_DIR) \
-	-I $(E_ECALL_DIR) \
-	-I $(COMMON_DIR) \
+SM_TEST_LD :=  $(SM_TEST_DIR)/test.lds
 
-TEST_INCLUDE := -I $(SM_BUILD) -I $(TEST_DIR)
+NULL_BOOT_BINARY := $(BUILD_DIR)/null_boot.bin
+NULL_BOOT_ELF := $(BUILD_DIR)/null_boot.elf
 
-CFLAGS += $(SM_INCLUDE) $(TEST_INCLUDE)
+SM_BINARY := $(BUILD_DIR)/sm.bin
 
-ASFLAGS := $(CFLAGS)
+BOOT_SRC := \
+	$(SM_TEST_DIR)/null_boot_loader/boot.S \
 
-SM_SRC := \
-	$(SM_SRC_DIR)/init.S \
-	$(SM_SRC_DIR)/init/init.c \
-	$(SM_SRC_DIR)/sm_stack.S \
-	$(S_TRAP_DIR)/entry.S \
-	$(SM_SRC_DIR)/sm_util/sm_util.c \
-	$(wildcard $(S_TRAP_DIR)/trap_*.S) \
-	$(wildcard $(S_TRAP_DIR)/trap_hacks.c) \
-	$(wildcard $(S_TRAP_DIR)/interrupt_*.S) \
-	$(wildcard $(S_ECALL_DIR)/ecall_s_*.c) \
-	$(COMMON_DIR)/clib/memcpy.c \
-	$(COMMON_DIR)/clib/memset.c \
-	$(COMMON_DIR)/sha3/sha3.c \
+$(BOOT_BINARY): $(BOOT_ELF)
+	$(OBJCOPY) -O binary --only-section=.boot  $< $@
 
-SM_ENCLAVE_HANDLER_SRC := \
-	$(E_TRAP_DIR)/entry.S \
-	$(wildcard $(E_TRAP_DIR)/*.S) \
-	$(wildcard $(E_TRAP_DIR)/*.c) \
-	$(COMMON_DIR)/clib/memcpy.c \
-	$(COMMON_DIR)/clib/memset.c \
+$(BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(BOOT_SRC) -o $@
 
-SM_OBJS := $(addprefix ,$(addsuffix .o, $(basename $(SM_SRC))))
 
-TEST_SRC := $(TEST_DIR)/os/sm_api_os.c
-TEST_SRC += $(TEST_DIR)/os/os_stack.S
-TEST_SRC += $(TEST_DIR)/os/os_pt.S
-TEST_SRC += $(TEST_DIR)/enclave/sm_api_enclave.c
-TEST_SRC += $(TEST_DIR)/enclave/enclave_code.S
-TEST_SRC += $(TEST_DIR)/htif/htif.c
+SM_TEST_INCLUDES := \
+	$(COMMON_DIR) \
+	$(PLATFORM_DIR) \
+	$(SM_SRC_DIR) \
+	$(SM_TEST_DIR) \
 
-TEST_OBJS := $(addsuffix .o, $(basename $(TEST_SRC)))
+NULL_TEST_SRC := \
+	$(SM_TEST_DIR)/test_entry.S \
+	$(SM_TEST_DIR)/htif/htif.c \
+	$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
+	$(SM_TEST_DIR)/null_boot_loader/sm.S \
+	$(SM_TEST_DIR)/unit_tests/null_test.c \
 
-OBJS := $(SM_OBJS) $(TEST_OBJS) $(wildcard $(UNIT_TESTS_DIR)/*.o)
+$(BUILD_DIR)/null_test.elf: $(NULL_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BINARY)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(NULL_TEST_SRC) -D SM_BINARY_FILE=\"$(SM_BINARY)\" -o $@
 
-$(TEST_IDPT): $(TEST_DIR)/make_idpt.py
-	mkdir -p $(SM_BUILD)
-	cd $(SM_BUILD) && python $(TEST_DIR)/make_idpt.py
-
-$(SM_BUILD)/%.elf: $(TEST_IDPT) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/%.o
-	mkdir -p $(SM_BUILD)
-	echo $(SM_OBJS)
-	echo $(SM_SRC)
-	cd $(SM_SRC_DIR) && $(CC) -T security_monitor.lds $(CFLAGS) $(SM_OBJS) $(TEST_OBJS) $(UNIT_TESTS_DIR)/$*.o -o $@
-
-.PHONY: security_monitor_test_elfs
-security_monitor_test_elfs: $(TEST_ELFS)
-
-.PHONY: security_monitor_objs
-security_monitor_objs: $(OBJS)
-
-%.task: $(SM_BUILD)/%.elf
-	cd $(BUILD_DIR)/security_monitor && $(QEMU) $(QEMU_FLAGS) -kernel $^
-
-.PHONY: security_monitor_tests
-security_monitor_tests: $(TEST_TASKS)
-	@echo "All the test cases in $(UNIT_TESTS_DIR) have been run."
-	@echo "The tests were: $(TEST_NAMES)"
+.PHONY: null_test
+null_test: $(BUILD_DIR)/null_test.elf

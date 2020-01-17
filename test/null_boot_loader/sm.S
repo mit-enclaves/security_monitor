@@ -1,3 +1,4 @@
+
 #ifndef SM_BINARY_FILE
   #error sm.bin path not defined
 #endif
@@ -6,5 +7,5 @@
 
 .globl sm_start, sm_end
 sm_start:
-  .incbin ENCLAVE_HANDLER_FILE
+  .incbin SM_BINARY_FILE
 sm_end:
