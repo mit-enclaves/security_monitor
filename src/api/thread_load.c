@@ -93,7 +93,7 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   }
 
   thread_metadata->owner               = enclave_id;
-  //platform_lock_acquire(thread_metadata->is_scheduled);
+  //platform_lock_acquire(thread_metadata->is_scheduled); TODO: ?????
   //thread_metadata->aex_present         = false;
   //thread_metadata->untrusted_pc        = 0;
   //thread_metadata->untrusted_sp        = 0;

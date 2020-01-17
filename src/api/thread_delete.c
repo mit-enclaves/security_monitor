@@ -38,7 +38,7 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
   }
 
   // the tread must not be scheduled
-  if(platform_lock_state(&(thread_metadata->is_scheduled))) {
+  if(thread_metadata->is_scheduled) {
     unlock_region(region_id_enclave);
     unlock_region(region_id_thread);
     return MONITOR_INVALID_STATE;

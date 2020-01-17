@@ -70,7 +70,7 @@ typedef struct thread_metadata_t {
   uintptr_t entry_sp;
 
   // State
-  platform_lock_t is_scheduled;
+  bool is_scheduled;
 
   // Untrusted core state at enclave_enter
   uintptr_t untrusted_pc;

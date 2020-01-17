@@ -98,6 +98,17 @@ static inline void unlock_regions (region_map_t * locked_regions) {
   }
 }
 
+static inline bool add_locked_region (region_id_t region_id, region_map_t * locked_regions) {
+  if (locked_regions->flags[region_id]) {
+    return true;
+  } else if ( lock_region(region_id) ) {
+    locked_regions->flags[region_id] = true;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 // Metadata helpers
 api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages);
