@@ -86,7 +86,7 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
 
   // Save untrusted sp, pc
   thread_metadata->untrusted_sp = thread_metadata->untrusted_state[2];
-  thread_metadata->untrusted_pc = read_csr(CSR_MSEPC);
+  thread_metadata->untrusted_pc = read_csr(mepc);
 
   if(aex) {
     thread_metadata->aex_present = false;

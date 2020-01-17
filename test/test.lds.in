@@ -4,8 +4,10 @@ ENTRY( payload_entry )
 MEMORY
 {
   HTIF (w) :      ORIGIN = 0x80000000,  LENGTH = 0x1000
-  GLOBALS (w) :   ORIGIN = 0x80001000,  LENGTH = 0x1000
-  SM (wx) :       ORIGIN = 0x80002000,  LENGTH = 0x8000E000
+  BOOT (r) :      ORIGIN = BOOT_ADDR
+  SM_STATE (w) :  ORIGIN = SM_STATE_ADDR, LENGTH = SM_STATE_LEN
+  SM (wx) :       ORIGIN = SM_ADDR,       LENGTH = SM_LEN
+  PAYLOAD (wx) :  ORIGIN = 0x80002000,  LENGTH = 0x8000E000
   PAYLOAD (wx) :  ORIGIN = 0x80010000,  LENGTH = 0x7FFF0000
 }
 
@@ -19,9 +21,11 @@ SECTIONS
 
 SECTIONS
 {
-  .sm : {
-    *(.sm)
-  } > SM
+  .boot : {
+    *(.boot.text.entry)
+    *(.boot.*)
+    *(.boot)
+  } > BOOT
 }
 
 SECTIONS
