@@ -21,7 +21,7 @@ SECTIONS
 SECTIONS
 {
   . = ORIGIN(SM);
-  sm : {
+  .sm : {
     PROVIDE( sm_entry = . );
     KEEP( *(.text.entry) )
     *(.text.*)

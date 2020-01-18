@@ -1,6 +1,6 @@
 SM_TEST_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
-SM_TEST_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -O0 -Wall
+SM_TEST_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -Wall -O0 -g
 
 SM_TEST_LDFLAGS := -nostartfiles -nostdlib -static
 
@@ -14,10 +14,10 @@ SM_BINARY := $(BUILD_DIR)/sm.bin
 BOOT_SRC := \
 	$(SM_TEST_DIR)/null_boot_loader/boot.S \
 
-$(BOOT_BINARY): $(BOOT_ELF)
-	$(OBJCOPY) -O binary --only-section=.boot  $< $@
+$(NULL_BOOT_BINARY): $(NULL_BOOT_ELF)
+	$(OBJCOPY) -O binary --only-section=.data.boot  $< $@
 
-$(BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
+$(NULL_BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(BOOT_SRC) -o $@
 
 
@@ -39,3 +39,7 @@ $(BUILD_DIR)/null_test.elf: $(NULL_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BIN
 
 .PHONY: null_test
 null_test: $(BUILD_DIR)/null_test.elf
+
+.PHONY: run_null_test
+run_null_test: $(BUILD_DIR)/null_test.elf $(NULL_BOOT_BINARY)
+	$(QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/null_test.elf --bios $(NULL_BOOT_BINARY)

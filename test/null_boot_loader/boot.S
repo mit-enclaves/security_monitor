@@ -3,5 +3,5 @@
 .option norvc
 .section .boot.text.entry
 
-la ra, sm_entry
+li ra, SM_ADDR
 jr ra

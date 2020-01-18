@@ -12,10 +12,10 @@
 /* Note: make sure the parameterization below is consistent with the target hardware platform! */
 
 // Placemetn of SM in memory
-#define SM_STATE_ADDR   0x80001000
+#define SM_STATE_ADDR   0x80000000
 #define SM_STATE_LEN        0x3000
 
-#define SM_ADDR         0x80004000
+#define SM_ADDR         0x80003000
 #define HANDLER_LEN         0x3000
 #define SM_LEN             0x10000
 

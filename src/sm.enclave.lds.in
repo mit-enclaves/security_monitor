@@ -19,11 +19,4 @@ SECTIONS
     *(.rodata)  /* read-only data */
     *(.rodata.*)
   } > ENCLAVE_HANDLER
-
-  /* global offset table : make sure this is *not* emitted
-  .enclave_handler.got : {
-    *(.got)
-    *(.got.*)
-  }
-  */
 }

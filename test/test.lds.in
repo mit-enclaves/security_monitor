@@ -5,7 +5,7 @@ ENTRY( boot_entry )
 
 MEMORY
 {
-  BOOT (x) :     ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
+  BOOT (x) :      ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
   SM_STATE (w) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   SM (wx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
   PAYLOAD (wx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
@@ -14,7 +14,7 @@ MEMORY
 SECTIONS
 {
   . = ORIGIN(BOOT);
-  .boot : {
+  .data.boot : {
     PROVIDE( boot_entry = . );
     *(.boot.text.entry)
     *(.boot.*)
@@ -26,7 +26,7 @@ SECTIONS
 SECTIONS
 {
   . = ORIGIN(SM_STATE);
-  .sm.state : {
+  .data.sm : {
     *(.sm.state) /* Your payload goes here */
   } > SM_STATE
 }
@@ -34,7 +34,7 @@ SECTIONS
 SECTIONS
 {
   . = ORIGIN(SM);
-  .sm : {
+  .text.sm : {
     PROVIDE( sm_entry = . );
     *(.sm) /* Your payload goes here */
   } > SM
