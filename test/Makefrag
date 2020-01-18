@@ -15,7 +15,7 @@ BOOT_SRC := \
 	$(SM_TEST_DIR)/null_boot_loader/boot.S \
 
 $(NULL_BOOT_BINARY): $(NULL_BOOT_ELF)
-	$(OBJCOPY) -O binary --only-section=.data.boot  $< $@
+	$(OBJCOPY) -O binary --only-section=.boot  $< $@
 
 $(NULL_BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(BOOT_SRC) -o $@

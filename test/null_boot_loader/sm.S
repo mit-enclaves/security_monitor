@@ -3,7 +3,7 @@
   #error sm.bin path not defined
 #endif
 
-.section .sm
+.section .sm, "ax", %progbits
 
 .globl sm_start, sm_end
 sm_start:

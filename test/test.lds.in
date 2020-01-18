@@ -5,39 +5,39 @@ ENTRY( boot_entry )
 
 MEMORY
 {
-  BOOT (x) :      ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
-  SM_STATE (w) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
-  SM (wx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
-  PAYLOAD (wx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
+  BOOT (ax) :      ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
+  SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
+  SM (awx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
+  PAYLOAD (awx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
 }
 
 SECTIONS
 {
   . = ORIGIN(BOOT);
-  .data.boot : {
+  .boot : {
     PROVIDE( boot_entry = . );
     *(.boot.text.entry)
     *(.boot.*)
     *(.boot)
-  } > BOOT
+  } > BOOT =0x0
 }
 
 
 SECTIONS
 {
   . = ORIGIN(SM_STATE);
-  .data.sm : {
+  .sm.state : {
     *(.sm.state) /* Your payload goes here */
-  } > SM_STATE
+  } > SM_STATE =0x0
 }
 
 SECTIONS
 {
   . = ORIGIN(SM);
-  .text.sm : {
+  .sm : {
     PROVIDE( sm_entry = . );
     *(.sm) /* Your payload goes here */
-  } > SM
+  } > SM =0x0
 }
 
 
@@ -49,12 +49,12 @@ SECTIONS
     *(.text.entry)
     *(.text.*)
     *(.text)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .data ALIGN(0x1000) : {
     *(.data.*)
     *(.data)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .bss ALIGN(0x1000) : {
     *(.bss.*)
@@ -64,9 +64,9 @@ SECTIONS
   .rodata ALIGN(0x1000) : {
     *(.rodata.*)
     *(.rodata)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
-  .htif ALIGN(0x1000) (NOLOAD) : {
+  .htif ALIGN(0x1000) : {
     PROVIDE( __htif_base = . );
     *(.htif.tohost)
     *(.htif.fromhost)
