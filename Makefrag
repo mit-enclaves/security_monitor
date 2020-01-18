@@ -131,7 +131,7 @@ $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 	$(PYTHON) $(SM_DIR)/scripts/idpt.py $@
 
 .PHONY: sm
-sm: $(BUILD_DIR)/sm.elf
+sm: $(BUILD_DIR)/sm.enclave.elf $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.bin
 
 $(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
 	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@

@@ -53,7 +53,8 @@ The initialization routine prepares SM data structures and initializes the platf
 The handler receiving untrusted events may delegate some events directly to the untrusted software (this is appropriate for timer interrupts, page faults, etc.).
 The enclave mode SM handlers receives *all* events, and forces an enclave exit if the event is not handled by the SM or the enclave.
 The handlers also implement the [SM api](src/api.h), through which .
-In short, untrusted software and enclaves call into the SM much like a system call: via function call semantics over `ecall` (passing the API method in `$a7`, and arguments via `a0-a6`, receiving a result in `a0`).
+In short, untrusted software and enclaves call into the SM much like a system call: via function call semantics over `ecall` (passing the API method in `$a7`, and arguments via `$a0-$a6`, receiving a result in `$a0`).
+It is very important to remember that all addresses given the the SM as arguments are **physical addresses**.
 
 In the case of a machine with paged virtual memory, the SM expects to own M-mode execution, allowing untrusted software to exist in "S" and "U" modes, and implementing "U" mode enclaves.
 This implementation expects to take advantage of page table walker invariants (see Sanctum, MI6) to implement isolation boundaries, and "S"-mode is barred from disabling paged virtual memory.
