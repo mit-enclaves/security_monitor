@@ -36,7 +36,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       break;
 
     case SM_ENCLAVE_LOAD_PAGE_TABLE:
-      retval = sm_enclave_load_page_table( arg0, arg1, arg2, (uint64_t)arg3, arg4 );
+      retval = sm_enclave_load_page_table( arg0, arg1, arg2, (uint64_t) arg3, arg4 );
       break;
 
     case SM_ENCLAVE_LOAD_PAGE:
@@ -44,12 +44,12 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
       break;
 
     case SM_ENCLAVE_METADATA_PAGES:
-      retval = sm_enclave_metadata_pages( (int64_t)arg0 );
+      retval = sm_enclave_metadata_pages( (int64_t) arg0 );
       break;
 
     // Fields
     case SM_GET_PUBLIC_FIELD:
-      retval = sm_get_public_field( arg0, arg1 );
+      retval = sm_get_public_field( arg0, (uintptr_t) arg1 );
       break;
 
     // Mail
