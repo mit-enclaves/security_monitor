@@ -37,7 +37,7 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_init.S \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
-	$(PLATFORM_DIR)/platform_core_init.S \
+	$(PLATFORM_DIR)/platform_core_init.c \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \

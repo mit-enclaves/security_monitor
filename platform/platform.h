@@ -35,11 +35,11 @@ void platform_purge_core (void); // uarch state only
 #define write_reg(reg, val) ({ \
   asm volatile ("ld " #reg ", %0" :: "rK"(val)); })
 
-void platform_init ();
-void platform_core_init ();
+void platform_init (void);
+void platform_core_init (void);
 
-void platform_interrupt_other_cores ();
-void platform_wait_for_interrupt ();
+void platform_interrupt_other_cores (void);
+void platform_wait_for_interrupt (void);
 
 void platform_delegate_to_untrusted ( uint64_t virtual_pc, uint64_t  ) __attribute__((noreturn));
 void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc, uint64_t virtual_sp ) __attribute__((noreturn));
