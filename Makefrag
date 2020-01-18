@@ -40,7 +40,7 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_core_init.S \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
-	$(PLATFORM_DIR)/platform_jump_to_untrusted.S \
+	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
