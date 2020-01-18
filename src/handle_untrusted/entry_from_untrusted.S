@@ -7,39 +7,45 @@
 .section .rodata.trap_table
 .align 6 # Align to a cache line (64B) boundary
 trap_table:
+.t_tab_root:
   # NOTE: only T0 are saved at this point
-  .word .delegate_to_s            //  0: misaligned instruction address
-  .word .pmp_trap                 //  1: instruction access fault
-  .word .illegal_insn_trap        //  2: illegal instruction
-  .word .delegate_to_s            //  3: breakpoint
-  .word .misaligned_load_trap     //  4: misaligned load addr
-  .word .pmp_trap                 //  5: load access fault
-  .word .misaligned_store_trap    //  6: misaligned store/AMO addr
-  .word .pmp_trap                 //  7: store/AMO access fault
-  .word .delegate_to_s            //  8: ECALL from U-mode
-  .word .ecall_from_s_trap        //  9: ECALL from S-mode
-  .word .bad_event                // 10: (reserved)
-  .word .bad_event                // 11: ECALL from M-mode
-  .word .delegate_to_s            // 12: instruction page fault
-  .word .delegate_to_s            // 13: load page fault
-  .word .bad_event                // 14: (reserved)
-  .word .delegate_to_s            // 15: store/AMO page fault
+  .word (.delegate_to_s-.t_tab_root)      //  0: misaligned instruction address
+  .word (.pmp_trap-.t_tab_root)           //  1: instruction access fault
+  .word (.illegal_insn_trap-.t_tab_root)  //  2: illegal instruction
+  .word (.delegate_to_s-.t_tab_root)      //  3: breakpoint
+  .word (.misaligned_load_trap-.t_tab_root)   //  4: misaligned load addr
+  .word (.pmp_trap-.t_tab_root)           //  5: load access fault
+  .word (.misaligned_store_trap-.t_tab_root)  //  6: misaligned store/AMO addr
+  .word (.pmp_trap-.t_tab_root)           //  7: store/AMO access fault
+  .word (.delegate_to_s-.t_tab_root)      //  8: ECALL from U-mode
+  .word (.ecall_from_s_trap-.t_tab_root)  //  9: ECALL from S-mode
+  .word (.bad_event-.t_tab_root)          // 10: (reserved)
+  .word (.bad_event-.t_tab_root)          // 11: ECALL from M-mode
+  .word (.delegate_to_s-.t_tab_root)      // 12: instruction page fault
+  .word (.delegate_to_s-.t_tab_root)      // 13: load page fault
+  .word (.bad_event-.t_tab_root)          // 14: (reserved)
+  .word (.delegate_to_s-.t_tab_root)      // 15: store/AMO page fault
+
+// TODO: mcause > 15 would be problematic here, make sure the architecture won't let that happen
 
 .align 6 # Align to a cache line (64B) boundary
 interrupt_table:
+.i_tab_root:
   # NOTE: only T0 are saved at this point
-  .word .delegate_to_s          //  0: user software interrupt
-  .word .delegate_to_s          //  1: supervisor software interrupt
-  .word .bad_event              //  2: (reserved)
-  .word .delegate_to_s          //  3: machine software interrupt
-  .word .delegate_to_s          //  4: user timer interrupt
-  .word .delegate_to_s          //  5: supervisor timer interrupt
-  .word .bad_event              //  6: (reserved)
-  .word .handle_mtimer_interrupt //  7: machine timer interrupt
-  .word .delegate_to_s          //  8: user external interrupt
-  .word .bad_event              //  9: supervisor external interrupt
-  .word .bad_event              // 10: (reserved)
-  .word .delegate_to_s          // 11: machine external interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  0: user software interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  1: supervisor software interrupt
+  .word (.bad_event-.i_tab_root)      //  2: (reserved)
+  .word (.delegate_to_s-.i_tab_root)  //  3: machine software interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  4: user timer interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  5: supervisor timer interrupt
+  .word (.bad_event-.i_tab_root)      //  6: (reserved)
+  .word (.handle_mtimer_interrupt-.i_tab_root) //  7: machine timer interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  8: user external interrupt
+  .word (.bad_event-.i_tab_root)      //  9: supervisor external interrupt
+  .word (.bad_event-.i_tab_root)      // 10: (reserved)
+  .word (.delegate_to_s-.i_tab_root)  // 11: machine external interrupt
+
+// TODO: mcause > 11 would be problematic here, make sure the architecture won't let that happen
 
 # Handler for events originating in untrusted software
 # ====================================================
@@ -76,7 +82,8 @@ trap_vector_from_untrusted:
   # handler address = *( event_table_ptr + (mcause << 2) )
   sll t0, t0, 2
   add t0, ra, t0
-  lwu ra, 0(t0) # load address of handler from event table
+  lw t0, 0(t0) # load *offset* of handler from event table, sign extend
+  add ra, ra, t0
 
   # Jump to the event handler
   jr ra # route event

@@ -52,7 +52,7 @@ The initialization routine prepares SM data structures and initializes the platf
 
 The handler receiving untrusted events may delegate some events directly to the untrusted software (this is appropriate for timer interrupts, page faults, etc.).
 The enclave mode SM handlers receives *all* events, and forces an enclave exit if the event is not handled by the SM or the enclave.
-The handlers also implement the [SM api](src/api.h), through which .
+The handlers also implement the [SM API](src/api.h), through which .
 In short, untrusted software and enclaves call into the SM much like a system call: via function call semantics over `ecall` (passing the API method in `$a7`, and arguments via `$a0-$a6`, receiving a result in `$a0`).
 It is very important to remember that all addresses given the the SM as arguments are **physical addresses**.
 
@@ -64,7 +64,8 @@ To remain compatible with an OS and memory-mapped devices, the SM employs `TVM` 
 
 The SM consists of two sets of symbols: the union of (shared state, (initialization code, and the untrusted events handler)) resides at (`SM_STATE_ADDR`, `SM_ADDR`) and is described by `sm.elf`.
 The enclave event handler is different, as each enclave receives its own copy of this code.
-The enclave event handler has no internal state (instead accessing the shared state at `SM_ADDR`, and the SM stack, as set up by the initialization routine), and consists only of instructions and constants.
+The enclave event handler has no internal state (instead accessing the shared state at `SM_STATE_ADDR`, and the SM stack, as set up by the initialization routine), and consists only of instructions and constants.
+All addresses used within the enclave event handler binary are *pc-relative*, with the notable exception of `SM_STATE_ADDR` (which is a constant read from [parameters.h](src/parameters.h))
 This piece of the SM is given by `sm.enclave.elf` (for the debug symbols), and its binary is statically linked into `sm.elf`.
 
 Productive debugging of the SM requires carefully loading the relevant debug symbols. For example, for suppose a test `null_test.elf` starts an enclave at `0x82000000`.
