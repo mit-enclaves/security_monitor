@@ -1,4 +1,4 @@
-# security_monitor
+# MIT Sanctum/MI6 Security Monitor (SM)
 
 The security monitor (SM) is part of MIT's [Sanctum](https://eprint.iacr.org/2015/564) and [MI6](https://arxiv.org/abs/1812.09822) projects.
 The SM implements enclave semantics over a processor system with support for protection domains.
@@ -61,7 +61,7 @@ To remain compatible with an OS and memory-mapped devices, the SM employs `TVM` 
 
 ## Debugging SM code
 
-The SM consists of two sets of symbols: the union of (shared state, (initialization code, and the untrusted events handler)) resides at (`SM_STATE_ADDR, `SM_ADDR`) and is described by `sm.elf`.
+The SM consists of two sets of symbols: the union of (shared state, (initialization code, and the untrusted events handler)) resides at (`SM_STATE_ADDR`, `SM_ADDR`) and is described by `sm.elf`.
 The enclave event handler is different, as each enclave receives its own copy of this code.
 The enclave event handler has no internal state (instead accessing the shared state at `SM_ADDR`, and the SM stack, as set up by the initialization routine), and consists only of instructions and constants.
 This piece of the SM is given by `sm.enclave.elf` (for the debug symbols), and its binary is statically linked into `sm.elf`.
