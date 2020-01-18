@@ -5,6 +5,7 @@ SM_TEST_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11
 SM_TEST_LDFLAGS := -nostartfiles -nostdlib -static
 
 SM_TEST_LD :=  $(SM_TEST_DIR)/test.lds
+.INTERMEDIATE: $(SM_TEST_LD)
 
 NULL_BOOT_BINARY := $(BUILD_DIR)/null_boot.bin
 NULL_BOOT_ELF := $(BUILD_DIR)/null_boot.elf

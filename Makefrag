@@ -26,6 +26,7 @@ SM_COMMON_SRC := \
 	$(PLATFORM_DIR)/platform_panic.S \
 
 SM_LD := $(SM_SRC_DIR)/sm.lds
+.INTERMEDIATE: $(SM_LD)
 
 SM_PARAMETERS := $(SM_SRC_DIR)/parameters.h
 
@@ -81,6 +82,7 @@ SM_SRC := \
 # thread
 
 SM_ENCLAVE_LD := $(SM_SRC_DIR)/sm.enclave.lds
+.INTERMEDIATE: $(SM_ENCLAVE_LD)
 
 IDPT_BIN := $(BUILD_DIR)/idpt.bin
 HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
