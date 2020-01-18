@@ -125,7 +125,7 @@ $(BUILD_DIR)/sm.enclave.elf: $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
 .INTERMEDIATE: $(SM_ENCLAVE_LD)
 
 $(HANDLER_BIN): $(BUILD_DIR)/sm.enclave.elf
-	$(OBJCOPY) -O binary --only-section=.enclave_handler  $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
 
 $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 	$(PYTHON) $(SM_DIR)/scripts/idpt.py $@
@@ -134,4 +134,4 @@ $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 sm: $(BUILD_DIR)/sm.elf
 
 $(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
-	$(OBJCOPY) -O binary --only-section=.sm  $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@

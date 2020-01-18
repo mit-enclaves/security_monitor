@@ -33,18 +33,45 @@ The SM is parameterized via [parameters.h](src/parameters.h).
 | --------------- | ------------:|:------------ |
 | `SM_STATE_ADDR` | `0x80001000` | Address in physical memory where the SM state structure resides. |
 | `SM_STATE_LEN`  | `0x3000`     | Number of bytes reserved for the SM state. This will vary depending on the number of untrusted mailboxes specified in the SM's parameters. |
-| `SM_ADDR`       | `0x80004000` | The base address of the SM in physical memory. This is also the SM's entry address at boot. |
-| `HANDLER_LEN`   | `0x2000`     | Number of bytes reserved for the SM enclave handler. TODO: this need not be a parameter. |
-| `SM_LEN`        | `0x5000`     | Number of bytes reserved for the SM. The SM uses this this to set up the machine's protection primitives to guard itself from other software. |
-| `UNTRUSTED_ENTRY` | `0x80010000` | The entry point for untrusted software (the OS). |
+| `SM_ADDR`       | `0x80003000` | The base address of the SM in physical memory. This is also the SM's entry address at boot. |
+| `HANDLER_LEN`   | `0x3000`     | Number of bytes reserved for the SM enclave handler. TODO: this need not be a parameter. |
+| `SM_LEN`        | `0xF000`     | Number of bytes reserved for the SM. The SM uses this this to set up the machine's protection primitives to guard itself from other software. |
+| `UNTRUSTED_ENTRY` | `0x80020000` | The entry point for untrusted software (the OS). |
 
 #### Processor system configuration
 
-| Parameter      | Default      | Description  |
-| -------------- | ------------:|:------------ |
-| `RAM_BASE`     | `0x80000000` |
-| `RAM_SIZE`     | `0x80000000` |
-| `REGION_SHIFT` | `25`         |
-| `NUM_CORES`    | `1`          |
-
 The SM's parameterization also includes a handful of architectural parameters that you shouldn't mess with unless you know quite well what you're up to.
+
+## Integrating the SM into your software stack
+
+The SM is *not* designed to run on its own.
+Indeed, the notion of "running" the SM is not defined past initialization: the SM maintains internal data structures needed to implement enclave semantics over a low-level "platform" ABI.
+To this end, the SM implements an initialization routine (to be invoked before any untrusted software, early in the boot process), and a pair of M-mode event handlers (for events originating during and outside enclaved execution, respectively).
+
+The initialization routine prepares SM data structures and initializes the platform's protection mechanism before delegating execution to untrusted software (at `UNTRUSTED_ENTRY`).
+
+The handler receiving untrusted events may delegate some events directly to the untrusted software (this is appropriate for timer interrupts, page faults, etc.).
+The enclave mode SM handlers receives *all* events, and forces an enclave exit if the event is not handled by the SM or the enclave.
+The handlers also implement the [SM api](src/api.h), through which .
+In short, untrusted software and enclaves call into the SM much like a system call: via function call semantics over `ecall` (passing the API method in `$a7`, and arguments via `a0-a6`, receiving a result in `a0`).
+
+In the case of a machine with paged virtual memory, the SM expects to own M-mode execution, allowing untrusted software to exist in "S" and "U" modes, and implementing "U" mode enclaves.
+This implementation expects to take advantage of page table walker invariants (see Sanctum, MI6) to implement isolation boundaries, and "S"-mode is barred from disabling paged virtual memory.
+To remain compatible with an OS and memory-mapped devices, the SM employs `TVM` and spoofs physical memory access by installing identity page tables.
+
+## Debugging SM code
+
+The SM consists of two sets of symbols: the union of (shared state, (initialization code, and the untrusted events handler)) resides at (`SM_STATE_ADDR, `SM_ADDR`) and is described by `sm.elf`.
+The enclave event handler is different, as each enclave receives its own copy of this code.
+The enclave event handler has no internal state (instead accessing the shared state at `SM_ADDR`, and the SM stack, as set up by the initialization routine), and consists only of instructions and constants.
+This piece of the SM is given by `sm.enclave.elf` (for the debug symbols), and its binary is statically linked into `sm.elf`.
+
+Productive debugging of the SM requires carefully loading the relevant debug symbols. For example, for suppose a test `null_test.elf` starts an enclave at `0x82000000`.
+We would instruct gdb to load the following symbols:
+
+- the test ELF: `file null_test.elf`, at its given addresses
+- the SM: `add-symbol-file sm.elf <SM_ADDR>`, specifying the address of the SM's `.text` section to be <SM_ADDR>. Omitting this should work if the SM's linker script matches the architecture.
+- the SM enclave handler: `add-symbol-file sm.enclave.elf 0x82000000`
+
+Care should be taken to remove unnecessary symbols, as multiply defined symbols can become extremely confusing.
+Use `info symbol 0x82000000` and `remove-symbol-file -a 0x82000000` to clean up.

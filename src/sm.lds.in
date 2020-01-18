@@ -15,25 +15,31 @@ SECTIONS
   .sm_state : {
     PROVIDE( sm_state = . );
     *(.sm.state)
-  } > SM_STATE
+  } > SM_STATE =0x0
 }
 
 SECTIONS
 {
   . = ORIGIN(SM);
-  .sm : {
+  .text : {
     PROVIDE( sm_entry = . );
     KEEP( *(.text.entry) )
     *(.text.*)
     *(.text)
+  } > SM =0x0
 
+  .rodata ALIGN(64) : {
     *(.rodata)  /* read-only data */
     *(.rodata.*)
+  } > SM =0x0
 
+  .data ALIGN(64)  : {
     *(.data)  /* initialized data */
     *(.data.*)
+  } > SM =0x0
 
+  .bss ALIGN(64)  : {
     *(.bss)   /* uninitialized data */
     *(.bss.*)
-  } > SM
+  } > SM =0x0
 }
