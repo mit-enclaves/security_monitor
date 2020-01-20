@@ -13,6 +13,8 @@ api_result_t sm_get_public_field (public_field_t field, phys_ptr_t out_buffer) {
     - the output buffer region must belong to the caller
   */
 
+
+
   sm_state_t * sm = get_sm_state_ptr();
   sm_keys_t * keys = &sm->keys;
   size_t buffer_size = 0;

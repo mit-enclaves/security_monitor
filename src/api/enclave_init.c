@@ -12,18 +12,19 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
       - the enclave has had its handler, page tables, and at least 1 page of data loded.
   */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   // <TRANSACTION>
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
-  uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   // Make sure the enclave is in correct state:
   if (enclave_metadata->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED) {
-    unlock_region( region_id );
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -39,7 +40,7 @@ api_result_t sm_enclave_init (enclave_id_t enclave_id) {
   enclave_metadata->init_state = ENCLAVE_STATE_INITIALIZED;
 
   // Release locks
-  unlock_region( region_id );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

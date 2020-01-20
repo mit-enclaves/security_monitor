@@ -18,10 +18,12 @@ api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uint
     - debug is covered by measurement.
       */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   uint64_t enclave_pages = sm_enclave_metadata_pages(num_mailboxes);
 
   // <TRANSACTION>
-  api_result_t result = lock_region_iff_free_metadata_pages( enclave_id, enclave_pages );
+  api_result_t result = add_lock_region_iff_free_metadata_pages( enclave_id, enclave_pages, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
@@ -68,7 +70,7 @@ api_result_t sm_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uint
   // enclave_metadata->mailboxes are zero (empty, not expecting mail)
 
   // Release locks
-  unlock_region( region_id );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

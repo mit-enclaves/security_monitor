@@ -13,8 +13,10 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
       - all of the enclave's regions can be locked.
   */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   // <TRANSACTION>
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
@@ -24,12 +26,11 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
   metadata_region_t * region = region_id_to_addr(region_id);
-  region_map_t locked_regions = (const region_map_t){ 0 };
-  locked_regions.flags[region_id] = true;
+
 
   // Fail if the enclave has any threads associated with it
   if( enclave_metadata->num_threads > 0 ) {
-    unlock_region( region_id );
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -37,7 +38,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   for ( int i=0; i<NUM_REGIONS; i++ ) {
     if ( enclave_metadata->regions.flags[i] == true ) {
       if ( !lock_region(i) ) {
-        unlock_regions( &locked_regions );
+        unlock_regions(&locked_regions);
         return MONITOR_CONCURRENT_CALL;
       } else {
         locked_regions.flags[i] = true;
@@ -73,7 +74,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   memset(enclave_metadata, 0x0, enclave_pages*PAGE_SIZE);
 
   // Release locks
-  unlock_regions( &locked_regions );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

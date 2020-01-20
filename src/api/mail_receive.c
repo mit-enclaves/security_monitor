@@ -19,6 +19,9 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
     - the message buffer region must belong to the caller
   */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+  bool untrusted_locked = false;
+
   sm_state_t * sm = get_sm_state_ptr();
   enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
   mailbox_t * mailbox;
@@ -42,7 +45,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
 
   } else { // an enclave
 
-    if (!lock_region(addr_to_region_id(caller))) {
+    if (!add_lock_region(addr_to_region_id(caller), &locked_regions)) {
       return MONITOR_CONCURRENT_CALL;
     }
 
@@ -50,7 +53,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
 
     // mailbox_id must be valid
     if (mailbox_id >= enclave_metadata->num_mailboxes) {
-      unlock_region(addr_to_region_id(caller));
+      unlock_regions(&locked_regions);
       return MONITOR_INVALID_VALUE;
     }
 
@@ -61,11 +64,10 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
   // the recipient mailbox must be full
 
   if (mailbox->state != ENCLAVE_MAILBOX_STATE_FULL) {
-    if (caller == OWNER_UNTRUSTED) {
+    if (untrusted_locked) {
       unlock_untrusted_state();
-    } else {
-      unlock_region(addr_to_region_id(caller));
     }
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -74,11 +76,10 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
 
   if ((addr_to_region_id(out_message) != addr_to_region_id(out_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
     (sm_region_owner(addr_to_region_id(out_message)) != caller)) {
-    if (caller == OWNER_UNTRUSTED) {
+    if (untrusted_locked) {
       unlock_untrusted_state();
-    } else {
-      unlock_region(addr_to_region_id(caller));
     }
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -87,35 +88,29 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
 
   if ((addr_to_region_id(out_sender_measurement) != addr_to_region_id(out_sender_measurement + sizeof(hash_t))) ||
     (sm_region_owner(addr_to_region_id(out_sender_measurement)) != caller)) {
-    if (caller == OWNER_UNTRUSTED) {
+    if (untrusted_locked) {
       unlock_untrusted_state();
-    } else {
-      unlock_region(addr_to_region_id(caller));
     }
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // Lock the message buffer region
-  if(!lock_region(addr_to_region_id(out_message))) {
-    if (caller == OWNER_UNTRUSTED) {
+  if(!add_lock_region(addr_to_region_id(out_message), &locked_regions)) {
+    if (untrusted_locked) {
       unlock_untrusted_state();
-    } else {
-      unlock_region(addr_to_region_id(caller));
     }
+    unlock_regions(&locked_regions);
     return MONITOR_CONCURRENT_CALL;
   }
 
-  // Lock the measurement buffer region if different from the message buffer region
-  if (addr_to_region_id(out_sender_measurement) != addr_to_region_id(out_message)) {
-    if(!lock_region(addr_to_region_id(out_sender_measurement))) {
-      if (caller == OWNER_UNTRUSTED) {
-        unlock_untrusted_state();
-      } else {
-        unlock_region(addr_to_region_id(caller));
-      }
-      unlock_region(addr_to_region_id(out_message));
-      return MONITOR_CONCURRENT_CALL;
+  // Lock the measurement buffer region
+  if(!add_lock_region(addr_to_region_id(out_sender_measurement), &locked_regions)) {
+    if (untrusted_locked) {
+      unlock_untrusted_state();
     }
+    unlock_regions(&locked_regions);
+    return MONITOR_CONCURRENT_CALL;
   }
 
   // NOTE: Inputs are now deemed valid.
@@ -133,13 +128,10 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;
 
   // Release locks
-  if ( caller == OWNER_UNTRUSTED ) {
+  if (untrusted_locked) {
     unlock_untrusted_state();
-  } else {
-    unlock_region( addr_to_region_id(caller) );
   }
-  unlock_region(addr_to_region_id(out_message));
-  unlock_region(addr_to_region_id(out_sender_measurement));
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

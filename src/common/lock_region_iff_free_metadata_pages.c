@@ -1,10 +1,6 @@
 #include <sm.h>
 
-api_result_t lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pages ) {
-  return lock_region_iff_free_metadata_pages_and_not_locked(ptr, num_pages, true);
-}
-
-api_result_t lock_region_iff_free_metadata_pages_and_not_locked( uintptr_t ptr, uint64_t num_pages, bool not_locked) {
+api_result_t add_lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t num_pages, region_map_t * locked_regions) {
   // Get a handler to SM global state
   sm_state_t * sm = get_sm_state_ptr();
 
@@ -28,27 +24,28 @@ api_result_t lock_region_iff_free_metadata_pages_and_not_locked( uintptr_t ptr, 
     return MONITOR_INVALID_VALUE;
   }
 
+  // Compute if the region was already locked
+  bool not_previously_locked = locked_regions->flags[region_id];
+
   // Begin transation
   // ----------------
 
-  if(not_locked) {
-    if ( !lock_region( region_id ) ) {
-      return MONITOR_CONCURRENT_CALL;
-    }
+  if (!add_lock_region(region_id, locked_regions)) {
+    return MONITOR_CONCURRENT_CALL;
   }
 
   // Check that the requested region is indeed a metadata region
   if ( sm->regions[region_id].type != REGION_TYPE_METADATA ) {
-    if(not_locked) {
-      unlock_region( region_id );
+    if(not_previously_locked) {
+      unlock_region(region_id);
     }
     return MONITOR_INVALID_STATE;
   }
 
   // Check that the requested region is owned (not blocked)
   if ( sm->regions[region_id].state != REGION_STATE_OWNED ) {
-    if(not_locked) {
-      unlock_region( region_id );
+    if(not_previously_locked) {
+      unlock_region(region_id);
     }
     return MONITOR_INVALID_STATE;
   }
@@ -57,8 +54,8 @@ api_result_t lock_region_iff_free_metadata_pages_and_not_locked( uintptr_t ptr, 
   for ( int i=0; i<num_pages; i++ ) {
     metadata_region_t * metadata_region = region_id_to_addr(region_id);
     if ( metadata_region->page_info[page_id+i] != METADATA_PAGE_FREE ) {
-      if(not_locked) {
-        unlock_region( region_id );
+      if(not_previously_locked) {
+        unlock_region(region_id);
       }
       return MONITOR_INVALID_STATE;
     }

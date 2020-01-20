@@ -15,7 +15,9 @@ api_result_t sm_region_free ( region_id_t region_id ) {
       - if enclave, the enclave metadata region must be lockable
   */
 
-  if ( !is_valid_region_id(region_id) ) {
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
+  if (!is_valid_region_id(region_id)) {
     return MONITOR_INVALID_VALUE;
   }
 
@@ -23,26 +25,26 @@ api_result_t sm_region_free ( region_id_t region_id ) {
   sm_region_t * region_metadata = &sm->regions[region_id];
 
   // <TRANSACTION>
-  if ( !lock_region(region_id) ) {
+  if (!add_lock_region(region_id, &locked_regions)) {
     return MONITOR_CONCURRENT_CALL;
   }
 
   if ( region_metadata->state != REGION_STATE_BLOCKED ) {
-    unlock_region( region_id );
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // NOTE: regions of type SM could not have been blocked. Such regions cannot be ever freed.
   if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    if ( !lock_untrusted_state() ) {
-      unlock_region( region_id );
+    if (!lock_untrusted_state()) {
+      unlock_regions(&locked_regions);
       return MONITOR_CONCURRENT_CALL;
     }
 
   } else {
     // The owner is a valid enclave
-    if ( !lock_region(addr_to_region_id(region_metadata->owner)) ) {
-      unlock_region( region_id );
+    if (!add_lock_region(addr_to_region_id(region_metadata->owner), &locked_regions)) {
+      unlock_regions(&locked_regions);
       return MONITOR_CONCURRENT_CALL;
     }
 
@@ -76,10 +78,10 @@ api_result_t sm_region_free ( region_id_t region_id ) {
   if ( region_metadata->owner == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();
   } else { // a valid enclave
-    unlock_region( addr_to_region_id(region_metadata->owner) );
+    unlock_regions(&locked_regions);
   }
 
-  unlock_region( region_id );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

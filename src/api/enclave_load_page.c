@@ -24,57 +24,58 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
 
   // Lock the enclave's metadata's region, the phys_addr region and the os_addr region
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   // <TRANSACTION>
   // enclave_id must be valid
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
-  uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   // enclave must be in state ENCLAVE_STATE_PAGE_TABLES_LOADED or ENCLAVE_STATE_PAGE_DATA_LOADED
   if((enclave_metadata->init_state != ENCLAVE_STATE_PAGE_TABLES_LOADED)
     && (enclave_metadata->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED)) {
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must be page alligned
   if(phys_addr % PAGE_SIZE) {
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
   // phys_addr must be greater than the last physical address loaded
   if(enclave_metadata->last_phys_addr_loaded > phys_addr) {
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
   // Check that phys_addr points into a DRAM region owned by the enclave
   if(sm_region_owner(addr_to_region_id(phys_addr)) != enclave_id){
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // Check virtual addr validity
   if(((virtual_addr & enclave_metadata->ev_mask) != enclave_metadata->ev_base) ||
        (((virtual_addr + PAGE_SIZE) & enclave_metadata->ev_mask) != enclave_metadata->ev_base)) {
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
   // os_addr must be page alligned
   if(os_addr % PAGE_SIZE) {
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
   // Check that phys_addr points into a DRAM region owned by the enclave
   if(sm_region_owner(addr_to_region_id(os_addr)) != OWNER_UNTRUSTED){
-    unlock_region(region_id);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -87,14 +88,13 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
 
   // Lock the phys_addr region and the os_addr region
 
-  if(!lock_region(addr_to_region_id(phys_addr))) {
-    unlock_region(region_id);
+  if(!add_lock_region(addr_to_region_id(phys_addr), &locked_regions)) {
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
-  if(!lock_region(addr_to_region_id(os_addr))) {
-    unlock_region(region_id);
-    unlock_region(addr_to_region_id(phys_addr));
+  if(!add_lock_region(addr_to_region_id(os_addr), &locked_regions)) {
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }
 
@@ -106,9 +106,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
   // Load page table entry in page table and check arguments
   result = load_page_table_entry(enclave_id, phys_addr, virtual_addr, 0, acl); // TODO: Are loaded pages always kilo pages?
   if ( MONITOR_OK != result ) {
-    unlock_region(region_id);
-    unlock_region(addr_to_region_id(phys_addr));
-    unlock_region(addr_to_region_id(os_addr));
+    unlock_regions(&locked_regions);
     return result;
   }
 
@@ -124,9 +122,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
   hash_extend(&enclave_metadata->hash_context, (const void *) os_addr, PAGE_SIZE);
 
   // Release locks
-  unlock_region(region_id);
-  unlock_region(addr_to_region_id(phys_addr));
-  unlock_region(addr_to_region_id(os_addr));
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

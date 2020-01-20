@@ -7,6 +7,12 @@ void test_entry (void) {
   uint8_t pk_buffer[32];
 
   api_result_t result = SM_API_CALL(SM_GET_PUBLIC_FIELD, PUBLIC_FIELD_PK_M, &pk_buffer, 0, 0, 0, 0);
+  if(MONITOR_OK == result) {
+    print_str("Test SUCCESS\n");
+  }
+  else {
+    print_str("Test FAIL\n");
+  }
 
   // Set up a fake enclave API call
 
@@ -22,5 +28,5 @@ void test_entry (void) {
   uint64_t bla = a0;
   */
 
-  test_success();
+  test_completed();
 }

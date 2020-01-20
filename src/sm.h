@@ -98,7 +98,7 @@ static inline void unlock_regions (region_map_t * locked_regions) {
   }
 }
 
-static inline bool add_locked_region (region_id_t region_id, region_map_t * locked_regions) {
+static inline bool add_lock_region (region_id_t region_id, region_map_t * locked_regions) {
   if (locked_regions->flags[region_id]) {
     return true;
   } else if ( lock_region(region_id) ) {
@@ -109,23 +109,17 @@ static inline bool add_locked_region (region_id_t region_id, region_map_t * lock
   }
 }
 
-
 // Metadata helpers
-api_result_t lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages);
-api_result_t lock_region_iff_free_metadata_pages_and_not_locked (uintptr_t ptr, uint64_t num_pages, bool not_locked);
+api_result_t add_lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages, region_map_t * locked_regions);
 
-api_result_t lock_region_iff_valid_metadata( uintptr_t ptr, metadata_page_t metadata_type );
-api_result_t lock_region_iff_valid_metadata_pages_and_not_locked( uintptr_t ptr, metadata_page_t metadata_type,  bool not_locked);
+api_result_t add_lock_region_iff_valid_metadata(uintptr_t ptr, metadata_page_t metadata_type, region_map_t * locked_regions);
 
-static inline api_result_t lock_region_iff_valid_enclave (uintptr_t ptr) {
-  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE);
+static inline api_result_t add_lock_region_iff_valid_enclave (uintptr_t ptr, region_map_t * locked_regions) {
+  return add_lock_region_iff_valid_metadata( ptr, METADATA_PAGE_ENCLAVE, locked_regions);
 }
 
-static inline api_result_t lock_region_iff_valid_thread (uintptr_t ptr) {
-  return lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD);
-}
-static inline api_result_t lock_region_iff_valid_thread_and_not_locked (uintptr_t ptr, bool not_locked) {
-  return lock_region_iff_valid_metadata_pages_and_not_locked( ptr, METADATA_PAGE_THREAD, not_locked);
+static inline api_result_t add_lock_region_iff_valid_thread (uintptr_t ptr, region_map_t * locked_regions) {
+  return add_lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD, locked_regions);
 }
 
 

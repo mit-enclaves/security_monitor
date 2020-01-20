@@ -2,13 +2,6 @@
 
 api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
 
-  //TODO: lock enclave metadata region with add_locked_region
-  //TODO: lock thread metadata region with add_locked_region
-
-  //TODO: thread_metadata->is_scheduled = true
-
-  //TODO: release locks with unlock_regions
-
   // Validate inputs
   // ---------------
 
@@ -32,46 +25,41 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   uint64_t core_id = read_csr(mhartid);
   sm_core_t *core_metadata = &(sm->cores[core_id]);
 
-  uint64_t region_id_enclave = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
-  uint64_t region_id_thread = addr_to_region_id(thread_id);
   thread_metadata_t *thread_metadata = (thread_metadata_t *) thread_id;
+
+  region_map_t locked_regions = (const region_map_t){ 0 };
 
   // <TRANSACTION>
   // enclave_id must be valid
   // Lock the enclave's metadata's region
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
   // enclave must be in state ENCLAVE_STATE_PAGE_DATA_LOADED
   if(enclave_metadata->init_state != ENCLAVE_STATE_INITIALIZED) {
-    unlock_region(region_id_enclave);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // thread_id must be valid
-  // Lock the thread_id region (if different)
-  bool different_region = (region_id_thread != region_id_enclave);
-  bool not_locked = different_region; // If the regions are different, we need to lock it
-  result = lock_region_iff_valid_thread_and_not_locked(thread_id, not_locked);
+  result = add_lock_region_iff_valid_thread(thread_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
   // the tread must not be scheduled
   if(thread_metadata->is_scheduled) {
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // Get the curent core's lock
   if(!lock_core(core_id)) {
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_CONCURRENT_CALL;
   }
 
@@ -137,8 +125,7 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   swap_csr(mscratch, thread_metadata->fault_sp);
 
   // Release locks
-  unlock_region(region_id_enclave);
-  unlock_region(region_id_thread);
+  unlock_regions(&locked_regions);
   unlock_core(core_id);
   // </TRANSACTION>
 

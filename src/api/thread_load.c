@@ -19,7 +19,8 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
 
   // Lock the enclave's metadata's region and the thread_id region (if different)
 
-  uint64_t region_id_enclave = addr_to_region_id(enclave_id);
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   uint64_t region_id_thread = addr_to_region_id(thread_id);
@@ -30,51 +31,46 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   // <TRANSACTION>
   // enclave_id must be valid
   // Lock the enclave's metadata's region
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
   // enclave must be in state ENCLAVE_STATE_PAGE_DATA_LOADED
   if(enclave_metadata->init_state != ENCLAVE_STATE_PAGE_TABLES_LOADED) {
-    unlock_region(region_id_enclave);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // thread_id must point to a free metadata region
   // Lock the thread_id region (if different)
-  bool different_region = (region_id_thread != region_id_enclave);
-  bool not_locked = different_region; // If the regions are different, we need to lock it
-  result = lock_region_iff_free_metadata_pages_and_not_locked(thread_id, num_metadata_pages, not_locked);
+  result = add_lock_region_iff_free_metadata_pages(thread_id, num_metadata_pages, &locked_regions);
   if ( MONITOR_OK != result ) {
+    unlock_regions(&locked_regions);
     return result;
   }
 
   // phys_addr must point to a region owned by the enclave
   if(sm_region_owner(addr_to_region_id(entry_pc)) != enclave_id){
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
   if(sm_region_owner(addr_to_region_id(entry_stack)) != enclave_id){
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
   if(sm_region_owner(addr_to_region_id(fault_pc)) != enclave_id){
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
   if(sm_region_owner(addr_to_region_id(fault_stack)) != enclave_id){
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -92,15 +88,15 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
     region->page_info[page_id + i] = METADATA_PAGE_INVALID;
   }
 
-  thread_metadata->owner               = enclave_id;
-  //platform_lock_acquire(thread_metadata->is_scheduled); TODO: ?????
-  //thread_metadata->aex_present         = false;
-  //thread_metadata->untrusted_pc        = 0;
-  //thread_metadata->untrusted_sp        = 0;
-  thread_metadata->entry_pc            = entry_pc;
-  thread_metadata->entry_sp            = entry_stack;
-  thread_metadata->fault_pc            = fault_pc;
-  thread_metadata->fault_sp            = fault_stack;
+  thread_metadata->owner        = enclave_id;
+  //thread_metadata->is_schedule  = 0; TODO: ?????
+  //thread_metadata->aex_present  = false;
+  //thread_metadata->untrusted_pc = 0;
+  //thread_metadata->untrusted_sp = 0;
+  thread_metadata->entry_pc     = entry_pc;
+  thread_metadata->entry_sp     = entry_stack;
+  thread_metadata->fault_pc     = fault_pc;
+  thread_metadata->fault_sp     = fault_stack;
 
   /*
   for(int i = 0; i < NUM_REGISTERS; i++) {
@@ -120,8 +116,7 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   hash_extend(&enclave_metadata->hash_context, &fault_stack, sizeof(fault_stack));
 
   // Release locks
-  unlock_region(region_id_enclave);
-  unlock_region(region_id_thread);
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

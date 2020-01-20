@@ -29,6 +29,8 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
   uint64_t core_id = read_csr(mhartid);
   sm_core_t *core_metadata = &(sm->cores[core_id]);
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   // <TRANSACTION>
   // Get the curent core's lock
   if(!lock_core(core_id)) {
@@ -54,17 +56,15 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
 
   // <TRANSACTION>
   // Lock the thread's metadata region
-  api_result_t result = lock_region(region_id_enclave);
+  api_result_t result = add_lock_region(region_id_enclave, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
 
-  if(region_id_enclave != region_id_thread) {
-    result = lock_region(region_id_thread);
-    if ( MONITOR_OK != result ) {
-      unlock_region(region_id_enclave);
-      return result;
-    }
+  result = add_lock_region(region_id_thread, &locked_regions);
+  if ( MONITOR_OK != result ) {
+    unlock_regions(&locked_regions);
+    return result;
   }
 
   // Set MSTATUS
@@ -97,8 +97,7 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
   thread_metadata->aex_present = false; // TODO: Usefull?
 
   // Release locks
-  unlock_region(region_id_enclave);
-  unlock_region(region_id_thread);
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   // Procede to mret

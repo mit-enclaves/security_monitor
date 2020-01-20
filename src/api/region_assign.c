@@ -15,6 +15,9 @@ api_result_t sm_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
       - if the new owner is a valid enclave, it must be lockable
   */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+  bool untrusted_locked = false;
+
   if ( !is_valid_region_id(region_id) ) {
     return MONITOR_INVALID_VALUE;
   }
@@ -23,28 +26,27 @@ api_result_t sm_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
   sm_region_t * region_metadata = &sm->regions[region_id];
 
   // <TRANSACTION>
-  if ( !lock_region(region_id) ) {
+  if (!add_lock_region(region_id, &locked_regions) ) {
     return MONITOR_CONCURRENT_CALL;
   }
 
   if ( region_metadata->state != REGION_STATE_FREE ) {
-    unlock_region( region_id );
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   if ( new_owner == OWNER_UNTRUSTED ) {
     if ( !lock_untrusted_state() ) {
-      unlock_region( region_id );
+      unlock_regions(&locked_regions);
       return MONITOR_CONCURRENT_CALL;
     }
-
+    untrusted_locked = true;
   } else {
-    api_result_t result = lock_region_iff_valid_enclave( new_owner );
+    api_result_t result = add_lock_region_iff_valid_enclave(new_owner, &locked_regions);
     if ( MONITOR_OK != result ) {
-      unlock_region( region_id );
+      unlock_regions(&locked_regions);
       return result;
     }
-
   }
 
   // NOTE: Inputs are now deemed valid.
@@ -66,13 +68,10 @@ api_result_t sm_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
   }
 
   // Release locks
-  if ( new_owner == OWNER_UNTRUSTED ) {
+  if(untrusted_locked) {
     unlock_untrusted_state();
-  } else {
-    unlock_region( addr_to_region_id(new_owner) );
   }
-
-  unlock_region( region_id );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

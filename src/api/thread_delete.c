@@ -14,9 +14,12 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
 
   // Lock the thread_id region
 
+
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   // <TRANSACTION>
   // thread_id must be valid
-  api_result_t result = lock_region_iff_valid_thread(thread_id);
+  api_result_t result = add_lock_region_iff_valid_thread(thread_id, &locked_regions);
   if ( MONITOR_OK != result ) {
     return result;
   }
@@ -29,18 +32,15 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
 
-  // Lock the thread's owner/enclave metadata region (if different)
-  if(region_id_enclave != region_id_thread) {
-    if(!lock_region(region_id_enclave)) {
-      unlock_region(region_id_thread);
-      return MONITOR_CONCURRENT_CALL;
-    }
+  // Lock the thread's owner/enclave metadata region
+  if(!add_lock_region(region_id_enclave, &locked_regions)) {
+    unlock_regions(&locked_regions);
+    return MONITOR_CONCURRENT_CALL;
   }
 
   // the tread must not be scheduled
   if(thread_metadata->is_scheduled) {
-    unlock_region(region_id_enclave);
-    unlock_region(region_id_thread);
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
@@ -66,8 +66,7 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
   }
 
   // Release locks
-  unlock_region(region_id_enclave);
-  unlock_region(region_id_thread);
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

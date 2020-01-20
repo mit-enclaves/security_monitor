@@ -14,6 +14,8 @@ api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
     - the output buffer region must belong to the caller
   */
 
+  region_map_t locked_regions = (const region_map_t){ 0 };
+
   size_t buffer_size = sizeof(secret_key_t);
 
   uint64_t region_id = addr_to_region_id(out_buffer);
@@ -30,7 +32,7 @@ api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
   enclave_id_t caller = sm->cores[platform_get_core_id()].owner;
 
   // <TRANSACTION>
-  if ( !lock_region(addr_to_region_id(caller)) ) {
+  if ( !add_lock_region(addr_to_region_id(caller), &locked_regions)) {
     return MONITOR_CONCURRENT_CALL;
   }
 
@@ -39,20 +41,18 @@ api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
     return MONITOR_ACCESS_DENIED;
   }
 
-  if ( !lock_region(region_id) ) {
-    unlock_region( addr_to_region_id(caller) );
+  if ( !add_lock_region(region_id, &locked_regions) ) {
+    unlock_regions(&locked_regions);
     return MONITOR_CONCURRENT_CALL;
   }
 
   if ( region_metadata->state != REGION_STATE_OWNED ) {
-    unlock_region( region_id );
-    unlock_region( addr_to_region_id(caller) );
+    unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   if ( region_metadata->owner != caller ) {
-    unlock_region( region_id );
-    unlock_region( addr_to_region_id(caller) );
+    unlock_regions(&locked_regions);
     return MONITOR_ACCESS_DENIED;
   }
 
@@ -66,8 +66,7 @@ api_result_t sm_get_attestation_key ( phys_ptr_t out_buffer ) {
   memcpy( (uint8_t *)out_buffer, &keys->software_secret_key, buffer_size );
 
   // Release locks
-  unlock_region( region_id );
-  unlock_region( addr_to_region_id(caller) );
+  unlock_regions(&locked_regions);
   // </TRANSACTION>
 
   return MONITOR_OK;

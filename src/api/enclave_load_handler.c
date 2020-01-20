@@ -14,13 +14,12 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
    - the handler should fit in one region
   */
 
-
-  uint64_t region_id = addr_to_region_id(enclave_id);
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
+  region_map_t locked_regions = (const region_map_t){ 0 };
 
   // <TRANSACTION>
   // enclave_id must be valid
-  api_result_t result = lock_region_iff_valid_enclave( enclave_id );
+  api_result_t result = add_lock_region_iff_valid_enclave(enclave_id, &locked_regions);
   if ( MONITOR_OK != result ) {
    return result;
   }
@@ -28,19 +27,19 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
 
   // enclave must be ENCLAVE_STATE_CREATED
   if(enclave_metadata->init_state > ENCLAVE_STATE_CREATED) {
-   unlock_region(region_id);
+   unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
   }
 
   // phys_addr must be page alligned
   if(phys_addr % PAGE_SIZE) {
-   unlock_region(region_id);
+   unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
   }
 
   // phys_addr must be greater than the last physical address loaded
   if(enclave_metadata->last_phys_addr_loaded > phys_addr) {
-   unlock_region(region_id);
+   unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
   }
 
@@ -51,19 +50,18 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
 
   // Make sure the handlers are not larger than a region
   if(addr_to_region_id(phys_addr) != addr_to_region_id(end_phys_addr)){
-   unlock_region(region_id);
-   unlock_region(addr_to_region_id(phys_addr));
+   unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
   }
 
   // Check that phys_addr points into a DRAM region owned by the enclave
   if(sm_region_owner(addr_to_region_id(phys_addr)) != enclave_id){
-   unlock_region(region_id);
+   unlock_regions(&locked_regions);
    return MONITOR_INVALID_STATE;
   }
 
-  if (!lock_region(addr_to_region_id(phys_addr))) {
-   unlock_region(region_id);
+  if (!add_lock_region(addr_to_region_id(phys_addr), &locked_regions)) {
+   unlock_regions(&locked_regions);
    return MONITOR_CONCURRENT_CALL;
   }
 
@@ -79,6 +77,10 @@ api_result_t sm_enclave_load_handler (enclave_id_t enclave_id, uintptr_t phys_ad
 
   // Update the measurement
   hash_extend(&enclave_metadata->hash_context, &enclave_handler_start, size_handler);
+
+  // Release locks
+  unlock_regions(&locked_regions);
+  // </TRANSACTION>
 
   return MONITOR_OK;
 }
