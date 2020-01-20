@@ -6,3 +6,9 @@ tools
 
 # vim files
 *.swp
+
+#atom files
+.tags*
+
+# gdb
+gdb.txt

@@ -7,7 +7,9 @@ SM_DIR:=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # -mcmodel=medany is *very* important - it ensures the program addressing is PC-relative. Ensure no global variables are used. To quote from the spec, "the program and its statically defined symbols must lie within any single 2 GiB address range. Addressing for global symbols uses lui/addi instruction pairs, which emit the R_RISCV_PCREL_HI20/R_RISCV_PCREL_LO12_I sequences."
 
-SM_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11  -Wall -O0 -ggdb
+DEBUG_FLAGS := -ggdb3
+
+SM_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -Wall -O0 $(DEBUG_FLAGS)
 
 SM_LDFLAGS := -nostartfiles -nostdlib -static
 
