@@ -67,6 +67,8 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
     return result;
   }
 
+  thread_metadata->aex_present = false; // TODO: Usefull?
+
   // Set MSTATUS
   uint64_t mstatus_tmp = read_csr(mstatus);
 
@@ -84,24 +86,30 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
   swap_csr(satp, enclave_metadata->eptbr);
 
   // Restore trap handler
-  swap_csr(mtvec, thread_metadata->fault_pc);
+  write_csr(mtvec, ( ((uint64_t)(&trap_vector_from_untrusted))&(~0x3L) ));
 
-  // Set pc
-  write_csr(mepc, thread_metadata->untrusted_pc + 4);
-  // Set sp
-  write_csr(mscratch, thread_metadata->untrusted_sp);
-  asm volatile ("csrrw sp, mscratch, sp");
-  swap_csr(mscratch, thread_metadata->fault_sp);
+  // Prepare untrusted pc
+  write_csr(mepc, thread_metadata->untrusted_pc);
 
-  // TODO: Recover Register File
-  thread_metadata->aex_present = false; // TODO: Usefull?
+  // Compute the core's SM pointer
+  uintptr_t SM_sp = stack_ptr + (core_id * (STACK_SIZE));
+  uintptr_t *regs = (uintptr_t *) SM_sp;
+  // Save the registers on the stack
+  for(int i = 0; i < NUM_REGISTERS; i++) {
+    regs[i] = thread_metadata->untrusted_state[i];
+  }
 
   // Release locks
   unlock_regions(&locked_regions);
   // </TRANSACTION>
 
-  // Procede to mret
-  asm volatile ("mret");
+  // Restaure registers and perform mret
+  register uintptr_t t0 asm ("t0") = SM_sp;
+  // Procede to mret \\ TODO : purge the core?
+  asm volatile (" \
+  mv sp, t0; \n \
+  call restore_regs; \n \
+  call enclave_perform_mret;"  : : "r" (t0));
 
   return MONITOR_OK; // Unreachable
 }

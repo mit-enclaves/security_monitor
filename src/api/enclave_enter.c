@@ -80,7 +80,6 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   }
 
   // Save untrusted sp, pc
-  thread_metadata->untrusted_sp = thread_metadata->untrusted_state[2];
   thread_metadata->untrusted_pc = read_csr(mepc);
 
   if(aex) {
@@ -117,11 +116,9 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   // Set trap handler
   swap_csr(mtvec, thread_metadata->fault_pc);
 
-  // Set pc
+  // Prepare enclave pc
   write_csr(mepc, thread_metadata->entry_pc);
-  // Set sp
-  write_csr(mscratch, thread_metadata->entry_sp);
-  asm volatile ("csrrw sp, mscratch, sp");
+  // Prepare enclave sp
   swap_csr(mscratch, thread_metadata->fault_sp);
 
   // Release locks
@@ -129,42 +126,13 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   unlock_core(core_id);
   // </TRANSACTION>
 
-  // Clean State
-
-  clean_reg(x1);
-  // Do not clean x2
-  clean_reg(x3);
-  clean_reg(x4);
-  clean_reg(x5);
-  clean_reg(x6);
-  clean_reg(x7);
-  clean_reg(x8);
-  clean_reg(x9);
-  clean_reg(x10);
-  clean_reg(x11);
-  clean_reg(x12);
-  clean_reg(x13);
-  clean_reg(x14);
-  clean_reg(x15);
-  clean_reg(x16);
-  clean_reg(x17);
-  clean_reg(x18);
-  clean_reg(x19);
-  clean_reg(x20);
-  clean_reg(x21);
-  clean_reg(x22);
-  clean_reg(x23);
-  clean_reg(x24);
-  clean_reg(x25);
-  clean_reg(x26);
-  clean_reg(x27);
-  clean_reg(x28);
-  clean_reg(x29);
-  clean_reg(x30);
-  clean_reg(x31);
-
-  // mret
-  asm volatile ("mret");
+  register uint64_t t0 asm ("t0") = thread_metadata->entry_sp;
+  asm volatile (" \
+  mv sp, t0; \n \
+  call platform_clean_core; \n \
+  call_platform_purge_core; \n \
+  li ra, 0; \n \
+  mret"  : : "r" (t0));
 
   return MONITOR_OK; // Not rechable
 }
