@@ -29,12 +29,12 @@ void platform_jump_to_untrusted ( region_map_t * region_map, uint64_t virtual_pc
     csrr t1, mhartid; \n \
     mul t0, t0, t1; \n \
     sub sp, sp, t0; # sp = stack_ptr - (mhartid*STACK_SIZE) \n \
-    csrw mscratch, sp; \n \
+    csrw mscratch, a1; \n \
     \
     # Clean the cores; \n \
     call platform_clean_core; \n \
     call platform_purge_core; \n \
-    mv sp, a1; \n \
+    csrrw sp, mscratch, sp; \n \
     li ra, 0; \n \
     \
     mret " : : "r" (t0), "r" (a0), "r" (a1));
