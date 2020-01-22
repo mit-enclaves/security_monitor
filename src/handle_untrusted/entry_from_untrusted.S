@@ -179,22 +179,6 @@ trap_vector_from_untrusted:
   ld t1, 6*REGBYTES(sp)
   ld t2, 7*REGBYTES(sp)
 
-  # (continue to perform_mret)
-.globl .perform_mret
-.perform_mret:
-  # Go back whence we came.
-  ld t0, 2*REGBYTES(sp)
-  csrw mscratch, t0
-
-  csrr t0, mepc
-  addi t0, t0, 4
-  csrw mepc, t0
-
-  ld ra, 1*REGBYTES(sp)
-  ld t0, 5*REGBYTES(sp)
-  csrrw sp, mscratch, sp
-  mret
-
 .bad_event:
   csrr a0, mcause
   call platform_panic;

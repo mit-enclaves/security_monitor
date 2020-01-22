@@ -92,7 +92,6 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   //thread_metadata->is_schedule  = 0;
   //thread_metadata->aex_present  = false;
   //thread_metadata->untrusted_pc = 0;
-  //thread_metadata->untrusted_sp = 0;
   thread_metadata->entry_pc     = entry_pc;
   thread_metadata->entry_sp     = entry_stack;
   thread_metadata->fault_pc     = fault_pc;

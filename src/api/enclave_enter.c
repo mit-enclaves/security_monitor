@@ -1,5 +1,8 @@
 #include <sm.h>
 
+extern uintptr_t trap_vector_from_untrusted;
+extern uintptr_t stack_ptr;
+
 api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
 
   // Validate inputs
@@ -79,8 +82,12 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
     regs[i] = aex ? thread_metadata->aex_state[i] : 0; // TODO: Init registers?
   }
 
-  // Save untrusted sp, pc
+  // Save untrusted pc
   thread_metadata->untrusted_pc = read_csr(mepc);
+
+  // Save untrusted fault handler pc and fault sp
+  thread_metadata->untrusted_fault_pc = (((uint64_t)(&trap_vector_from_untrusted))&(~0x3L));
+  thread_metadata->untrusted_fault_sp = stack_ptr + (core_id * (STACK_SIZE));
 
   if(aex) {
     thread_metadata->aex_present = false;
@@ -130,7 +137,7 @@ api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, u
   asm volatile (" \
   mv sp, t0; \n \
   call platform_clean_core; \n \
-  call_platform_purge_core; \n \
+  call platform_purge_core; \n \
   li ra, 0; \n \
   mret"  : : "r" (t0));
 

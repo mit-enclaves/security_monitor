@@ -74,8 +74,11 @@ typedef struct thread_metadata_t {
 
   // Untrusted core state at enclave_enter
   uintptr_t untrusted_pc;
-  uintptr_t untrusted_sp;
   platform_core_state_t untrusted_state;
+
+  // Untrusted fault sp and pc
+  uintptr_t untrusted_fault_pc;
+  uintptr_t untrusted_fault_sp;
 
   // Enclave state buffer in the event of a trap/interrupt/fault
   uintptr_t fault_pc;

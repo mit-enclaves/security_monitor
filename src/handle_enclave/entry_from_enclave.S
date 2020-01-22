@@ -105,25 +105,10 @@ trap_vector_from_enclave:
   call .save_regs_and_set_args
   call ecall_from_enclave_trap
   call .restore_regs
-  j .enclave_perform_mret
+  j .perform_mret
 
 # Generic event handlers
 # ----------------------
-
-.globl .enclave_perform_mret
-.enclave_perform_mret:
-  # Go back whence we came.
-  ld t0, 2*REGBYTES(sp)
-  csrw mscratch, t0
-
-  csrr t0, mepc
-  addi t0, t0, 4
-  csrw mepc, t0
-
-  ld ra, 1*REGBYTES(sp)
-  ld t0, 5*REGBYTES(sp)
-  csrrw sp, mscratch, sp
-  mret
 
 .bad_event:
   csrr a0, mcause

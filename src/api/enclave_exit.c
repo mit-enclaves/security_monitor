@@ -85,14 +85,14 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
   // Swap the page table root
   swap_csr(satp, enclave_metadata->eptbr);
 
-  // Restore trap handler
-  write_csr(mtvec, ( ((uint64_t)(&trap_vector_from_untrusted))&(~0x3L) ));
-
   // Prepare untrusted pc
   write_csr(mepc, thread_metadata->untrusted_pc);
 
-  // Compute the core's SM pointer
-  uintptr_t SM_sp = stack_ptr + (core_id * (STACK_SIZE));
+  // Restore trap handler pc
+  write_csr(mtvec, thread_metadata->untrusted_fault_pc);
+
+  // get the core's SM pointer and push the untrusted state on the stack
+  uintptr_t SM_sp = thread_metadata->untrusted_fault_sp;
   uintptr_t *regs = (uintptr_t *) SM_sp;
   // Save the registers on the stack
   for(int i = 0; i < NUM_REGISTERS; i++) {
@@ -108,8 +108,8 @@ api_result_t sm_enclave_exit() { // TODO: noreturn
   // Procede to mret \\ TODO : purge the core?
   asm volatile (" \
   mv sp, t0; \n \
-  call restore_regs; \n \
-  call enclave_perform_mret;"  : : "r" (t0));
+  call .restore_regs; \n \
+  j .perform_mret"  : : "r" (t0));
 
   return MONITOR_OK; // Unreachable
 }
