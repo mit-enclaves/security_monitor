@@ -57,7 +57,7 @@ trap_vector_from_untrusted:
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
   beqz sp, .recursive_trap_from_untrusted
-  # TODO: the above is problematic. Make sure recurison does not blow the stack.
+  # TODO: the above is problematic. Make sure recursion does not blow the stack.
 
   # Save ra, t0 and former SP, load the trap cause (mcause)
   sd ra, 1*REGBYTES(sp)
