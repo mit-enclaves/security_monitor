@@ -1,9 +1,6 @@
-#include "../htif/htif.h"
-#include <api.h>
+#include <test.h>
 
-__attribute__((section(".os.text")))
-
-int main(void) {
+void test_entry(void) {
   print_str("Hello World!\n");
-  tohost = TOHOST_CMD(0, 0, 0b01);
+  test_completed();
 }

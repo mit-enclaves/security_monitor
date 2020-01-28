@@ -3,7 +3,6 @@
 
 void test_entry (void) {
 
-
   // Set up an untrusted API call
   uint8_t pk_buffer[32];
 

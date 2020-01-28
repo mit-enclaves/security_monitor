@@ -42,6 +42,10 @@
 #define MSTATUS_UIE_MASK   (0x00000001)
 
 // Paged virtual memory configuration
+
+#define LEAF_ACL (0b11111111) // D A G U X W R V
+#define NODE_ACL (0b00000001) // Node
+
 #define PAGE_SHIFT    (12)
 #define PTE_SIZE      (8)
 #define PN_OFFSET     (9)
