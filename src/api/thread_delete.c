@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_thread_delete (thread_id_t thread_id) {
+api_result_t sm_internal_thread_delete (thread_id_t thread_id) {
 
   // Validate inputs
   // ---------------
@@ -58,7 +58,7 @@ api_result_t sm_thread_delete (thread_id_t thread_id) {
   // Clean the metadata page map
   metadata_region_t * region = region_id_to_addr(region_id_thread);
 
-  uint64_t num_metadata_pages = sm_thread_metadata_pages();
+  uint64_t num_metadata_pages = thread_metadata_pages();
   uint64_t page_id = addr_to_region_page_id(thread_id);
 
   for(int i = 0; i < num_metadata_pages; i++) {

@@ -16,6 +16,7 @@ SM_LDFLAGS := -nostartfiles -nostdlib -static
 SM_SRC_DIR := $(SM_DIR)/src
 PLATFORM_DIR := $(SM_DIR)/platform
 COMMON_DIR := $(SM_DIR)/common
+API_DIR := $(SM_DIR)/api
 
 SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_accept.c \
@@ -29,8 +30,6 @@ SM_COMMON_SRC := \
 
 SM_LD := $(SM_SRC_DIR)/sm.lds
 .INTERMEDIATE: $(SM_LD)
-
-SM_PARAMETERS := $(SM_SRC_DIR)/parameters.h
 
 SM_SRC := \
 	$(SM_COMMON_SRC) \
@@ -76,13 +75,6 @@ SM_SRC := \
 	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
 	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
 
-# enter
-# exit
-# load
-# mail
-# flush
-# thread
-
 SM_ENCLAVE_LD := $(SM_SRC_DIR)/sm.enclave.lds
 .INTERMEDIATE: $(SM_ENCLAVE_LD)
 
@@ -101,20 +93,17 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
 
-# platform helpers
-# mail
-# aex
-
 SM_INCLUDES := \
 	$(COMMON_DIR) \
 	$(PLATFORM_DIR) \
+	$(API_DIR) \
 	$(SM_SRC_DIR) \
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 # Preprocessor fills out linker script constants
-%.lds : %.lds.in $(SM_PARAMETERS)
+%.lds : %.lds.in
 	$(CC) -E -x c $(addprefix -I , $(SM_INCLUDES)) $^ | grep -v '^#' > $@
 
 # TODO: add idpt and handler binary

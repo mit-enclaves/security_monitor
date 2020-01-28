@@ -19,7 +19,7 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr
   }
   else {
     uintptr_t pte_base = (enclave_metadata->eptbr & SATP_PPN_MASK) << PAGE_SHIFT;
-    if(sm_region_owner(addr_to_region_id(pte_base)) != enclave_id){
+    if(region_owner(addr_to_region_id(pte_base)) != enclave_id){
        return MONITOR_INVALID_STATE;
     }
 
@@ -37,7 +37,7 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr
 
           pte_base = (((*pte_addr) & PPNs_MASK) >> PAGE_ENTRY_ACL_OFFSET)  << PAGE_SHIFT;
 
-          if(sm_region_owner(addr_to_region_id(pte_base)) != enclave_id){
+          if(region_owner(addr_to_region_id(pte_base)) != enclave_id){
              return MONITOR_INVALID_STATE;
           }
        }

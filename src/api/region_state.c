@@ -1,6 +1,6 @@
 #include <sm.h>
 
-region_state_t sm_region_state (region_id_t region_id) {
+region_state_t sm_internal_region_state (region_id_t region_id) {
 
     // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 

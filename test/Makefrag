@@ -25,12 +25,12 @@ $(NULL_BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
 SM_TEST_INCLUDES := \
 	$(COMMON_DIR) \
 	$(PLATFORM_DIR) \
-	$(SM_SRC_DIR) \
+	$(API_DIR) \
 	$(SM_TEST_DIR) \
 
 NULL_TEST_SRC := \
+	$(COMMON_DIR)/htif/htif.c \
 	$(SM_TEST_DIR)/test_entry.S \
-	$(SM_TEST_DIR)/htif/htif.c \
 	$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
 	$(SM_TEST_DIR)/null_boot_loader/sm.S \
 	$(SM_TEST_DIR)/unit_tests/null_test.c \

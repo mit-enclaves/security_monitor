@@ -2,7 +2,7 @@
 
 // Need to lock ALL of the caller's metadata region, the message buffer and sender_measurement regions (if different)
 
-api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement) {
+api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement) {
 
   /* Caller is authenticated and authorized by the trap routing logic :
    the trap handler and MCAUSE unambiguously identify the caller,
@@ -75,7 +75,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
   // the message buffer region must belong to the caller
 
   if ((addr_to_region_id(out_message) != addr_to_region_id(out_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
-    (sm_region_owner(addr_to_region_id(out_message)) != caller)) {
+    (region_owner(addr_to_region_id(out_message)) != caller)) {
     if (untrusted_locked) {
       unlock_untrusted_state();
     }
@@ -87,7 +87,7 @@ api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, p
   // the measurement buffer region must belong to the caller
 
   if ((addr_to_region_id(out_sender_measurement) != addr_to_region_id(out_sender_measurement + sizeof(hash_t))) ||
-    (sm_region_owner(addr_to_region_id(out_sender_measurement)) != caller)) {
+    (region_owner(addr_to_region_id(out_sender_measurement)) != caller)) {
     if (untrusted_locked) {
       unlock_untrusted_state();
     }

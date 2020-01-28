@@ -1,4 +1,4 @@
-#include "parameters.h"
+#include <parameters.h>
 
 OUTPUT_ARCH( "riscv" )
 ENTRY( enclave_handler_entry )

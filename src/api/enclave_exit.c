@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_enclave_exit() { // TODO: noreturn
+api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 

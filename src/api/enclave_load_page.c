@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
+api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
   phys_ptr_t phys_addr,
   uintptr_t virtual_addr,
   uintptr_t os_addr,
@@ -55,7 +55,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
   }
 
   // Check that phys_addr points into a DRAM region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(phys_addr)) != enclave_id){
+  if(region_owner(addr_to_region_id(phys_addr)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
@@ -74,7 +74,7 @@ api_result_t sm_enclave_load_page (enclave_id_t enclave_id,
   }
 
   // Check that phys_addr points into a DRAM region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(os_addr)) != OWNER_UNTRUSTED){
+  if(region_owner(addr_to_region_id(os_addr)) != OWNER_UNTRUSTED){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }

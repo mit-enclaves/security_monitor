@@ -1,7 +1,7 @@
 #ifndef SECURITY_MONITOR_CONSTANTS_H
 #define SECURITY_MONITOR_CONSTANTS_H
 
-#include "parameters.h"
+#include <parameters.h>
 
 // Derived parameters
 // ------------------

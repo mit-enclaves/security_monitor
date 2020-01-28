@@ -2,7 +2,7 @@
 #define SECURITY_MONITOR_TYPES_H
 
 #include "sm_constants.h"
-#include "api.h"
+#include <api_types.h>
 #include <platform_types.h>
 #include <cryptography.h>
 #include <secure_boot/secure_boot.h>
@@ -11,8 +11,6 @@
 
 // SM Types
 // --------
-
-typedef boot_image_header_t sm_keys_t;
 
 typedef struct region_map_t {
   bool flags[NUM_REGIONS];

@@ -1,4 +1,4 @@
-#include <sm_types.h>
+#include <secure_boot/secure_boot.h>
 
 // TODO: initialize this
 

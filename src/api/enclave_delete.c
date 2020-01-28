@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
+api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -65,7 +65,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   }
 
   // Clean enclave metadata page map
-  uint64_t enclave_pages = sm_enclave_metadata_pages(enclave_metadata->num_mailboxes);
+  uint64_t enclave_pages = enclave_metadata_pages(enclave_metadata->num_mailboxes);
   for ( int i=0; i<enclave_pages; i++ ) {
     region->page_info[i+page_id] = METADATA_PAGE_FREE;
   }

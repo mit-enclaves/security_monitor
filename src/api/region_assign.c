@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
+api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new_owner) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 

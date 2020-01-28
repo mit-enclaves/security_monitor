@@ -3,7 +3,6 @@
 
 #include "sm_types.h"
 #include "sm_constants.h"
-#include "api.h"
 #include <platform.h>
 
 // Helpful macros
@@ -34,6 +33,8 @@ static inline sm_state_t * get_sm_state_ptr (void) {
 
 
 // Region helpers
+enclave_id_t region_owner (region_id_t region_id);
+
 static inline region_id_t addr_to_region_id (uintptr_t addr) {
   return ((addr-RAM_BASE) & REGION_MASK) >> REGION_SHIFT; // will return an illegally large number in case of an address outside RAM. CAUTION!
 }
@@ -110,6 +111,19 @@ static inline bool add_lock_region (region_id_t region_id, region_map_t * locked
 }
 
 // Metadata helpers
+
+static inline uint64_t thread_metadata_pages () {
+  // Round up at page granularity
+  return ( sizeof(thread_metadata_t)+(PAGE_SIZE-1) ) / PAGE_SIZE;
+}
+
+static inline uint64_t enclave_metadata_pages ( uint64_t num_mailboxes ) {
+  // Round up at page granularity
+  size_t enclave_size = sizeof(enclave_metadata_t) + num_mailboxes*sizeof(mailbox_t);
+  return ( enclave_size+(PAGE_SIZE-1) ) / PAGE_SIZE;
+}
+
+
 api_result_t add_lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages, region_map_t * locked_regions);
 
 api_result_t add_lock_region_iff_valid_metadata(uintptr_t ptr, metadata_page_t metadata_type, region_map_t * locked_regions);
@@ -121,7 +135,6 @@ static inline api_result_t add_lock_region_iff_valid_enclave (uintptr_t ptr, reg
 static inline api_result_t add_lock_region_iff_valid_thread (uintptr_t ptr, region_map_t * locked_regions) {
   return add_lock_region_iff_valid_metadata( ptr, METADATA_PAGE_THREAD, locked_regions);
 }
-
 
 // Page Table helper
 

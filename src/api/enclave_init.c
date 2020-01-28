@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_enclave_init (enclave_id_t enclave_id) {
+api_result_t sm_internal_enclave_init (enclave_id_t enclave_id) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 

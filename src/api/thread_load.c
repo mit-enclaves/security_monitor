@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
+api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
   uintptr_t fault_stack) {
 
@@ -26,7 +26,7 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   uint64_t region_id_thread = addr_to_region_id(thread_id);
   thread_metadata_t *thread_metadata = (thread_metadata_t *) thread_id;
 
-  uint64_t num_metadata_pages = sm_thread_metadata_pages();
+  uint64_t num_metadata_pages = thread_metadata_pages();
 
   // <TRANSACTION>
   // enclave_id must be valid
@@ -51,25 +51,25 @@ api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   }
 
   // phys_addr must point to a region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(entry_pc)) != enclave_id){
+  if(region_owner(addr_to_region_id(entry_pc)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(entry_stack)) != enclave_id){
+  if(region_owner(addr_to_region_id(entry_stack)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(fault_pc)) != enclave_id){
+  if(region_owner(addr_to_region_id(fault_pc)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
   // phys_addr must point to a region owned by the enclave
-  if(sm_region_owner(addr_to_region_id(fault_stack)) != enclave_id){
+  if(region_owner(addr_to_region_id(fault_stack)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }

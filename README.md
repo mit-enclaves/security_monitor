@@ -16,7 +16,7 @@ This performs a series of steps:
 
 ### Parameters
 
-The SM is parameterized via [parameters.h](src/parameters.h).
+The SM is parameterized via [parameters.h](platform/parameters.h).
 
 #### SM configuration:
 
@@ -65,7 +65,7 @@ To remain compatible with an OS and memory-mapped devices, the SM employs `TVM` 
 The SM consists of two sets of symbols: the union of (shared state, (initialization code, and the untrusted events handler)) resides at (`SM_STATE_ADDR`, `SM_ADDR`) and is described by `sm.elf`.
 The enclave event handler is different, as each enclave receives its own copy of this code.
 The enclave event handler has no internal state (instead accessing the shared state at `SM_STATE_ADDR`, and the SM stack, as set up by the initialization routine), and consists only of instructions and constants.
-All addresses used within the enclave event handler binary are *pc-relative*, with the notable exception of `SM_STATE_ADDR` (which is a constant read from [parameters.h](src/parameters.h))
+All addresses used within the enclave event handler binary are *pc-relative*, with the notable exception of `SM_STATE_ADDR` (which is a constant read from [parameters.h](platform/parameters.h))
 This piece of the SM is given by `sm.enclave.elf` (for the debug symbols), and its binary is statically linked into `sm.elf`.
 
 Productive debugging of the SM requires carefully loading the relevant debug symbols. For example, for suppose a test `null_test.elf` starts an enclave at `0x82000000`.
