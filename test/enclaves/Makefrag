@@ -1,0 +1,30 @@
+# Assumes: $(SM_DIR)
+# Assumes: $(BUILD_DIR)
+# Assumes: $(ENCLAVE_SRC_DIR)
+# Assumes: $(CC)
+# Assumes: $(OBJCOPY)
+
+ENCLAVE_ELF := $(BUILD_DIR)/enclave.elf
+ENCLAVE_BIN := $(BUILD_DIR)/enclave.bin
+
+ENCLAVE_INCLUDES := \
+	$(PLATFORM_DIR) \
+	$(API_DIR) \
+	$(ENCLAVE_SRC_DIR)
+
+ENCLAVE_COMMON_SRC := \
+	$(ENCLAVE_SRC_DIR)/enclave_entry.S \
+  $(ENCLAVE_SRC_DIR)/enclave_code.c \
+  $(ENCLAVE_SRC_DIR)/enclave_stack.S \
+
+ENCLAVE_LD := $(ENCLAVE_SRC_DIR)/enclave.lds
+.INTERMEDIATE: $(SM_LD)
+
+$(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(addprefix -I , $(ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(ENCLAVE_LD) $< $(ENCLAVE_COMMON_SRC) -o $@
+
+$(ENCLAVE_BIN): $(ENCLAVE_ELF)
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@
+
+.PHONY: enclave
+enclave : $(ENCLAVE_BIN)

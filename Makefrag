@@ -5,99 +5,18 @@ SM_DIR:=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 # Assumes: $(CC)
 # Assumes: $(OBJCOPY)
 
-# -mcmodel=medany is *very* important - it ensures the program addressing is PC-relative. Ensure no global variables are used. To quote from the spec, "the program and its statically defined symbols must lie within any single 2 GiB address range. Addressing for global symbols uses lui/addi instruction pairs, which emit the R_RISCV_PCREL_HI20/R_RISCV_PCREL_LO12_I sequences."
-
-DEBUG_FLAGS := -ggdb3
-
-SM_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -Wall -O0 $(DEBUG_FLAGS)
-
-SM_LDFLAGS := -nostartfiles -nostdlib -static
-
-SM_SRC_DIR := $(SM_DIR)/src
 PLATFORM_DIR := $(SM_DIR)/platform
 COMMON_DIR := $(SM_DIR)/common
 API_DIR := $(SM_DIR)/api
+SM_SRC_DIR := $(SM_DIR)/src
+SM_TEST_DIR := $(SM_DIR)/test
+ENCLAVE_SRC_DIR := $(SM_DIR)/test/enclaves
 
-SM_COMMON_SRC := \
-	$(SM_SRC_DIR)/api/mail_accept.c \
-	$(SM_SRC_DIR)/api/mail_send.c \
-	$(SM_SRC_DIR)/api/mail_receive.c \
-	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
-	$(COMMON_DIR)/clib/memcpy.c \
-	$(COMMON_DIR)/clib/memset.c \
-	$(SM_SRC_DIR)/common/syscall_helpers.S \
-	$(PLATFORM_DIR)/platform_panic.S \
+DEBUG_FLAGS := -ggdb3
 
-SM_LD := $(SM_SRC_DIR)/sm.lds
-.INTERMEDIATE: $(SM_LD)
+CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -Wall -O0 $(DEBUG_FLAGS)
 
-SM_SRC := \
-	$(SM_COMMON_SRC) \
-	$(COMMON_DIR)/ed25519/sha512.c \
-	$(PLATFORM_DIR)/idpt.S \
-	$(PLATFORM_DIR)/stacks.S \
-	$(PLATFORM_DIR)/platform_init.S \
-	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
-	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
-	$(PLATFORM_DIR)/platform_core_init.c \
-	$(PLATFORM_DIR)/platform_clean_core.S \
-	$(PLATFORM_DIR)/platform_purge_core.S \
-	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
-	$(PLATFORM_DIR)/platform_memory_protection.c \
-	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
-	$(SM_SRC_DIR)/common/sm_state.c \
-	$(SM_SRC_DIR)/common/enclave_handler.S \
-	$(SM_SRC_DIR)/common/load_page_table_entry.c \
-	$(SM_SRC_DIR)/init/init.S \
-	$(SM_SRC_DIR)/init/init.c \
-	$(SM_SRC_DIR)/api/enclave_create.c \
-	$(SM_SRC_DIR)/api/enclave_delete.c \
-	$(SM_SRC_DIR)/api/enclave_enter.c \
-	$(SM_SRC_DIR)/api/enclave_exit.c \
-	$(SM_SRC_DIR)/api/enclave_init.c \
-	$(SM_SRC_DIR)/api/enclave_load_handler.c \
-	$(SM_SRC_DIR)/api/enclave_load_page_table.c \
-	$(SM_SRC_DIR)/api/enclave_load_page.c \
-	$(SM_SRC_DIR)/api/enclave_metadata_pages.c \
-	$(SM_SRC_DIR)/api/get_public_field.c \
-	$(SM_SRC_DIR)/api/region_assign.c \
-	$(SM_SRC_DIR)/api/region_block.c \
-	$(SM_SRC_DIR)/api/region_check_owned.c \
-	$(SM_SRC_DIR)/api/region_free.c \
-	$(SM_SRC_DIR)/api/region_metadata_create.c \
-	$(SM_SRC_DIR)/api/region_metadata_pages.c \
-	$(SM_SRC_DIR)/api/region_metadata_start.c \
-	$(SM_SRC_DIR)/api/region_owner.c \
-	$(SM_SRC_DIR)/api/region_state.c \
-	$(SM_SRC_DIR)/api/thread_delete.c \
-	$(SM_SRC_DIR)/api/thread_load.c \
-	$(SM_SRC_DIR)/api/thread_metadata_pages.c \
-	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
-	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
-
-SM_ENCLAVE_LD := $(SM_SRC_DIR)/sm.enclave.lds
-.INTERMEDIATE: $(SM_ENCLAVE_LD)
-
-IDPT_BIN := $(BUILD_DIR)/idpt.bin
-HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
-
-SM_ENCLAVE_SRC := \
-	$(SM_COMMON_SRC) \
-	$(COMMON_DIR)/clib/memcmp.c \
-	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
-	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
-	$(SM_SRC_DIR)/api/get_attestation_key.c \
-	$(SM_SRC_DIR)/api/get_public_field.c \
-	$(SM_SRC_DIR)/api/region_block.c \
-	$(SM_SRC_DIR)/api/region_check_owned.c \
-	$(SM_SRC_DIR)/api/region_owner.c \
-	$(SM_SRC_DIR)/api/enclave_exit.c \
-
-SM_INCLUDES := \
-	$(COMMON_DIR) \
-	$(PLATFORM_DIR) \
-	$(API_DIR) \
-	$(SM_SRC_DIR) \
+LDFLAGS := -nostartfiles -nostdlib -static
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -106,25 +25,7 @@ $(BUILD_DIR):
 %.lds : %.lds.in
 	$(CC) -E -x c $(addprefix -I , $(SM_INCLUDES)) $^ | grep -v '^#' > $@
 
-# TODO: add idpt and handler binary
-$(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(IDPT_BIN) $(HANDLER_BIN)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D IDPT_FILE=\"$(IDPT_BIN)\" -D ENCLAVE_HANDLER_FILE=\"$(HANDLER_BIN)\" -o $@
 
-.INTERMEDIATE: $(SM_LD)
-
-$(BUILD_DIR)/sm.enclave.elf: $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
-
-.INTERMEDIATE: $(SM_ENCLAVE_LD)
-
-$(HANDLER_BIN): $(BUILD_DIR)/sm.enclave.elf
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
-
-$(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
-	$(PYTHON) $(SM_DIR)/scripts/idpt.py $@
-
-.PHONY: sm
-sm: $(BUILD_DIR)/sm.enclave.elf $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.bin
-
-$(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@
+include $(SM_SRC_DIR)/Makefrag
+include $(SM_TEST_DIR)/Makefrag
+include $(SM_SRC_DIR)/Makefrag

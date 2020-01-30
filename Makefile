@@ -20,7 +20,6 @@ all: $(BUILD_DIR)/sm.bin $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.enclave.elf
 
 PYTHON=python
 include $(TOP_DIR)/Makefrag
-include $(TOP_DIR)/test/Makefrag
 
 .PHONY: clean
 clean:

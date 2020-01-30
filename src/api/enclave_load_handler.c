@@ -78,6 +78,12 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   // Update the measurement
   hash_extend(&enclave_metadata->hash_context, &enclave_handler_start, size_handler);
 
+  // Update the enclave state
+  enclave_metadata->init_state = ENCLAVE_STATE_HANDLER_LOADED;
+
+  // Update the last physical address loaded
+  enclave_metadata->last_phys_addr_loaded = phys_addr;
+
   // Release locks
   unlock_regions(&locked_regions);
   // </TRANSACTION>

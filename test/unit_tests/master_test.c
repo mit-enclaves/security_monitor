@@ -5,6 +5,9 @@ extern uintptr_t region1;
 extern uintptr_t region2;
 extern uintptr_t region3;
 
+extern uintptr_t enclave_start;
+extern uintptr_t enclave_end;
+
 void test_entry(void) {
   uint64_t region1_id = addr_to_region_id(&region1);
   uint64_t region2_id = addr_to_region_id(&region2);
@@ -38,16 +41,10 @@ void test_entry(void) {
     test_completed();
   }
 
-  enclave_id_t enclave_id = &region3;
-  uint64_t num_mailboxes = 1;
+  uint64_t region_metadata_start = sm_region_metadata_start();
 
-  result = sm_enclave_create(enclave_id, 0, 0, num_mailboxes, true);
-  if(result != MONITOR_OK) {
-    print_str("sm_enclave_create FAILED with error code ");
-    print_int(result);
-    print_str("\n\n");
-    test_completed();
-  }
+  enclave_id_t enclave_id = (&region3) + (PAGE_SIZE * region_metadata_start);
+  uint64_t num_mailboxes = 1;
 
   result = sm_enclave_create(enclave_id, 0, 0, num_mailboxes, true);
   if(result != MONITOR_OK) {
@@ -93,7 +90,7 @@ void test_entry(void) {
 
   uintptr_t page_table_address = enclave_handler_address + HANDLER_LEN;
 
-  result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 0, NODE_ACL);
+  result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 3, NODE_ACL);
   if(result != MONITOR_OK) {
     print_str("sm_enclave_load_page_table FAILED with error code ");
     print_int(result);

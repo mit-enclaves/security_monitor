@@ -1,11 +1,17 @@
-SM_TEST_DIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+# Assumes: $(PYTHON)
+# Assumes: $(BUILD_DIR)
+# Assumes: $(SM_TEST_DIR)
+# Assumes: $(ENCLAVE_SRC_DIR)
+# Assumes: $(CC)
+# Assumes: $(OBJCOPY)
 
-SM_TEST_CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -std=gnu11 -Wall -O0 -g
+include $(ENCLAVE_SRC_DIR)/Makefrag
 
-SM_TEST_LDFLAGS := -nostartfiles -nostdlib -static
+SM_TEST_CFLAGS := $(CFLAGS)
+
+SM_TEST_LDFLAGS := $(LDFLAGS)
 
 SM_TEST_LD :=  $(SM_TEST_DIR)/test.lds
-.INTERMEDIATE: $(SM_TEST_LD)
 
 NULL_BOOT_BINARY := $(BUILD_DIR)/null_boot.bin
 NULL_BOOT_ELF := $(BUILD_DIR)/null_boot.elf
@@ -13,7 +19,7 @@ NULL_BOOT_ELF := $(BUILD_DIR)/null_boot.elf
 SM_BINARY := $(BUILD_DIR)/sm.bin
 
 BOOT_SRC := \
-	$(SM_TEST_DIR)/null_boot_loader/boot.S \
+	$(SM_TEST_DIR)/null_boot_loader/boot.S
 
 $(NULL_BOOT_BINARY): $(NULL_BOOT_ELF)
 	$(OBJCOPY) -O binary --only-section=.boot  $< $@
@@ -28,18 +34,19 @@ SM_TEST_INCLUDES := \
 	$(SM_TEST_DIR) \
 
 ALL_TESTS_SRC := \
-$(COMMON_DIR)/htif/htif.c \
-$(SM_TEST_DIR)/test_entry.S \
-$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
-$(SM_TEST_DIR)/null_boot_loader/sm.S \
+	$(COMMON_DIR)/htif/htif.c \
+	$(SM_TEST_DIR)/test_entry.S \
+	$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
+	$(SM_TEST_DIR)/null_boot_loader/sm.S \
 
+UNIT_TESTS_DIR := $(SM_TEST_DIR)/unit_tests
 
-NULL_TEST_SRC := \
-	$(ALL_TESTS_SRC) \
-	$(SM_TEST_DIR)/unit_tests/null_test.c \
+$(BUILD_DIR)/null_test.elf: $(UNIT_TESTS_DIR)/null_test.c $(ALL_TESTS_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BINARY)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $< $(ALL_TESTS_SRC) -D SM_BINARY_FILE=\"$(SM_BINARY)\" -o $@
 
-$(BUILD_DIR)/null_test.elf: $(NULL_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BINARY)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(NULL_TEST_SRC) -D SM_BINARY_FILE=\"$(SM_BINARY)\" -o $@
+TEST_NAMES :=  $(notdir $(basename $(wildcard $(UNIT_TESTS_DIR))))
+TEST_ELFS  := $(addprefix $(BUILD_DIR)/, $(addsuffix .elf, $(TEST_NAMES)))
+TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 
 .PHONY: null_test
 null_test: $(BUILD_DIR)/null_test.elf
@@ -48,13 +55,13 @@ null_test: $(BUILD_DIR)/null_test.elf
 run_null_test: $(BUILD_DIR)/null_test.elf $(NULL_BOOT_BINARY)
 	$(QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/null_test.elf --bios $(NULL_BOOT_BINARY)
 
-
 MASTER_TEST_SRC := \
+	$(UNIT_TESTS_DIR)/master_test.c \
+	$(UNIT_TESTS_DIR)/enclave_bin.S \
 	$(ALL_TESTS_SRC) \
-	$(SM_TEST_DIR)/unit_tests/master_test.c
 
-$(BUILD_DIR)/master_test.elf: $(MASTER_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BINARY)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(MASTER_TEST_SRC) -D SM_BINARY_FILE=\"$(SM_BINARY)\" -o $@
+$(BUILD_DIR)/master_test.elf: $(MASTER_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM_BINARY) $(ENCLAVE_BIN)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(MASTER_TEST_SRC) -D ENCLAVE_BINARY_FILE=\"$(ENCLAVE_BIN)\" -D SM_BINARY_FILE=\"$(SM_BINARY)\" -o $@
 
 .PHONY: master_test
 master_test: $(BUILD_DIR)/master_test.elf

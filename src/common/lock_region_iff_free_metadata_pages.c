@@ -20,7 +20,7 @@ api_result_t add_lock_region_iff_free_metadata_pages( uintptr_t ptr, uint64_t nu
   // region page info table is marked as METADATA_INVALID, so we do not need to explicitly check that page_id > sm_region_metadata_start().
 
   // Check that the requested pages do not span regions
-  if ( is_valid_page_id_in_region(page_id+num_pages-1) ) {
+  if ( !is_valid_page_id_in_region(page_id+num_pages-1) ) {
     return MONITOR_INVALID_VALUE;
   }
 

@@ -12,6 +12,8 @@ static inline void test_completed (void) {
   while (1) { continue; }
 }
 
+#define PAGE_SIZE (1<<PAGE_SHIFT)
+
 #define REGION_SIZE (1<<REGION_SHIFT)
 #define REGION_MASK (~(REGION_SIZE-1))
 

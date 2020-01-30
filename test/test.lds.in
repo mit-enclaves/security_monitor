@@ -51,6 +51,10 @@ SECTIONS
     *(.text)
   } > PAYLOAD =0x0
 
+  .enclave ALIGN(0x1000): {
+    *(.enclave)
+  } > PAYLOAD =0x0
+
   .data ALIGN(0x1000) : {
     *(.data.*)
     *(.data)

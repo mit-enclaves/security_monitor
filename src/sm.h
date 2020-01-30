@@ -52,7 +52,7 @@ static inline bool is_page_aligned (uintptr_t addr) {
 }
 
 static inline uint64_t addr_to_region_page_id (uintptr_t addr) {
-  return ((addr & REGION_MASK) >> PAGE_SHIFT);
+  return (((addr-RAM_BASE) & (~REGION_MASK)) >> PAGE_SHIFT);
 }
 
 static inline bool is_valid_page_id_in_region (uint64_t page_id) {
