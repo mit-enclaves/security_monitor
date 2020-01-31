@@ -35,6 +35,7 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
+	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
 	$(SM_SRC_DIR)/common/enclave_handler.S \

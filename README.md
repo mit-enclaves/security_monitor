@@ -36,7 +36,7 @@ The SM is parameterized via [parameters.h](platform/parameters.h).
 | `SM_ADDR`       | `0x80003000` | The base address of the SM in physical memory. This is also the SM's entry address at boot. |
 | `HANDLER_LEN`   | `0x3000`     | Number of bytes reserved for the SM enclave handler. TODO: this need not be a parameter. |
 | `SM_LEN`        | `0x10000`     | Number of bytes reserved for the SM. The SM uses this this to set up the machine's protection primitives to guard itself from other software. |
-| `UNTRUSTED_ENTRY` | `0x80020000` | The entry point for untrusted software (the OS). |
+| `UNTRUSTED_ENTRY` | `0x82000000` | The entry point for untrusted software (the OS). |
 
 #### Processor system configuration
 

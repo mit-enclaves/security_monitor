@@ -28,4 +28,3 @@ $(BUILD_DIR):
 
 include $(SM_SRC_DIR)/Makefrag
 include $(SM_TEST_DIR)/Makefrag
-include $(SM_SRC_DIR)/Makefrag

@@ -73,7 +73,7 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
     return MONITOR_INVALID_VALUE;
   }
 
-  // Check that phys_addr points into a DRAM region owned by the enclave
+  // Check that os_addr points into a DRAM region owned by the os
   if(region_owner(addr_to_region_id(os_addr)) != OWNER_UNTRUSTED){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
@@ -112,6 +112,9 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
 
   // Update the last physical address loaded
   enclave_metadata->last_phys_addr_loaded = phys_addr;
+
+  // Update the enclave state
+  enclave_metadata->init_state = ENCLAVE_STATE_PAGE_DATA_LOADED;
 
   // Load page
   memcpy((void *) phys_addr, (void *) os_addr, PAGE_SIZE);

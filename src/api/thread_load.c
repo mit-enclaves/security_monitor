@@ -37,7 +37,7 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
   }
 
   // enclave must be in state ENCLAVE_STATE_PAGE_DATA_LOADED
-  if(enclave_metadata->init_state != ENCLAVE_STATE_PAGE_TABLES_LOADED) {
+  if(enclave_metadata->init_state != ENCLAVE_STATE_PAGE_DATA_LOADED) {
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
@@ -50,25 +50,13 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
     return result;
   }
 
-  // phys_addr must point to a region owned by the enclave
-  if(region_owner(addr_to_region_id(entry_pc)) != enclave_id){
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
-  // phys_addr must point to a region owned by the enclave
-  if(region_owner(addr_to_region_id(entry_stack)) != enclave_id){
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
-  // phys_addr must point to a region owned by the enclave
+  // fault_pc must point to a region owned by the enclave
   if(region_owner(addr_to_region_id(fault_pc)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
 
-  // phys_addr must point to a region owned by the enclave
+  // fault_stack must point to a region owned by the enclave
   if(region_owner(addr_to_region_id(fault_stack)) != enclave_id){
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;

@@ -20,3 +20,23 @@ void platform_protect_memory_enter_enclave(enclave_metadata_t *enclave_metadata)
   */
   return;
 }
+
+void platform_hack_enclave_memory_protection(void) {
+  write_csr(0x7c0,   0);
+  write_csr(0x7c1,   0);
+
+  write_csr(0x7c4,   0xFFFFFFFFFFFFFFFF);
+
+  write_csr(0x7c7, 0);
+  write_csr(0x7c8, 0xFFFFFFFFFFFFFFFF);
+}
+
+void platform_hack_exit_enclave_memory_protection(void) {
+  write_csr(0x7c0,   0);
+  write_csr(0x7c1,   0xFFFFFFFFFFFFFFFF);
+
+  write_csr(0x7c4,   0);
+
+  write_csr(0x7c7, 0);
+  write_csr(0x7c8, 0);
+}

@@ -5,4 +5,4 @@
 .globl enclave_stack_base, enclave_stack_ptr
 enclave_stack_base:
   .skip (STACK_SIZE)
-encalve_stack_ptr:
+enclave_stack_ptr:

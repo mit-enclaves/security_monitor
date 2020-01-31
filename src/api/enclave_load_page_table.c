@@ -98,6 +98,9 @@ api_result_t sm_internal_enclave_load_page_table (enclave_id_t enclave_id,
   // Update the last physical address loaded
   enclave_metadata->last_phys_addr_loaded = phys_addr;
 
+  // Update the enclave state
+  enclave_metadata->init_state = ENCLAVE_STATE_PAGE_TABLES_LOADED;
+
   // Update measurement
   hash_extend(&enclave_metadata->hash_context, &virtual_addr, sizeof(virtual_addr));
   hash_extend(&enclave_metadata->hash_context, &level, sizeof(level));

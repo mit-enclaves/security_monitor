@@ -87,7 +87,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
 
   // Save untrusted fault handler pc and fault sp
   thread_metadata->untrusted_fault_pc = (((uint64_t)(&trap_vector_from_untrusted))&(~0x3L));
-  thread_metadata->untrusted_fault_sp = stack_ptr + (core_id * (STACK_SIZE));
+  thread_metadata->untrusted_fault_sp = ((uintptr_t) &stack_ptr) + (core_id * (STACK_SIZE));
 
   if(aex) {
     thread_metadata->aex_present = false;
@@ -115,10 +115,12 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   write_csr(mstatus, mstatus_tmp);
 
   // Swap the page table root
-  swap_csr(satp, enclave_metadata->eptbr);
+  platform_set_enclave_page_table(enclave_metadata);
 
   // Setup the platform's memory protection mechanisms
   platform_protect_memory_enter_enclave(enclave_metadata);
+
+  platform_hack_enclave_memory_protection(); // TODO implement platform protection and get rid of Hack
 
   // Set trap handler
   swap_csr(mtvec, thread_metadata->fault_pc);

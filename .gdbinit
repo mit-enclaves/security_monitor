@@ -8,3 +8,4 @@ target remote localhost:1234
 #add-symbol-file build/sm.elf 0x80000000
 #add-symbol-file build/master_test.elf 0x80020000
 symbol-file build/sm.elf
+add-symbol-file build/sm.enclave.elf 0x86000000

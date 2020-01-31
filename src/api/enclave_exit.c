@@ -39,7 +39,7 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   enclave_id_t enclave_id = core_metadata->owner;
   uint64_t region_id_enclave = addr_to_region_id(enclave_id);
-  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
+  //enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   thread_id_t thread_id = core_metadata->thread;
   uint64_t region_id_thread = addr_to_region_id(thread_id);
@@ -56,15 +56,13 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   // <TRANSACTION>
   // Lock the thread's metadata region
-  api_result_t result = add_lock_region(region_id_enclave, &locked_regions);
-  if ( MONITOR_OK != result ) {
-    return result;
+  if(!add_lock_region(region_id_enclave, &locked_regions)) {
+    return MONITOR_CONCURRENT_CALL;
   }
 
-  result = add_lock_region(region_id_thread, &locked_regions);
-  if ( MONITOR_OK != result ) {
+  if(!add_lock_region(region_id_thread, &locked_regions)) {
     unlock_regions(&locked_regions);
-    return result;
+    return MONITOR_CONCURRENT_CALL;
   }
 
   thread_metadata->aex_present = false; // TODO: Usefull?
@@ -82,8 +80,18 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   write_csr(mstatus, mstatus_tmp);
 
+  //platform_hack_exit_enclave_memory_protection();
+  // Warning big Hack
+  write_csr(0x7c0, 0);
+  write_csr(0x7c1, 0);
+
+  write_csr(0x7c4, 0);
+
+  write_csr(0x7c7, 0);
+  write_csr(0x7c8, 0);
+
   // Swap the page table root
-  swap_csr(satp, enclave_metadata->eptbr);
+  write_csr(satp, 0); // TODO this is a hack
 
   // Prepare untrusted pc
   write_csr(mepc, thread_metadata->untrusted_pc);
