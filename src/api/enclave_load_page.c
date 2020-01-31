@@ -61,8 +61,8 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
   }
 
   // Check virtual addr validity
-  if(((virtual_addr & enclave_metadata->ev_mask) != enclave_metadata->ev_base) ||
-       (((virtual_addr + PAGE_SIZE) & enclave_metadata->ev_mask) != enclave_metadata->ev_base)) {
+  if(((virtual_addr & enclave_metadata->platform_csr.ev_mask) != enclave_metadata->platform_csr.ev_base) ||
+       (((virtual_addr + PAGE_SIZE) & enclave_metadata->platform_csr.ev_mask) != enclave_metadata->platform_csr.ev_base)) {
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_VALUE;
   }

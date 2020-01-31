@@ -51,11 +51,11 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
   hash_init( &enclave_metadata->hash_context );
 
   // Enclave parameters (covered by measurement)
-  enclave_metadata->ev_base = ev_base;
-  hash_extend(&enclave_metadata->hash_context, &enclave_metadata->ev_base, sizeof(enclave_metadata->ev_base));
+  enclave_metadata->platform_csr.ev_base = ev_base;
+  hash_extend(&enclave_metadata->hash_context, &enclave_metadata->platform_csr.ev_base, sizeof(enclave_metadata->platform_csr.ev_base));
 
-  enclave_metadata->ev_base = ev_mask;
-  hash_extend(&enclave_metadata->hash_context, &enclave_metadata->ev_mask, sizeof(enclave_metadata->ev_mask));
+  enclave_metadata->platform_csr.ev_mask = ev_mask;
+  hash_extend(&enclave_metadata->hash_context, &enclave_metadata->platform_csr.ev_mask, sizeof(enclave_metadata->platform_csr.ev_mask));
 
   enclave_metadata->num_mailboxes = num_mailboxes;
   hash_extend(&enclave_metadata->hash_context, &enclave_metadata->num_mailboxes, sizeof(enclave_metadata->num_mailboxes));

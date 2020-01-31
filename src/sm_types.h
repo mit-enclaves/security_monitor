@@ -44,9 +44,8 @@ typedef struct enclave_metadata_t {
   hash_context_t hash_context;
 
   // Parameters
-  uintptr_t ev_base;
-  uintptr_t ev_mask;
-  uintptr_t eptbr;
+  platform_csr_t platform_csr;
+
   int64_t num_mailboxes;
   bool debug;
 

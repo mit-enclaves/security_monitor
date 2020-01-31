@@ -118,7 +118,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   platform_set_enclave_page_table(enclave_metadata);
 
   // Setup the platform's memory protection mechanisms
-  platform_protect_memory_enter_enclave(enclave_metadata);
+  platform_memory_protection_enter_enclave(enclave_metadata);
 
   platform_hack_enclave_memory_protection(); // TODO implement platform protection and get rid of Hack
 

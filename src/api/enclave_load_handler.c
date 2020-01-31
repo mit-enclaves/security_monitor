@@ -70,7 +70,7 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   // Apply state transition
   // ----------------------
 
-  platform_protect_enclave_sm_handler(phys_addr, size_handler);
+  platform_protect_enclave_sm_handler(enclave_metadata, phys_addr);
 
   // Copy the handlers
   memcpy((void *) phys_addr, (void *) &enclave_handler_start, size_handler);

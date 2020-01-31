@@ -39,7 +39,7 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   enclave_id_t enclave_id = core_metadata->owner;
   uint64_t region_id_enclave = addr_to_region_id(enclave_id);
-  //enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
+  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
 
   thread_id_t thread_id = core_metadata->thread;
   uint64_t region_id_thread = addr_to_region_id(thread_id);
@@ -81,17 +81,19 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
   write_csr(mstatus, mstatus_tmp);
 
   //platform_hack_exit_enclave_memory_protection();
-  // Warning big Hack
-  write_csr(0x7c0, 0);
-  write_csr(0x7c1, 0);
+  // WARNING !!! Big Hack
 
-  write_csr(0x7c4, 0);
+  swap_csr(0x7c0, enclave_metadata->platform_csr.ev_base); //CSR_MEVBASE
+  swap_csr(0x7c1, enclave_metadata->platform_csr.ev_mask); //CSR_MEVMASK
 
-  write_csr(0x7c7, 0);
-  write_csr(0x7c8, 0);
+  // TODO fix this
+  //swap_csr(0x7c4, enclave_metadata->platform_csr.dram_bitmap); //CSR_MEMRBM
+  write_csr(0x7c4, 0); //CSR_MEMRBM
 
-  // Swap the page table root
-  write_csr(satp, 0); // TODO this is a hack
+  swap_csr(0x7c7, enclave_metadata->platform_csr.meparbase); //CSR_MEPARBASE
+  swap_csr(0x7c8, enclave_metadata->platform_csr.meparmask); //CSR_MEPARMASK
+
+  swap_csr(0x7c2, enclave_metadata->platform_csr.eptbr); //CSR_MEATP
 
   // Prepare untrusted pc
   write_csr(mepc, thread_metadata->untrusted_pc);

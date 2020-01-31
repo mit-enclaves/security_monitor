@@ -10,4 +10,14 @@ typedef struct {
 
 typedef uint64_t platform_core_state_t[32];
 
+typedef struct {
+  uintptr_t ev_base;
+  uintptr_t ev_mask;
+
+  uintptr_t meparbase;
+  uintptr_t meparmask;
+  
+  uintptr_t eptbr;
+} platform_csr_t;
+
 #endif // SM_PLATFORM_TYPES_H

@@ -17,7 +17,7 @@
 
 #define SM_ADDR         0x80003000
 #define HANDLER_LEN         0x3000
-#define SM_LEN              0x10000
+#define SM_LEN             0x10000
 
 #define UNTRUSTED_ENTRY 0x82000000
 

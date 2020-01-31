@@ -14,11 +14,11 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr
 
   // Initialize page table entry
   if(level == 3) {
-    enclave_metadata->eptbr = phys_addr >> PAGE_SHIFT;
-    enclave_metadata->eptbr |= SATP_MODE_SV39 << SATP_MODE;
+    enclave_metadata->platform_csr.eptbr = phys_addr >> PAGE_SHIFT;
+    enclave_metadata->platform_csr.eptbr |= SATP_MODE_SV39 << SATP_MODE;
   }
   else {
-    uintptr_t pte_base = (enclave_metadata->eptbr & SATP_PPN_MASK) << PAGE_SHIFT;
+    uintptr_t pte_base = (enclave_metadata->platform_csr.eptbr & SATP_PPN_MASK) << PAGE_SHIFT;
     if(region_owner(addr_to_region_id(pte_base)) != enclave_id){
        return MONITOR_INVALID_STATE;
     }

@@ -22,8 +22,12 @@ void sm_init(void) {
     }
 
     // Initialize region metadata : untrusted SW owns all regions that do not include SM code.
+    // Initialize untrusted metadata : untrusted SW is allowed access to all regions that do not include SM code.
     for ( int i=0; i<NUM_REGIONS; i++ ) {
       bool region_includes_sm = (uint64_t)region_id_to_addr(i) > (SM_ADDR+SM_LEN);
+      if(!region_includes_sm) {
+        sm->untrusted_regions.flags[i] = true;
+      }
       sm->regions[i].owner = region_includes_sm ? OWNER_UNTRUSTED : OWNER_SM;
       sm->regions[i].type = REGION_TYPE_UNTRUSTED;
       sm->regions[i].state = REGION_STATE_OWNED;
@@ -33,11 +37,6 @@ void sm_init(void) {
     // Initialize signing enclave measurement
     const uint8_t signing_enclave_measurement[64] = SIGNING_ENCLAVE_MEASUREMENT;
     memcpy( sm->signing_enclave_measurement.bytes, signing_enclave_measurement, sizeof(signing_enclave_measurement) );
-
-    // Initialize untrusted metadata : untrusted SW is allowed access to all regions.
-    for ( int i=0; i<NUM_REGIONS; i++ ) {
-      sm->untrusted_regions.flags[i] = true;
-    }
 
     // Initialize untrusted mailboxes : all are empty and unused.
     for ( int i=0; i<NUM_UNTRUSTED_MAILBOXES; i++ ) {
@@ -60,6 +59,9 @@ void sm_init(void) {
 
   // Initialize platform core state
   platform_core_init();
+
+  // Initialize memory protection
+  platform_initialize_memory_protection(sm);
 
   // payload must set its own stack pointer.
   platform_jump_to_untrusted( &sm->untrusted_regions, UNTRUSTED_ENTRY, 0 );

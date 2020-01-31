@@ -46,7 +46,7 @@ void test_entry(void) {
   enclave_id_t enclave_id = ((uintptr_t) &region3) + (PAGE_SIZE * region_metadata_start);
   uint64_t num_mailboxes = 1;
 
-  result = sm_enclave_create(enclave_id, 0, 0, num_mailboxes, true);
+  result = sm_enclave_create(enclave_id, 0x0, REGION_MASK, num_mailboxes, true);
   if(result != MONITOR_OK) {
     print_str("sm_enclave_create FAILED with error code ");
     print_int(result);
