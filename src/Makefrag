@@ -25,7 +25,6 @@ SM_LD := $(SM_SRC_DIR)/sm.lds
 SM_SRC := \
 	$(SM_COMMON_SRC) \
 	$(COMMON_DIR)/ed25519/sha512.c \
-	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/stacks.S \
 	$(PLATFORM_DIR)/platform_init.S \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
@@ -71,7 +70,6 @@ SM_SRC := \
 SM_ENCLAVE_LD := $(SM_SRC_DIR)/sm.enclave.lds
 .INTERMEDIATE: $(SM_ENCLAVE_LD)
 
-IDPT_BIN := $(BUILD_DIR)/idpt.bin
 HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 
 SM_ENCLAVE_SRC := \
@@ -92,10 +90,8 @@ SM_INCLUDES := \
 	$(API_DIR) \
 	$(SM_SRC_DIR) \
 
-
-# TODO: add idpt and handler binary
-$(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(IDPT_BIN) $(HANDLER_BIN)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D IDPT_FILE=\"$(IDPT_BIN)\" -D ENCLAVE_HANDLER_FILE=\"$(HANDLER_BIN)\" -o $@
+$(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(HANDLER_BIN)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D ENCLAVE_HANDLER_FILE=\"$(HANDLER_BIN)\" -o $@
 
 .INTERMEDIATE: $(SM_LD)
 
@@ -106,9 +102,6 @@ $(BUILD_DIR)/sm.enclave.elf: $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
 
 $(HANDLER_BIN): $(BUILD_DIR)/sm.enclave.elf
 	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
-
-$(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
-	$(PYTHON) $(SM_DIR)/scripts/idpt.py $@
 
 .PHONY: sm
 sm: $(BUILD_DIR)/sm.enclave.elf $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.bin

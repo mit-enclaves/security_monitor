@@ -9,6 +9,7 @@ MEMORY
   SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   SM (awx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
   PAYLOAD (awx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
+  IDPT (awx) :     ORIGIN = IDPT_BASE,       LENGTH = IDPT_SIZE
 }
 
 SECTIONS
@@ -51,10 +52,6 @@ SECTIONS
     *(.text)
   } > PAYLOAD =0x0
 
-  .enclave ALIGN(0x1000): {
-    *(.enclave)
-  } > PAYLOAD =0x0
-
   .data ALIGN(0x1000) : {
     *(.data.*)
     *(.data)
@@ -76,6 +73,10 @@ SECTIONS
     *(.htif.fromhost)
   } > PAYLOAD
 
+  .enclave ALIGN(0x1000): {
+    *(.enclave)
+  } > PAYLOAD =0x0
+
   .region1 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
     PROVIDE( region1 = . );
     BYTE(1)
@@ -90,4 +91,12 @@ SECTIONS
     PROVIDE( region3 = . );
     BYTE(1)
   } > PAYLOAD
+}
+
+SECTIONS
+{
+  . = ORIGIN(IDPT);
+  .idpt : {
+    *(.idpt)
+  } > IDPT =0x0
 }

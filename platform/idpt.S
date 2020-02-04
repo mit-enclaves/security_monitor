@@ -1,6 +1,6 @@
-#include <sm_constants.h>
+#include <parameters.h>
 
-.section .rodata.idpt
+.section .idpt , "ax", %progbits
 
 #ifndef IDPT_FILE
   #error idpt.bin path not defined

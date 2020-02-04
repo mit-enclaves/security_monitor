@@ -24,11 +24,11 @@ void sm_init(void) {
     // Initialize region metadata : untrusted SW owns all regions that do not include SM code.
     // Initialize untrusted metadata : untrusted SW is allowed access to all regions that do not include SM code.
     for ( int i=0; i<NUM_REGIONS; i++ ) {
-      bool region_includes_sm = (uint64_t)region_id_to_addr(i) > (SM_ADDR+SM_LEN);
-      if(!region_includes_sm) {
+      bool region_doesnt_include_sm = (uint64_t)region_id_to_addr(i) > (SM_ADDR+SM_LEN);
+      if(region_doesnt_include_sm) {
         sm->untrusted_regions.flags[i] = true;
       }
-      sm->regions[i].owner = region_includes_sm ? OWNER_UNTRUSTED : OWNER_SM;
+      sm->regions[i].owner = region_doesnt_include_sm ? OWNER_UNTRUSTED : OWNER_SM;
       sm->regions[i].type = REGION_TYPE_UNTRUSTED;
       sm->regions[i].state = REGION_STATE_OWNED;
       unlock_region(i); // Ensure cores aren't locked. the SM must be initialized in a vaccum, with only one thread running, so this is not dangerous.

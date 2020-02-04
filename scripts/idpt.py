@@ -2,10 +2,15 @@
 
 import struct
 import sys
+import re
 
-# This scripts constructs a set of identity page tables with all but the MEGA_PAGE_START - MEGA_PAGE_END mapped as giga pages.
+# This scripts constructs a set of identity page tables with all but
+# the MEGA_PAGE_START - MEGA_PAGE_END mapped as giga pages.
+
 # These pages are mega pages via a second level page table (PT_1).
-# These page tables are written to reside before address 0x100000000
+
+# These page tables are written to reside after address IDPT_BASE contained in
+# the header file passed as the first argument
 
 leaf_permissions = 0b11101111 # D A G (not U) X W R V
 node_permissions = 0b00000001 # Node
@@ -24,25 +29,45 @@ MEGA_PAGE_START = 0x080000000
 MEGA_PAGE_END   = 0x100000000
 NUMBER_MEGA_PAGES = (MEGA_PAGE_END - MEGA_PAGE_START) / MEGA_PAGE_SIZE
 
-
 SIZE_PAGE_TABLE = (NUMBER_MEGA_PAGES + NUMBER_GIGA_PAGES) * size_pte
 
-END_PAGE_TABLE_ADDRESS = 0x100000000
-START_PAGE_TABLE_ADDRESS = END_PAGE_TABLE_ADDRESS - SIZE_PAGE_TABLE
-
 def print_usage():
-    print "Usage: %s <output file path>" % (sys.argv[0])
+    print "Usage: %s <IDPT_BASE_ADDR> <output file path>" % (sys.argv[0])
 
-if (len(sys.argv) != 2):
+if (len(sys.argv) != 3):
     print_usage()
     sys.exit(1)
 
-name_file = sys.argv[1]
+## Parse header file to find IDPT_BASE value
 
-with open(name_file, 'wb') as f:
+p_idpt_base = re.compile('[ \t]*#define[ \t]+IDPT_BASE[ \t]+\(?(?P<value>0x[0-9a-fA-F]+)\)?L?')
+header_file = sys.argv[1]
+
+START_PAGE_TABLE_ADDRESS = None;
+
+with open(header_file, 'r') as f:
+    for line in f:
+        m = p_idpt_base.match(line)
+        if (m != None):
+            START_PAGE_TABLE_ADDRESS = int(m.group("value"), 0)
+            continue;
+
+if(START_PAGE_TABLE_ADDRESS == None):
+    raise RuntimeError("No IDPT_BASE definition found in header file")
+
+END_PAGE_TABLE_ADDRESS = START_PAGE_TABLE_ADDRESS + SIZE_PAGE_TABLE
+
+if((END_PAGE_TABLE_ADDRESS > MEGA_PAGE_END) or (START_PAGE_TABLE_ADDRESS < MEGA_PAGE_START)):
+    raise RuntimeError("Page table needs to be stored in memory")
+
+## Generate IDPT
+
+name_output_file = sys.argv[2]
+
+with open(name_output_file, 'wb') as f:
 
     next_page = START_PAGE_TABLE_ADDRESS
-    next_page += NUMBER_GIGA_PAGES
+    next_page += KILO_PAGE_SIZE
 
     # Generate the giga page table (PT_0)
     for i in range(NUMBER_GIGA_PAGES):
