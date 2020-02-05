@@ -81,20 +81,20 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
   write_csr(mstatus, mstatus_tmp);
 
   // WARNING !!! Big Hack
+  // TODO moove this code in platform specific functions
 
-  swap_csr(0x7c0, enclave_metadata->platform_csr.ev_base); //CSR_MEVBASE
-  swap_csr(0x7c1, enclave_metadata->platform_csr.ev_mask); //CSR_MEVMASK
+  swap_csr(CSR_MEVBASE, enclave_metadata->platform_csr.ev_base);
+  swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
 
-  // TODO fix this
   uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
-  swap_csr(0x7c4, memrbm); //CSR_MEMRBM
+  swap_csr(CSR_MEMRBM, memrbm); //CSR_MEMRBM
 
-  swap_csr(0x7c7, enclave_metadata->platform_csr.meparbase); //CSR_MEPARBASE
-  swap_csr(0x7c8, enclave_metadata->platform_csr.meparmask); //CSR_MEPARMASK
+  swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
+  swap_csr(CSR_MEPARMASK, enclave_metadata->platform_csr.meparmask);
 
   //platform_memory_protection_exit_enclave(enclave_metadata);
 
-  swap_csr(0x7c2, enclave_metadata->platform_csr.eptbr); //CSR_MEATP
+  swap_csr(CSR_MEATP, enclave_metadata->platform_csr.eptbr);
 
   // Prepare untrusted pc
   write_csr(mepc, thread_metadata->untrusted_pc);
