@@ -79,6 +79,7 @@ void test_entry(void) {
   }
 
   uintptr_t enclave_handler_address = (uintptr_t) &region2;
+  uintptr_t enclave_handler_stack_pointer = enclave_handler_address + HANDLER_LEN + STACK_SIZE;
 
   result = sm_enclave_load_handler(enclave_id, enclave_handler_address);
   if(result != MONITOR_OK) {
@@ -88,7 +89,7 @@ void test_entry(void) {
     test_completed();
   }
 
-  uintptr_t page_table_address = enclave_handler_address + HANDLER_LEN;
+  uintptr_t page_table_address = enclave_handler_stack_pointer;
 
   result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 3, NODE_ACL);
   if(result != MONITOR_OK) {
@@ -144,7 +145,7 @@ void test_entry(void) {
 
   thread_id_t thread_id = enclave_id + (size_enclave_metadata * PAGE_SIZE);
 
-  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, enclave_handler_address, phys_addr);
+  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, enclave_handler_address, enclave_handler_stack_pointer);
   if(result != MONITOR_OK) {
     print_str("sm_thread_load FAILED with error code ");
     print_int(result);
