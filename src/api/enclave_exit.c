@@ -80,18 +80,19 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
 
   write_csr(mstatus, mstatus_tmp);
 
-  //platform_hack_exit_enclave_memory_protection();
   // WARNING !!! Big Hack
 
   swap_csr(0x7c0, enclave_metadata->platform_csr.ev_base); //CSR_MEVBASE
   swap_csr(0x7c1, enclave_metadata->platform_csr.ev_mask); //CSR_MEVMASK
 
   // TODO fix this
-  //swap_csr(0x7c4, enclave_metadata->platform_csr.dram_bitmap); //CSR_MEMRBM
-  write_csr(0x7c4, 0); //CSR_MEMRBM
+  uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
+  swap_csr(0x7c4, memrbm); //CSR_MEMRBM
 
   swap_csr(0x7c7, enclave_metadata->platform_csr.meparbase); //CSR_MEPARBASE
   swap_csr(0x7c8, enclave_metadata->platform_csr.meparmask); //CSR_MEPARMASK
+
+  //platform_memory_protection_exit_enclave(enclave_metadata);
 
   swap_csr(0x7c2, enclave_metadata->platform_csr.eptbr); //CSR_MEATP
 

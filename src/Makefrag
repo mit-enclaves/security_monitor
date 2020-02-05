@@ -75,6 +75,7 @@ HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(COMMON_DIR)/clib/memcmp.c \
+	$(PLATFORM_DIR)/platform_helper.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/api/get_attestation_key.c \

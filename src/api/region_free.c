@@ -55,12 +55,16 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   // Apply state transition
   // ----------------------
 
+  // Transfer ownership of the region
+  enclave_id_t former_owner = region_metadata->owner;
+  region_metadata->owner = OWNER_UNTRUSTED;
+
   // Remove the region from owner's page map
-  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    sm->untrusted_regions.flags[region_id] = false;
-  } else {
-    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(region_metadata->owner);
-    enclave_metadata->regions.flags[region_id] = false;
+  if ( former_owner == OWNER_UNTRUSTED ) {
+    platform_update_untrusted_regions(sm, region_id, false);
+  } else if ( former_owner != OWNER_SM ){
+    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(former_owner);
+    platform_update_enclave_regions(enclave_metadata, region_id, false);
   }
 
   if (CLEAN_REGIONS_ON_FREE) {
@@ -75,7 +79,7 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
 
   // Release locks
   // (NOTE: owner field is conveniently not cleared until the region is re-assigned)
-  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
+  if ( former_owner == OWNER_UNTRUSTED ) {
     unlock_untrusted_state();
   } else { // a valid enclave
     unlock_regions(&locked_regions);

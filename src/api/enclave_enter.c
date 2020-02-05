@@ -120,7 +120,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   // Setup the platform's memory protection mechanisms
   platform_memory_protection_enter_enclave(enclave_metadata);
 
-  platform_hack_enclave_memory_protection(); // TODO implement platform protection and get rid of Hack
+  //platform_hack_enclave_memory_protection(); // TODO implement platform protection and get rid of Hack
 
   // Set trap handler
   swap_csr(mtvec, thread_metadata->fault_pc);

@@ -64,5 +64,5 @@ void sm_init(void) {
   platform_initialize_memory_protection(sm);
 
   // payload must set its own stack pointer.
-  platform_jump_to_untrusted( &sm->untrusted_regions, UNTRUSTED_ENTRY, 0 );
+  platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0 );
 }

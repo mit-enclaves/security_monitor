@@ -61,10 +61,10 @@ api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new
 
   // Mark the newly gained region in the new owner's region map
   if ( new_owner == OWNER_UNTRUSTED ) {
-    sm->untrusted_regions.flags[region_id] = true;
+    platform_update_untrusted_regions(sm, region_id, true);
   } else {
     enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(new_owner);
-    enclave_metadata->regions.flags[region_id] = true;
+    platform_update_enclave_regions(enclave_metadata, region_id, true);
   }
 
   // Release locks
