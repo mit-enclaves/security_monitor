@@ -4,6 +4,9 @@
 // SM Parameters:
 // --------------
 
+#define BOOT_ADDR (0x1000)
+#define BOOT_MAXLEN (0x10)
+
 #define STACK_SIZE    (0x1000)
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
@@ -19,7 +22,8 @@
 #define HANDLER_LEN         0x3000
 #define SM_LEN             0x10000
 
-#define UNTRUSTED_ENTRY 0x82000000
+#define UNTRUSTED_ENTRY  0x82000000
+#define PAYLOAD_MAXLEN    0xA000000
 
 // Machine configuration
 #define RAM_BASE        0x80000000

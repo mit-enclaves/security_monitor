@@ -1,4 +1,4 @@
-#include "test_parameters.h"
+#include "parameters.h"
 
 OUTPUT_ARCH( "riscv" )
 ENTRY( boot_entry )
@@ -9,7 +9,6 @@ MEMORY
   SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   SM (awx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
   PAYLOAD (awx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
-  IDPT (awx) :     ORIGIN = IDPT_BASE,       LENGTH = IDPT_SIZE
 }
 
 SECTIONS
@@ -91,12 +90,9 @@ SECTIONS
     PROVIDE( region3 = . );
     BYTE(1)
   } > PAYLOAD
-}
 
-SECTIONS
-{
-  . = ORIGIN(IDPT);
-  .idpt : {
+  . = IDPT_BASE;
+  .idpt IDPT_BASE : {
     *(.idpt)
-  } > IDPT =0x0
+  } > PAYLOAD =0x0
 }

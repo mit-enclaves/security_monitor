@@ -12,8 +12,8 @@ void sm_init(void) {
   sm_state_t * sm = get_sm_state_ptr();
 
   // IMPORTANT: this will be run by *all* cores
-
-  if (platform_get_core_id() == 0) {
+  uintptr_t core_id = platform_get_core_id();
+  if (core_id == 0) {
     // Initialize core metadata
     for ( int i=0; i<NUM_CORES; i++ ) {
       sm->cores[i].owner = OWNER_UNTRUSTED;
@@ -49,6 +49,9 @@ void sm_init(void) {
     // Initialize shared platform state
     platform_init();
 
+    // Initialize the device tree
+    platform_init_device_tree();
+
     // Resume other cores
     platform_interrupt_other_cores();
 
@@ -63,6 +66,9 @@ void sm_init(void) {
   // Initialize memory protection
   platform_initialize_memory_protection(sm);
 
+  // Walk the device tree and get its address
+  uintptr_t fdt_addr = platform_get_device_tree_addr();
+
   // payload must set its own stack pointer.
-  platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0 );
+  platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0, core_id, fdt_addr);
 }

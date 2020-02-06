@@ -24,12 +24,16 @@ SM_LD := $(SM_SRC_DIR)/sm.lds
 
 SM_SRC := \
 	$(SM_COMMON_SRC) \
+	$(COMMON_DIR)/clib/strcmp.c \
+	$(COMMON_DIR)/clib/strlen.c \
 	$(COMMON_DIR)/ed25519/sha512.c \
+	$(PLATFORM_DIR)/ftd/ftd.c \
 	$(PLATFORM_DIR)/stacks.S \
 	$(PLATFORM_DIR)/platform_init.S \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
 	$(PLATFORM_DIR)/platform_core_init.c \
+	$(PLATFORM_DIR)/platform_device_tree.c \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
