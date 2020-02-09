@@ -105,8 +105,8 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   // Update MSTATUS
   uint64_t mstatus_tmp = read_csr(mstatus);
 
-  // Set TVM to one, MPP to 0 (U mode), MPIE, SIE to 0 and UIE to 1
-  mstatus_tmp |= MSTATUS_TVM_MASK;
+  // Set TVM to 0, MPP to 0 (U mode), MPIE, SIE to 0 and UIE to 1
+  mstatus_tmp  &= (~MSTATUS_TVM_MASK);
   mstatus_tmp &= (~MSTATUS_MPP_MASK);
   mstatus_tmp &= (~MSTATUS_MPIE_MASK);
   mstatus_tmp &= (~MSTATUS_SIE_MASK);
