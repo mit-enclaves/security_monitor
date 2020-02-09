@@ -453,7 +453,7 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
 
   for (int index = 0; end - value > 0; ++index) {
     uint32_t phandle = bswap(value[0]);
-    uint32_t cpu_int = bswap(value[1]);
+    //uint32_t cpu_int = bswap(value[1]);
     int hart;
     for (hart = 0; hart < MAX_HARTS; ++hart)
       if (hart_phandles[hart] == phandle)

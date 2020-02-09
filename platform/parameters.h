@@ -23,7 +23,7 @@
 #define SM_LEN             0x10000
 
 #define UNTRUSTED_ENTRY  0x82000000
-#define PAYLOAD_MAXLEN    0xA000000
+#define PAYLOAD_MAXLEN    0xC000000
 
 // Machine configuration
 #define RAM_BASE        0x80000000
@@ -47,7 +47,7 @@
 
 // Paged virtual memory configuration
 
-#define IDPT_BASE (0x8A000000)
+#define IDPT_BASE (0x8D000000)
 #define IDPT_SIZE (0x4000)
 
 #define LEAF_ACL (0b11111111) // D A G U X W R V

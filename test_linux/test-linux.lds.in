@@ -44,51 +44,14 @@ SECTIONS
 SECTIONS
 {
   . = ORIGIN(PAYLOAD);
-  .text : {
-    PROVIDE( payload_entry = . );
-    *(.text.entry)
-    *(.text.*)
-    *(.text)
-  } > PAYLOAD =0x0
-
-  .data ALIGN(0x1000) : {
-    *(.data.*)
-    *(.data)
-  } > PAYLOAD =0x0
-
-  .bss ALIGN(0x1000) : {
-    *(.bss.*)
-    *(.bss)
-  } > PAYLOAD
-
-  .rodata ALIGN(0x1000) : {
-    *(.rodata.*)
-    *(.rodata)
+  .linux :{
+    *(.linux)
   } > PAYLOAD =0x0
 
   .htif ALIGN(0x1000) : {
     PROVIDE( __htif_base = . );
     *(.htif.tohost)
     *(.htif.fromhost)
-  } > PAYLOAD
-
-  .enclave ALIGN(0x1000): {
-    *(.enclave)
-  } > PAYLOAD =0x0
-
-  .region1 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
-    PROVIDE( region1 = . );
-    BYTE(1)
-  } > PAYLOAD
-
-  .region2 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
-    PROVIDE( region2 = . );
-    BYTE(1)
-  } > PAYLOAD
-
-  .region3 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
-    PROVIDE( region3 = . );
-    BYTE(1)
   } > PAYLOAD
 
   . = IDPT_BASE;

@@ -11,6 +11,7 @@ API_DIR := $(SM_DIR)/api
 SM_SRC_DIR := $(SM_DIR)/src
 SM_TEST_DIR := $(SM_DIR)/test
 ENCLAVE_SRC_DIR := $(SM_DIR)/test/enclaves
+SM_TEST_LINUX_DIR := $(SM_DIR)/test_linux
 
 DEBUG_FLAGS := -ggdb3
 
@@ -28,3 +29,4 @@ $(BUILD_DIR):
 
 include $(SM_SRC_DIR)/Makefrag
 include $(SM_TEST_DIR)/Makefrag
+include $(SM_TEST_LINUX_DIR)/Makefrag
