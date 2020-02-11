@@ -5,9 +5,21 @@ ENTRY( boot_entry )
 MEMORY
 {
   BOOT (ax) : ORIGIN = (0x1000), LENGTH = (0x10)
+  HTIF (awx) : ORIGIN = 0x10001000, LENGTH = 0x10
   SM_STATE (aw) : ORIGIN = 0x80000000, LENGTH = 0x3000
-  SM (awx) : ORIGIN = 0x80003000, LENGTH = 0x10000
-  PAYLOAD (awx) : ORIGIN = 0x82000000, LENGTH = 0x80000000
+  SM (awx) : ORIGIN = 0x80003000, LENGTH = 0x20000
+  PAYLOAD (awx) : ORIGIN = 0x82000000, LENGTH = 0xC000000
+}
+
+SECTIONS
+{
+  . = ORIGIN(HTIF);
+  .htif ALIGN(0x1000) : {
+    PROVIDE( __htif_base = . );
+    PROVIDE( __htif_base = . );
+    *(.htif.tohost)
+    *(.htif.fromhost)
+  } > HTIF
 }
 
 SECTIONS
@@ -46,12 +58,6 @@ SECTIONS
   .linux :{
     *(.linux)
   } > PAYLOAD =0x0
-
-  .htif ALIGN(0x1000) : {
-    PROVIDE( __htif_base = . );
-    *(.htif.tohost)
-    *(.htif.fromhost)
-  } > PAYLOAD
 
   . = (0x8D000000);
   .idpt (0x8D000000) : {

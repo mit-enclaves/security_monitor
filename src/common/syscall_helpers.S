@@ -83,7 +83,6 @@
   ld t6,31*REGBYTES(sp)
   ret
 
-  # (continue to perform_mret)
 .globl .perform_mret
 .perform_mret:
   # Go back whence we came.

@@ -5,8 +5,19 @@ ENTRY( sm_entry )
 
 MEMORY
 {
+  HTIF (awx)   :  ORIGIN = HTIF_BASE,     LENGTH = HTIF_LEN
   SM_STATE (w) :  ORIGIN = SM_STATE_ADDR, LENGTH = SM_STATE_LEN
   SM (wx) :       ORIGIN = SM_ADDR,       LENGTH = SM_LEN
+}
+
+SECTIONS
+{
+  . = ORIGIN(HTIF);
+  .htif ALIGN(0x1000) : {
+    PROVIDE( __htif_base = . );
+    *(.htif.tohost)
+    *(.htif.fromhost)
+  } > HTIF
 }
 
 SECTIONS

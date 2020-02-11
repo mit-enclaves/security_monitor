@@ -14,13 +14,17 @@
 
 /* Note: make sure the parameterization below is consistent with the target hardware platform! */
 
+// Placement for HTIF
+#define HTIF_BASE 0x10001000
+#define HTIF_LEN        0x10
+
 // Placemetn of SM in memory
 #define SM_STATE_ADDR   0x80000000
 #define SM_STATE_LEN        0x3000
 
 #define SM_ADDR         0x80003000
 #define HANDLER_LEN         0x3000
-#define SM_LEN             0x10000
+#define SM_LEN             0x20000
 
 #define UNTRUSTED_ENTRY  0x82000000
 #define PAYLOAD_MAXLEN    0xC000000
