@@ -24,6 +24,8 @@ SM_LD := $(SM_SRC_DIR)/sm.lds
 
 SM_SRC := \
 	$(SM_COMMON_SRC) \
+	$(COMMON_DIR)/htif/htif.c \
+	$(COMMON_DIR)/htif/htif_util.c \
 	$(COMMON_DIR)/clib/strcmp.c \
 	$(COMMON_DIR)/clib/strlen.c \
 	$(COMMON_DIR)/ed25519/sha512.c \
@@ -46,6 +48,7 @@ SM_SRC := \
 	$(SM_SRC_DIR)/common/load_page_table_entry.c \
 	$(SM_SRC_DIR)/init/init.S \
 	$(SM_SRC_DIR)/init/init.c \
+	$(SM_SRC_DIR)/kernel/mcall.c \
 	$(SM_SRC_DIR)/api/enclave_create.c \
 	$(SM_SRC_DIR)/api/enclave_delete.c \
 	$(SM_SRC_DIR)/api/enclave_enter.c \
@@ -112,4 +115,12 @@ $(HANDLER_BIN): $(BUILD_DIR)/sm.enclave.elf
 sm: $(BUILD_DIR)/sm.enclave.elf $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.bin
 
 $(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@
+	$(OBJCOPY) -O binary \
+	--only-section=.text \
+	--only-section=.rodata \
+	--only-section=.data \
+	--only-section=.bss  \
+	--keep-symbol=__htif_base \
+	--keep-symbol=tohost \
+	--keep-symbol=fromhost \
+	$< $@

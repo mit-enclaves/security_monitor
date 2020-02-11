@@ -178,6 +178,8 @@ trap_vector_from_untrusted:
   # Restore dirty registers and stack pointer
   ld t1, 6*REGBYTES(sp)
   ld t2, 7*REGBYTES(sp)
+  # (continue to perform_mret)
+  j .perform_mret
 
 .bad_event:
   csrr a0, mcause
