@@ -113,8 +113,10 @@ trap_vector_from_untrusted:
 # ----------------------
 
 .pmp_trap:
-  csrr a0, mcause
-  j platform_panic
+  call .save_regs_and_set_args
+  call illegal_instruction_trap_handler
+  call .restore_regs
+  j .perform_mret
 
 .illegal_insn_trap:
   csrr a0, mcause

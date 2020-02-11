@@ -1,5 +1,5 @@
-#include "kernel/mcall.h"
-#include "kernel/kernel_api.h"
+#include "mcall.h"
+#include "kernel_api.h"
 #include "htif/htif.h"
 #include <errno.h>
 

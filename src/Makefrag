@@ -49,6 +49,7 @@ SM_SRC := \
 	$(SM_SRC_DIR)/init/init.S \
 	$(SM_SRC_DIR)/init/init.c \
 	$(SM_SRC_DIR)/kernel/mcall.c \
+	$(SM_SRC_DIR)/kernel/handler_illegal_insn.c \
 	$(SM_SRC_DIR)/api/enclave_create.c \
 	$(SM_SRC_DIR)/api/enclave_delete.c \
 	$(SM_SRC_DIR)/api/enclave_enter.c \
