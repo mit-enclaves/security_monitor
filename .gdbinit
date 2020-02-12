@@ -12,3 +12,4 @@ symbol-file build/sm.elf
 #add-symbol-file build/sm.enclave.elf  0x86000000
 #add-symbol-file build/enclave.elf     0x0
 #add-symbol-file ../../build-riscv-linux/riscv-linux/vmlinux -s .init.text 0x82000000 -s .init.data 0x82004200
+add-symbol-file ../../build-riscv-linux/riscv-linux/vmlinux

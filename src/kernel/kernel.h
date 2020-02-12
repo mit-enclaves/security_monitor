@@ -4,11 +4,11 @@
 #include "kernel_api.h"
 #include "encoding.h"
 #include "csr/csr.h"
+#include <platform.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 typedef uintptr_t insn_t;
-
 static inline uintptr_t get_insn(uintptr_t mepc, uintptr_t* mstatus)
 {
   register uintptr_t __mstatus_adjust asm ("a1") = MSTATUS_MPRV | MSTATUS_MXR;

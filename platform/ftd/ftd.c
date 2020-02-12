@@ -72,7 +72,7 @@ static uint32_t *fdt_scan_helper(
         break;
       }
       case FDT_PROP: {
-        //assert (!last); TODO fix this
+        assert (!last);
         prop.name  = strings + bswap(lex[2]);
         prop.len   = bswap(lex[1]);
         prop.value = lex + 3;
@@ -319,7 +319,7 @@ void query_harts(uintptr_t fdt)
 }
 */
 ///////////////////////////////////////////// CLINT SCAN /////////////////////////////////////////
-/*
+
 struct clint_scan
 {
   int compat;
@@ -370,11 +370,13 @@ static void clint_done(const struct fdt_scan_node *node, void *extra)
     for (hart = 0; hart < MAX_HARTS; ++hart)
       if (hart_phandles[hart] == phandle)
         break;
+    /*
     if (hart < MAX_HARTS) {
       hls_t *hls = OTHER_HLS(hart);
       hls->ipi = (void*)((uintptr_t)scan->reg + index * 4);
       hls->timecmp = (void*)((uintptr_t)scan->reg + 0x4000 + (index * 8));
     }
+    */
     value += 4;
   }
 }
@@ -394,7 +396,7 @@ void query_clint(uintptr_t fdt)
   fdt_scan(fdt, &cb);
   assert (scan.done);
 }
-*/
+
 ///////////////////////////////////////////// PLIC SCAN /////////////////////////////////////////
 
 struct plic_scan
@@ -442,10 +444,10 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
   const uint32_t *end = value + scan->int_len/4;
 
   if (!scan->compat) return;
-  //assert (scan->reg != 0);
-  //assert (scan->int_value && scan->int_len % 8 == 0);
-  //assert (scan->ndev >= 0 && scan->ndev < 1024);
-  //assert (!scan->done); // only one plic
+  assert (scan->reg != 0);
+  assert (scan->int_value && scan->int_len % 8 == 0);
+  assert (scan->ndev >= 0 && scan->ndev < 1024);
+  assert (!scan->done); // only one plic
 
   scan->done = 1;
   plic_priorities = (uint32_t*)(uintptr_t)scan->reg;
@@ -693,8 +695,8 @@ static void hart_filter_done(const struct fdt_scan_node *node, void *extra)
   struct hart_filter *filter = (struct hart_filter *)extra;
 
   if (!filter->compat) return;
-  //assert (filter->status);
-  //assert (filter->hart >= 0);
+  assert (filter->status);
+  assert (filter->hart >= 0);
 
   if (hart_filter_mask(filter)) {
     strcpy(filter->status, "masked");

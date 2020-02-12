@@ -2,6 +2,7 @@
 #define SM_PLATFORM_H
 
 #include "platform_types.h"
+#include "platform_assert.h"
 #include "ftd/ftd.h"
 #include <csr/csr.h>
 #include <sm_types.h>
@@ -18,6 +19,9 @@
 static inline bool platform_lock_state(platform_lock_t *lock) {
   return ((lock->lock_flag) != 0);
 }
+
+// mtime device
+extern volatile uint64_t* mtime;
 
 // Core state
 // ----------
@@ -40,7 +44,7 @@ void platform_init (void);
 void platform_core_init (void);
 
 #define platform_get_device_tree_addr() ((uintptr_t) (((uint64_t) UNTRUSTED_ENTRY) + ((uint64_t) PAYLOAD_MAXLEN)))
-void platform_init_device_tree(void);
+void platform_filter_and_copy_device_tree(void);
 
 void platform_interrupt_other_cores (void);
 void platform_wait_for_interrupt (void);
@@ -64,7 +68,7 @@ void platform_hack_exit_enclave_memory_protection(void);
 void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata);
 void platform_memory_protection_exit_enclave(enclave_metadata_t *enclave_metadata);
 
-void platform_panic (uint64_t error_code) __attribute__((noreturn));
+void platform_panic(void) __attribute__((noreturn));
 
 // Platform helpers
 

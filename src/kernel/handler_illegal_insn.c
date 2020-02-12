@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include <platform.h>
 
 void static truly_illegal_insn(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc, uintptr_t mstatus, insn_t insn) {
   asm volatile ("j platform_panic");
@@ -19,7 +20,7 @@ static inline int emulate_read_csr(int num, uintptr_t mstatus, uintptr_t* result
     case CSR_TIME:
       if (!((counteren >> (CSR_TIME - CSR_CYCLE)) & 1))
         return -1;
-      *result = read_csr(mtime);
+      *result = *mtime;
       //*result = *mtime;
       return 0;
     case CSR_INSTRET:

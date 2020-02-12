@@ -50,7 +50,7 @@ void sm_init(void) {
     platform_init();
 
     // Initialize the device tree
-    platform_init_device_tree();
+    platform_filter_and_copy_device_tree();
 
     // Resume other cores
     platform_interrupt_other_cores();

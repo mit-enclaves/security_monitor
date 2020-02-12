@@ -113,14 +113,14 @@ trap_vector_from_untrusted:
 # ----------------------
 
 .pmp_trap:
+csrr a0, mcause
+j platform_panic
+
+.illegal_insn_trap:
   call .save_regs_and_set_args
   call illegal_instruction_trap_handler
   call .restore_regs
   j .perform_mret
-
-.illegal_insn_trap:
-  csrr a0, mcause
-  j platform_panic
 
 .misaligned_load_trap:
   csrr a0, mcause
@@ -136,7 +136,6 @@ trap_vector_from_untrusted:
   csrc mie, t0
   li t0, MIP_STIP
   csrs mip, t0
-  j .perform_mret
 
 .delegate_to_s:
   # delegate trap/interrupt to S mode
@@ -177,11 +176,18 @@ trap_vector_from_untrusted:
   # mepc <-- stvec
   csrr t0, stvec
   csrw mepc, t0
-  # Restore dirty registers and stack pointer
+  # Restore dirty registers, return address register and stack pointer
   ld t1, 6*REGBYTES(sp)
   ld t2, 7*REGBYTES(sp)
-  # (continue to perform_mret)
-  j .perform_mret
+
+  ld t0, 2*REGBYTES(sp)
+  csrw mscratch, t0
+
+  ld ra, 1*REGBYTES(sp)
+
+  ld t0, 5*REGBYTES(sp)
+  csrrw sp, mscratch, sp
+  mret
 
 .bad_event:
   csrr a0, mcause
