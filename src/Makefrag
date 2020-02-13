@@ -29,13 +29,11 @@ SM_SRC := \
 	$(COMMON_DIR)/clib/strcmp.c \
 	$(COMMON_DIR)/clib/strlen.c \
 	$(COMMON_DIR)/ed25519/sha512.c \
-	$(PLATFORM_DIR)/ftd/ftd.c \
 	$(PLATFORM_DIR)/stacks.S \
 	$(PLATFORM_DIR)/platform_init.c \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
 	$(PLATFORM_DIR)/platform_core_init.c \
-	$(PLATFORM_DIR)/platform_device_tree.c \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
@@ -48,6 +46,9 @@ SM_SRC := \
 	$(SM_SRC_DIR)/common/load_page_table_entry.c \
 	$(SM_SRC_DIR)/init/init.S \
 	$(SM_SRC_DIR)/init/init.c \
+	$(SM_SRC_DIR)/kernel/console.c \
+	$(SM_SRC_DIR)/kernel/fdt.c \
+	$(SM_SRC_DIR)/kernel/kernel_init.c \
 	$(SM_SRC_DIR)/kernel/mcall.c \
 	$(SM_SRC_DIR)/kernel/handler_illegal_insn.c \
 	$(SM_SRC_DIR)/api/enclave_create.c \

@@ -1,33 +1,33 @@
 // See LICENSE for license details.
 
-#include <sm.h>
+#include "kernel.h"
+
 #include <string.h>
-#include "ftd.h"
 
 // HACKS !!!
 #define MAX_HARTS 1
 
+extern long disabled_hart_mask;
+
 volatile uint32_t* plic_priorities;
 size_t plic_ndevs;
 
-typedef struct {
-  volatile uint32_t* ipi;
-  volatile int mipi_pending;
-
-  volatile uint64_t* timecmp;
-
-  volatile uint32_t* plic_m_thresh;
-  volatile uintptr_t* plic_m_ie;
-  volatile uint32_t* plic_s_thresh;
-  volatile uintptr_t* plic_s_ie;
-} hls_t;
-
-#define HLS_SIZE 64
-
-#define HLS() ((hls_t*)(MACHINE_STACK_TOP() - HLS_SIZE))
-#define OTHER_HLS(id) ((hls_t*)((void*)HLS() + PAGE_SIZE * ((id) - read_csr(mhartid))))
 
 // END HACKS
+
+void filter_and_copy_device_tree(void) {
+  uintptr_t src_fdt_addr = FDT_ADDR;
+  uintptr_t out_fdt_addr = platform_get_device_tree_addr();
+  uint32_t size = fdt_size(src_fdt_addr);
+
+  memcpy((void*)out_fdt_addr, (void*)src_fdt_addr, size);
+
+  // TODO : here filter the device tree
+  filter_harts(out_fdt_addr, &disabled_hart_mask);
+  filter_plic(out_fdt_addr);
+  //filter_compat(out_fdt_addr, "riscv,clint0");
+  //filter_compat(out_fdt_addr, "riscv,debug-013");
+}
 
 static inline uint32_t bswap(uint32_t x)
 {
@@ -229,7 +229,7 @@ void query_mem(uintptr_t fdt)
 ///////////////////////////////////////////// HART SCAN //////////////////////////////////////////
 
 static uint32_t hart_phandles[MAX_HARTS];
-/*uint64_t hart_mask;
+uint64_t hart_mask;
 
 struct hart_scan {
   const struct fdt_scan_node *cpu;
@@ -317,7 +317,7 @@ void query_harts(uintptr_t fdt)
   // The current hart should have been detected
   assert ((hart_mask >> read_csr(mhartid)) != 0);
 }
-*/
+
 ///////////////////////////////////////////// CLINT SCAN /////////////////////////////////////////
 
 struct clint_scan
@@ -370,13 +370,11 @@ static void clint_done(const struct fdt_scan_node *node, void *extra)
     for (hart = 0; hart < MAX_HARTS; ++hart)
       if (hart_phandles[hart] == phandle)
         break;
-    /*
     if (hart < MAX_HARTS) {
       hls_t *hls = OTHER_HLS(hart);
       hls->ipi = (void*)((uintptr_t)scan->reg + index * 4);
       hls->timecmp = (void*)((uintptr_t)scan->reg + 0x4000 + (index * 8));
     }
-    */
     value += 4;
   }
 }
@@ -455,12 +453,11 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
 
   for (int index = 0; end - value > 0; ++index) {
     uint32_t phandle = bswap(value[0]);
-    //uint32_t cpu_int = bswap(value[1]);
+    uint32_t cpu_int = bswap(value[1]);
     int hart;
     for (hart = 0; hart < MAX_HARTS; ++hart)
       if (hart_phandles[hart] == phandle)
         break;
-    /*
     if (hart < MAX_HARTS) {
       hls_t *hls = OTHER_HLS(hart);
       if (cpu_int == IRQ_M_EXT) {
@@ -473,18 +470,19 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
         printm("PLIC wired hart %d to wrong interrupt %d", hart, cpu_int);
       }
     }
-    */
     value += 2;
   }
-/*
 #if 0
   printm("PLIC: prio %x devs %d\r\n", (uint32_t)(uintptr_t)plic_priorities, plic_ndevs);
   for (int i = 0; i < MAX_HARTS; ++i) {
     hls_t *hls = OTHER_HLS(i);
-    printm("CPU %d: %x %x %x %x\r\n", i, (uint32_t)(uintptr_t)hls->plic_m_ie, (uint32_t)(uintptr_t)hls->plic_m_thresh, (uint32_t)(uintptr_t)hls->plic_s_ie, (uint32_t)(uintptr_t)hls->plic_s_thresh);
+    printm("CPU %d: %x %x %x %x\r\n", i,
+      (uint32_t)(uintptr_t)hls->plic_m_ie,
+      (uint32_t)(uintptr_t)hls->plic_m_thresh,
+      (uint32_t)(uintptr_t)hls->plic_s_ie,
+      (uint32_t)(uintptr_t)hls->plic_s_thresh);
   }
 #endif
-*/
 }
 
 void query_plic(uintptr_t fdt)

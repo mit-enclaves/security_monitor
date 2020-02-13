@@ -49,8 +49,8 @@ void sm_init(void) {
     // Initialize shared platform state
     platform_init();
 
-    // Initialize the device tree
-    platform_filter_and_copy_device_tree();
+    // Initialize kernel
+    kernel_init();
 
     // Resume other cores
     platform_interrupt_other_cores();

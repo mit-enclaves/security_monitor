@@ -49,6 +49,8 @@ struct fdt_cb {
   void *extra;
 };
 
+void filter_and_copy_device_tree(void);
+
 // Scan the contents of FDT
 void fdt_scan(uintptr_t fdt, const struct fdt_cb *cb);
 uint32_t fdt_size(uintptr_t fdt);

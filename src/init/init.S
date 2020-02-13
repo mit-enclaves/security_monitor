@@ -15,7 +15,9 @@ la sp, stack_ptr
 li t0, STACK_SIZE
 csrr t1, mhartid
 mul t0, t0, t1
+li t1, MENTRY_FRAME_SIZE
 sub sp, sp, t0    # sp = stack_ptr - (mhartid*STACK_SIZE)
+sub sp, sp, t1    # sp = stack_ptr - (mhartid*STACK_SIZE) - MENTRY_FRAME_SIZE
 
 # Run SM's high-level initialization routine; safe for all cores to run
 # call into sm_init()

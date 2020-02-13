@@ -87,7 +87,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
 
   // Save untrusted fault handler pc and fault sp
   thread_metadata->untrusted_fault_pc = (((uint64_t)(&trap_vector_from_untrusted))&(~0x3L));
-  thread_metadata->untrusted_fault_sp = ((uintptr_t) &stack_ptr) + (core_id * (STACK_SIZE));
+  thread_metadata->untrusted_fault_sp = ((uintptr_t) &stack_ptr) - (core_id * (STACK_SIZE)) - MENTRY_FRAME_SIZE;
 
   if(aex) {
     thread_metadata->aex_present = false;

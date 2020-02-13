@@ -7,10 +7,15 @@
 #define BOOT_ADDR (0x1000)
 #define BOOT_MAXLEN (0x10)
 
-#define STACK_SIZE    (0x1000)
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
 #define CLEAN_REGIONS_ON_FREE   (true)
+
+// Stack Parameter
+#define STACK_SIZE          (0x1000)
+#define INTEGER_CONTEXT_SIZE (0x100)
+#define HLS_SIZE                 64
+#define MENTRY_FRAME_SIZE (INTEGER_CONTEXT_SIZE + HLS_SIZE)
 
 /* Note: make sure the parameterization below is consistent with the target hardware platform! */
 

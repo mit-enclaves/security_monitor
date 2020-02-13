@@ -3,9 +3,21 @@
 
 #include "platform_types.h"
 #include "platform_assert.h"
-#include "ftd/ftd.h"
+#include <parameters.h>
 #include <csr/csr.h>
 #include <sm_types.h>
+
+
+// Atomic operations
+
+#define mb() asm volatile ("fence" ::: "memory")
+#define atomic_set(ptr, val) (*(volatile typeof(*(ptr)) *)(ptr) = val)
+#define atomic_read(ptr) (*(volatile typeof(*(ptr)) *)(ptr))
+
+# define atomic_add(ptr, inc) __sync_fetch_and_add(ptr, inc)
+# define atomic_or(ptr, inc) __sync_fetch_and_or(ptr, inc)
+# define atomic_swap(ptr, swp) __sync_lock_test_and_set(ptr, swp)
+# define atomic_cas(ptr, cmp, swp) __sync_val_compare_and_swap(ptr, cmp, swp)
 
 // Lock
 // ----
@@ -44,7 +56,6 @@ void platform_init (void);
 void platform_core_init (void);
 
 #define platform_get_device_tree_addr() ((uintptr_t) (((uint64_t) UNTRUSTED_ENTRY) + ((uint64_t) PAYLOAD_MAXLEN)))
-void platform_filter_and_copy_device_tree(void);
 
 void platform_interrupt_other_cores (void);
 void platform_wait_for_interrupt (void);

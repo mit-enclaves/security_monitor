@@ -1,18 +1,23 @@
-#include "mcall.h"
-#include "kernel_api.h"
-#include "htif/htif.h"
+#include "kernel.h"
+
 #include <errno.h>
+#include <stdio.h>
 
 // Code ispired by riscv-pk
 
 static uintptr_t mcall_console_putchar(uint8_t ch);
 static uintptr_t mcall_console_getchar();
+static uintptr_t mcall_set_timer(uint64_t when);
+static uintptr_t mcall_clear_ipi();
+static void send_ipi(uintptr_t recipient, int event);
+static void send_ipi_many(uintptr_t* pmask, int event);
 
 void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
   uintptr_t code = regs[17];
   uint64_t arg0 = regs[10];
 
   uint64_t retval;
+  uintptr_t ipi_type;
 
   switch (code)
   {
@@ -22,34 +27,103 @@ void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
     case SBI_CONSOLE_GETCHAR:
       retval = mcall_console_getchar();
       break;
-    //case SBI_SEND_IPI:
-    //case SBI_REMOTE_SFENCE_VMA:
-    //case SBI_REMOTE_SFENCE_VMA_ASID:
-    //case SBI_REMOTE_FENCE_I:
-    //case SBI_CLEAR_IPI:
-    /*
+    case SBI_SEND_IPI:
+      ipi_type = IPI_SOFT;
+      goto send_ipi;
+    case SBI_REMOTE_SFENCE_VMA:
+    case SBI_REMOTE_SFENCE_VMA_ASID:
+      ipi_type = IPI_SFENCE_VMA;
+      goto send_ipi;
+    case SBI_REMOTE_FENCE_I:
+      ipi_type = IPI_FENCE_I;
+send_ipi:
+      send_ipi_many((uintptr_t*)arg0, ipi_type);
+      retval = 0;
+      break;
+    case SBI_CLEAR_IPI:
+      retval = mcall_clear_ipi();
+      break;
+/*
     case SBI_SHUTDOWN:
       retval = mcall_shutdown();
-      break;
+      break; */
     case SBI_SET_TIMER:
       retval = mcall_set_timer(arg0);
       break;
-    S*/
+
     default:
       retval = -ENOSYS;
+      platform_panic();
       break;
   }
 
   regs[10] = retval;
 }
 
+hls_t* hls_init(uintptr_t id)
+{
+  hls_t* hls = OTHER_HLS(id);
+  memset(hls, 0, sizeof(*hls));
+  return hls;
+}
+
 static uintptr_t mcall_console_putchar(uint8_t ch)
 {
-  htif_putchar(ch);
+  console_putchar(ch);
   return 0;
 }
 
 static uintptr_t mcall_console_getchar()
 {
-  return htif_getchar();
+  return console_getchar();
+}
+
+static uintptr_t mcall_clear_ipi()
+{
+  return clear_csr(mip, MIP_SSIP) & MIP_SSIP;
+}
+
+static uintptr_t mcall_set_timer(uint64_t when)
+{
+  *HLS()->timecmp = when;
+  clear_csr(mip, MIP_STIP);
+  set_csr(mie, MIP_MTIP);
+  return 0;
+}
+
+static void send_ipi(uintptr_t recipient, int event)
+{
+  //if (((disabled_hart_mask >> recipient) & 1)) return;
+  atomic_or(&OTHER_HLS(recipient)->mipi_pending, event);
+  mb();
+  *OTHER_HLS(recipient)->ipi = 1;
+}
+
+static void send_ipi_many(uintptr_t* pmask, int event)
+{
+  uintptr_t mask = hart_mask;
+  if (pmask)
+    mask &= load_uintptr_t(pmask, read_csr(mepc));
+
+  // send IPIs to everyone
+  for (uintptr_t i = 0, m = mask; m; i++, m >>= 1)
+    if (m & 1)
+      send_ipi(i, event);
+
+  if (event == IPI_SOFT)
+    return;
+
+  // wait until all events have been handled.
+  // prevent deadlock by consuming incoming IPIs.
+  uint32_t incoming_ipi = 0;
+  for (uintptr_t i = 0, m = mask; m; i++, m >>= 1)
+    if (m & 1)
+      while (*OTHER_HLS(i)->ipi)
+        incoming_ipi |= atomic_swap(HLS()->ipi, 0);
+
+  // if we got an IPI, restore it; it will be taken after returning
+  if (incoming_ipi) {
+    *HLS()->ipi = incoming_ipi;
+    mb();
+  }
 }

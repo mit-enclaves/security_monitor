@@ -3,27 +3,15 @@
 
 #include "kernel_api.h"
 #include "encoding.h"
-#include "csr/csr.h"
+#include "fdt.h"
+#include "mcall.h"
+#include "unprivileged_memory.h"
+#include <csr/csr.h>
 #include <platform.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 typedef uintptr_t insn_t;
-static inline uintptr_t get_insn(uintptr_t mepc, uintptr_t* mstatus)
-{
-  register uintptr_t __mstatus_adjust asm ("a1") = MSTATUS_MPRV | MSTATUS_MXR;
-  register uintptr_t __mepc asm ("a2") = mepc;
-  register uintptr_t __mstatus asm ("a3");
-  uintptr_t val;
-
-  asm ("csrrs %[mstatus], mstatus, %[mprv]\n"
-       "lwu %[insn], (%[addr])\n"
-       "csrw mstatus, %[mstatus]"
-       : [mstatus] "+&r" (__mstatus), [insn] "=&r" (val)
-       : [mprv] "r" (__mstatus_adjust), [addr] "r" (__mepc));
-  *mstatus = __mstatus;
-  return val;
-}
 
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))

@@ -17,7 +17,6 @@ SECTIONS
   . = ORIGIN(HTIF);
   .htif ALIGN(0x1000) : {
     PROVIDE( __htif_base = . );
-    PROVIDE( __htif_base = . );
     *(.htif.tohost)
     *(.htif.fromhost)
   } > HTIF

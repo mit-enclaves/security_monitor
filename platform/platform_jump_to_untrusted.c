@@ -24,7 +24,7 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
 
   write_csr(mstatus, mstatus_csr);
 
-  register uint64_t t0 asm ("t0") = STACK_SIZE;
+  register uint64_t t0 asm ("t0") = (core_id*STACK_SIZE) - MENTRY_FRAME_SIZE;
   register uintptr_t a0 asm ("a0") = core_id;
   register uintptr_t a1 asm ("a1") = fdt_addr;
   register uintptr_t a2 asm ("a2") = virtual_pc;
@@ -35,9 +35,7 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
     \
     # Set the core's SM stack pointer \n \
     la sp, stack_ptr; \n \
-    csrr t1, mhartid; \n \
-    mul t0, t0, t1; \n \
-    sub sp, sp, t0; # sp = stack_ptr - (mhartid*STACK_SIZE) \n \
+    sub sp, sp, t0; # sp = stack_ptr - (mhartid*STACK_SIZE) - MENTRY_FRAME_SIZE \n \
     csrw mscratch, a3; \n \
     \
     # Clean the cores; \n \

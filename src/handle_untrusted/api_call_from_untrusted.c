@@ -1,5 +1,4 @@
 #include <sm.h>
-#include <kernel/kernel_api.h> // TODO move this to a kernel
 #include "handles_untrusted.h"
 
 // SM CALLS FROM OS (these come from S-mode)
