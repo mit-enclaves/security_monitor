@@ -35,7 +35,7 @@ interrupt_table:
   .word (.delegate_to_s-.i_tab_root)  //  0: user software interrupt
   .word (.delegate_to_s-.i_tab_root)  //  1: supervisor software interrupt
   .word (.bad_event-.i_tab_root)      //  2: (reserved)
-  .word (.delegate_to_s-.i_tab_root)  //  3: machine software interrupt
+  .word (.handle_m_soft_interrupt-.i_tab_root)  //  3: machine software interrupt
   .word (.delegate_to_s-.i_tab_root)  //  4: user timer interrupt
   .word (.delegate_to_s-.i_tab_root)  //  5: supervisor timer interrupt
   .word (.bad_event-.i_tab_root)      //  6: (reserved)
@@ -130,12 +130,65 @@ trap_vector_from_untrusted:
   csrr a0, mcause
   j platform_panic
 
-// We set the S timer interrupt, causing the SM to immediately catch that event, and delegated the S timer interrupt to S
+# We clear the M timer interrupt-pending bit
+# We set the S timer interrupt-pending bit
+# W also set the S timer interrupt-enable bit
+# Causing the SM to immediately catch that event,
+# We will then delegated the S timer interrupt to S
 .handle_mtimer_interrupt:
   li t0, MIP_MTIP
   csrc mie, t0
   li t0, MIP_STIP
+  #csrs mie, t0
   csrs mip, t0
+
+  # Go back whence we came.
+  ld t0, 2*REGBYTES(sp)
+  csrw mscratch, t0
+
+  ld t0, 5*REGBYTES(sp)
+  ld ra, 1*REGBYTES(sp)
+  csrrw sp, mscratch, sp
+  mret
+
+.handle_m_soft_interrupt:
+  sd t1, 6*REGBYTES(sp) # Save t1 on the stack
+
+  # First, clear the MIPI bit.
+  ld t0, MENTRY_IPI_OFFSET(sp)
+  sw x0, (t0)
+  fence
+
+  # Now, decode the cause(s).
+  addi t0, sp, MENTRY_IPI_PENDING_OFFSET
+  amoswap.w t0, x0, (t0)
+
+  and t1, t0, IPI_SOFT
+  beqz t1, 1f
+  csrs mip, MIP_SSIP
+  1:
+  andi t1, t0, IPI_FENCE_I
+  beqz t1, 1f
+  fence.i
+  1:
+  andi t1, t0, IPI_SFENCE_VMA
+  beqz t1, 1f
+  sfence.vma
+  1:
+  andi t1, t0, IPI_HALT
+  beqz t1, 1f
+  wfi
+  j 1b
+  1:
+  # Go back whence we came.
+  ld t0, 2*REGBYTES(sp)
+  csrw mscratch, t0
+
+  ld t0, 5*REGBYTES(sp)
+  ld t1, 6*REGBYTES(sp)
+  ld ra, 1*REGBYTES(sp)
+  csrrw sp, mscratch, sp
+  mret
 
 .delegate_to_s:
   # delegate trap/interrupt to S mode
@@ -184,7 +237,6 @@ trap_vector_from_untrusted:
   csrw mscratch, t0
 
   ld ra, 1*REGBYTES(sp)
-
   ld t0, 5*REGBYTES(sp)
   csrrw sp, mscratch, sp
   mret

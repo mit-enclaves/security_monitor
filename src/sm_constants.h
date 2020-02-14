@@ -25,10 +25,21 @@
 #define SATP_PPN_MASK ((PPN2_MASK << (PN_OFFSET * 2)) | (PN_MASK << PN_OFFSET) | PN_MASK)
 #define PPNs_MASK (SATP_PPN_MASK << PAGE_ENTRY_ACL_OFFSET)
 
+#define IPI_SOFT       0x1
+#define IPI_FENCE_I    0x2
+#define IPI_SFENCE_VMA 0x4
+#define IPI_HALT       0x8
+
+#define MENTRY_HLS_OFFSET (INTEGER_CONTEXT_SIZE)
+#define MENTRY_IPI_OFFSET (MENTRY_HLS_OFFSET)
+#define MENTRY_IPI_PENDING_OFFSET (MENTRY_HLS_OFFSET + REGBYTES)
+
 #define MIP_SSIP            (1 << IRQ_S_SOFT)
 #define MIP_STIP            (1 << IRQ_S_TIMER)
 #define MIP_HTIP            (1 << IRQ_H_TIMER)
 #define MIP_MTIP            (1 << IRQ_M_TIMER)
+#define MIP_MSIP            (1 << IRQ_M_SOFT)
+#define MIP_SEIP            (1 << IRQ_S_EXT)
 
 // Validate parameterization
 // -------------------------

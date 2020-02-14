@@ -4,17 +4,6 @@
 
 #include <string.h>
 
-// HACKS !!!
-#define MAX_HARTS 1
-
-extern long disabled_hart_mask;
-
-volatile uint32_t* plic_priorities;
-size_t plic_ndevs;
-
-
-// END HACKS
-
 void filter_and_copy_device_tree(void) {
   uintptr_t src_fdt_addr = FDT_ADDR;
   uintptr_t out_fdt_addr = platform_get_device_tree_addr();
@@ -167,7 +156,7 @@ int fdt_string_list_index(const struct fdt_scan_prop *prop, const char *str)
 }
 
 //////////////////////////////////////////// MEMORY SCAN /////////////////////////////////////////
-/*
+
 struct mem_scan {
   int memory;
   const uint32_t *reg_value;
@@ -225,7 +214,7 @@ void query_mem(uintptr_t fdt)
   fdt_scan(fdt, &cb);
   assert (mem_size > 0);
 }
-*/
+
 ///////////////////////////////////////////// HART SCAN //////////////////////////////////////////
 
 static uint32_t hart_phandles[MAX_HARTS];
@@ -582,7 +571,7 @@ void filter_compat(uintptr_t fdt, const char *compat)
 }
 
 //////////////////////////////////////////// CHOSEN SCAN ////////////////////////////////////////
-/*
+
 struct chosen_scan {
   const struct fdt_scan_node *chosen;
   void* kernel_start;
@@ -637,7 +626,7 @@ void query_chosen(uintptr_t fdt)
   kernel_start = chosen.kernel_start;
   kernel_end = chosen.kernel_end;
 }
-*/
+
 //////////////////////////////////////////// HART FILTER ////////////////////////////////////////
 
 struct hart_filter {

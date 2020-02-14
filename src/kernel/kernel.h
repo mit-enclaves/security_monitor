@@ -10,8 +10,19 @@
 #include <platform.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <limits.h>
+
+extern long disabled_hart_mask;
+extern uintptr_t mem_size;
+extern volatile uint64_t* mtime;
+extern volatile uint32_t* plic_priorities;
+extern size_t plic_ndevs;
+extern void* kernel_start;
+extern void* kernel_end;
 
 typedef uintptr_t insn_t;
+
+#define MAX_HARTS 1
 
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))

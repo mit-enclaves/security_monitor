@@ -27,15 +27,6 @@ typedef struct {
 
 hls_t* hls_init(uintptr_t hart_id);
 
-#define IPI_SOFT       0x1
-#define IPI_FENCE_I    0x2
-#define IPI_SFENCE_VMA 0x4
-#define IPI_HALT       0x8
-
-#define MENTRY_HLS_OFFSET (INTEGER_CONTEXT_SIZE)
-#define MENTRY_IPI_OFFSET (MENTRY_HLS_OFFSET)
-#define MENTRY_IPI_PENDING_OFFSET (MENTRY_HLS_OFFSET + REGBYTES)
-
 #define SBI_SET_TIMER 0
 #define SBI_CONSOLE_PUTCHAR 1
 #define SBI_CONSOLE_GETCHAR 2
