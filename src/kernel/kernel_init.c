@@ -63,6 +63,8 @@ static void prci_test()
 static void delegate_traps()
 {
   uintptr_t interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
+
+  /*
   uintptr_t exceptions =
     (1U << CAUSE_MISALIGNED_FETCH) |
     (1U << CAUSE_FETCH_PAGE_FAULT) |
@@ -70,22 +72,23 @@ static void delegate_traps()
     (1U << CAUSE_LOAD_PAGE_FAULT) |
     (1U << CAUSE_STORE_PAGE_FAULT) |
     (1U << CAUSE_USER_ECALL);
+  */
 
   write_csr(mideleg, interrupts);
-  write_csr(medeleg, exceptions);
+  //write_csr(medeleg, exceptions);
   assert(read_csr(mideleg) == interrupts);
-  assert(read_csr(medeleg) == exceptions);
+  //assert(read_csr(medeleg) == exceptions);
 }
 
 void kernel_init() {
   delegate_traps();
-  hls_init(0);
+  //hls_init(0);
 
-  query_mem(FDT_ADDR);
+  //query_mem(FDT_ADDR);
   query_harts(FDT_ADDR);
   query_clint(FDT_ADDR);
-  query_plic(FDT_ADDR);
-  query_chosen(FDT_ADDR);
+  //query_plic(FDT_ADDR);
+  //query_chosen(FDT_ADDR);
 
   plic_init();
   hart_plic_init();
