@@ -13,6 +13,7 @@
 #define CSR_FFLAGS 0x1
 #define CSR_FRM 0x2
 #define CSR_FCSR 0x3
+#define CSR_SATP 0x180
 #define CSR_CYCLE 0xc00
 #define CSR_TIME 0xc01
 #define CSR_INSTRET 0xc02
@@ -21,6 +22,10 @@
 #define CSR_MHPMCOUNTER4 0xb04
 #define CSR_MHPMEVENT3 0x323
 #define CSR_MHPMEVENT4 0x324
+
+#define SATP_MODE_OFFSET 60
+
+#define SFENCE_VMA_FUNCT7 0b0001001
 
 #define OPCODE_MASK        0x7F
 #define OPCODE_SYSTEM 0b1110011

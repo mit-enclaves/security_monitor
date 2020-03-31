@@ -14,8 +14,8 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
   // Set up the privilege stack for an S-mode return
   uint64_t mstatus_csr = read_csr(mstatus);
 
-  // Set TVM to 0, MPP to 1 (S mode), MPIE to 0, SIE to 1 and UIE to 0
-  mstatus_csr &= (~MSTATUS_TVM_MASK);
+  // Set TVM to 1, MPP to 1 (S mode), MPIE to 0, SIE to 1 and UIE to 0
+  mstatus_csr |= MSTATUS_TVM_MASK;
   mstatus_csr &= (~MSTATUS_MPP_MASK);
   mstatus_csr |= 1ul << MSTATUS_MPP_OFFSET;
   mstatus_csr &= (~MSTATUS_MPIE_MASK);

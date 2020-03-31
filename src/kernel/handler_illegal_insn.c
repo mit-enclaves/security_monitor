@@ -12,6 +12,9 @@ static inline int emulate_read_csr(int num, uintptr_t mstatus, uintptr_t* result
 
   switch (num)
   {
+    case CSR_SATP:
+      *result = read_csr(satp);
+      return 0;
     case CSR_CYCLE:
       if (!((counteren >> (CSR_CYCLE - CSR_CYCLE)) & 1))
         return -1;
@@ -50,6 +53,12 @@ static inline int emulate_read_csr(int num, uintptr_t mstatus, uintptr_t* result
 
 static inline int emulate_write_csr(int num, uintptr_t value, uintptr_t mstatus) {
   switch (num) {
+    case CSR_SATP:
+        // Make sure the instruction comes from S mode
+        assert((EXTRACT_FIELD(mstatus, MSTATUS_MPP) == PRV_S));
+        // Verify that the mode is SV32
+        assert(((value >> SATP_MODE_OFFSET) == SATP_MODE_SV39));
+        write_csr(satp, value);
     case CSR_CYCLE: write_csr(mcycle, value); return 0;
     case CSR_INSTRET: write_csr(minstret, value); return 0;
     case CSR_MHPMCOUNTER3: write_csr(mhpmcounter3, value); return 0;
@@ -63,14 +72,25 @@ static inline int emulate_write_csr(int num, uintptr_t value, uintptr_t mstatus)
 void static emulate_system_opcode(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc, uintptr_t mstatus, insn_t insn) {
   int rs1_num = (insn >> 15) & 0x1f;
   uintptr_t rs1_val = GET_RS1(insn, regs);
+  uintptr_t rd = GET_RM(insn);
   int csr_num = (uint32_t)insn >> 20;
   uintptr_t csr_val, new_csr_val;
 
+  uintptr_t funct3 = GET_FUNCT3(insn);
+  uintptr_t funct7 = GET_FUNCT7(insn);
+
+  if((funct3 == 0) && (rd == 0) && (funct7 == SFENCE_VMA_FUNCT7)) {
+    // Make sure the instruction comes from S mode
+    assert((EXTRACT_FIELD(mstatus, MSTATUS_MPP) == PRV_S));
+    asm volatile ("sfence.vma");
+    return;
+  }
+  
   if (emulate_read_csr(csr_num, mstatus, &csr_val))
     return truly_illegal_insn(regs, mcause, mepc, mstatus, insn);
 
   int do_write = rs1_num;
-  switch (GET_RM(insn))
+  switch (rd)
   {
     case 0: return truly_illegal_insn(regs, mcause, mepc, mstatus, insn);
     case 1: new_csr_val = rs1_val; do_write = 1; break;

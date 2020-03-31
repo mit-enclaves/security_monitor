@@ -36,6 +36,9 @@ typedef uintptr_t insn_t;
 
 #define GET_RM(insn) (((insn) >> 12) & 7)
 
+#define GET_FUNCT3(insn) GET_RM(insn)
+#define GET_FUNCT7(insn) (((insn) >> 25) & 0x7f)
+
 #define SHIFT_RIGHT(x, y) ((y) < 0 ? ((x) << -(y)) : ((x) >> (y)))
 #define GET_REG(insn, pos, regs) ({ \
   int mask = (1 << (5+LOG_REGBYTES)) - (1 << LOG_REGBYTES); \
@@ -50,6 +53,5 @@ typedef uintptr_t insn_t;
 #define SET_RD(insn, regs, val) (*GET_REG(insn, SH_RD, regs) = (val))
 #define IMM_I(insn) ((int32_t)(insn) >> 20)
 #define IMM_S(insn) (((int32_t)(insn) >> 25 << 5) | (int32_t)(((insn) >> 7) & 0x1f))
-#define MASK_FUNCT3 0x7000
 
 #endif // KERNEL_HELPERS_H
