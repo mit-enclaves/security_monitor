@@ -8,7 +8,7 @@ void test_entry (void)  __attribute__((noreturn));
 
 static inline void test_completed (void) __attribute__((noreturn));
 static inline void test_completed (void) {
-  print_char('\n');
+  print_str("END TEST\n");
   while (1) { continue; }
 }
 

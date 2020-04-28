@@ -30,7 +30,9 @@ SECTIONS
     PROVIDE( __htif_base = . );
     *(.htif.tohost)
     *(.htif.fromhost)
-  } > HTIF
+    *(.htif.*)
+    *(.htif)
+  } > HTIF =0x0
 }
 
 SECTIONS
@@ -74,12 +76,6 @@ SECTIONS
   .rodata ALIGN(0x1000) : {
     *(.rodata.*)
     *(.rodata)
-  } > PAYLOAD =0x0
-
-  .htif ALIGN(0x1000) : {
-    PROVIDE( __htif_base = . );
-    *(.htif.tohost)
-    *(.htif.fromhost)
   } > PAYLOAD =0x0
 
   .enclave ALIGN(0x1000): {
