@@ -6,6 +6,7 @@ ENTRY( boot_entry )
 MEMORY
 {
   BOOT (ax) :      ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
+  HTIF (awx)   :  ORIGIN = HTIF_BASE,        LENGTH = HTIF_LEN
   SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   SM (awx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
   PAYLOAD (awx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
@@ -22,6 +23,15 @@ SECTIONS
   } > BOOT =0x0
 }
 
+SECTIONS
+{
+  . = ORIGIN(HTIF);
+  .htif ALIGN(0x1000) : {
+    PROVIDE( __htif_base = . );
+    *(.htif.tohost)
+    *(.htif.fromhost)
+  } > HTIF
+}
 
 SECTIONS
 {
@@ -59,7 +69,7 @@ SECTIONS
   .bss ALIGN(0x1000) : {
     *(.bss.*)
     *(.bss)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .rodata ALIGN(0x1000) : {
     *(.rodata.*)
@@ -70,7 +80,7 @@ SECTIONS
     PROVIDE( __htif_base = . );
     *(.htif.tohost)
     *(.htif.fromhost)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .enclave ALIGN(0x1000): {
     *(.enclave)
@@ -79,18 +89,18 @@ SECTIONS
   .region1 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
     PROVIDE( region1 = . );
     BYTE(1)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .region2 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
     PROVIDE( region2 = . );
     BYTE(1)
-  } > PAYLOAD
+  } > PAYLOAD =0x0
 
   .region3 ALIGN(0x2000000) (NOLOAD) : { /* Align to the *next* 32MB boundary */
     PROVIDE( region3 = . );
     BYTE(1)
-  } > PAYLOAD
-
+  } > PAYLOAD =0x0
+  
   . = IDPT_BASE;
   .idpt IDPT_BASE : {
     *(.idpt)

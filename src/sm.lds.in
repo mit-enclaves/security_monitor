@@ -47,6 +47,7 @@ SECTIONS
   .data ALIGN(64)  : {
     *(.data)  /* initialized data */
     *(.data.*)
+    *(.data.stacks)
   } > SM =0x0
 
   .bss ALIGN(64)  : {

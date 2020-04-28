@@ -1,5 +1,4 @@
 #include <sm.h>
-#include <cryptography.h>
 #include <stdint.h>
 #include <stdbool.h>
 

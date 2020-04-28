@@ -1,11 +1,27 @@
-#include <secure_boot/secure_boot.h>
+#include <stdint.h>
+#include <stddef.h>
 
-// TODO: initialize this
+typedef struct hash_t {
+  uint8_t bytes[64];
+} hash_t;
 
-sm_keys_t sm_keys __attribute__ ((section (".sm.state"))) = {0};
+typedef struct public_key_t {
+  uint8_t bytes[32];
+} public_key_t;
 
-/*
-sm_keys_t:
+typedef struct secret_key_t {
+  uint8_t bytes[64];
+} secret_key_t;
+
+typedef struct symmetric_key_t {
+  uint8_t bytes[64];
+} symmetric_key_t; 
+
+typedef struct signature_t {
+  uint8_t bytes[64];
+} signature_t;
+
+typedef struct boot_image_header_t {
   public_key_t manufacturer_public_key;
 
   public_key_t device_public_key;
@@ -18,4 +34,8 @@ sm_keys_t:
 
   size_t software_measured_bytes;
   uint8_t* software_measured_binary[];
-*/
+} boot_image_header_t;
+
+// TODO: initialize this
+
+boot_image_header_t sm_keys __attribute__ ((section (".sm.state"))) = {0};

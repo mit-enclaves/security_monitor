@@ -3,6 +3,7 @@
 
 #include "sm_types.h"
 #include "sm_constants.h"
+#include <clib/clib.h>
 #include <kernel/kernel_api.h>
 #include <platform.h>
 

@@ -11,12 +11,21 @@ SM_TEST_CFLAGS := $(CFLAGS)
 
 SM_TEST_LDFLAGS := $(LDFLAGS)
 
-SM_TEST_LD :=  $(SM_TEST_DIR)/test.lds
+SM_TEST_LD :=  $(BUILD_DIR)/test.lds
+# Preprocessor fills out linker script constants
+$(BUILD_DIR)/test.lds : $(SM_TEST_DIR)/test.lds.in $(BUILD_DIR)
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
 
 NULL_BOOT_BINARY := $(BUILD_DIR)/null_boot.bin
 NULL_BOOT_ELF := $(BUILD_DIR)/null_boot.elf
 
 SM_BINARY := $(BUILD_DIR)/sm.bin
+
+SM_TEST_INCLUDES := \
+	$(PLATFORM_DIR) \
+	$(API_DIR) \
+	$(SM_TEST_DIR) \
+	$(SM_SRC_DIR) \
 
 BOOT_SRC := \
 	$(SM_TEST_DIR)/null_boot_loader/boot.S
@@ -27,23 +36,18 @@ $(NULL_BOOT_BINARY): $(NULL_BOOT_ELF)
 $(NULL_BOOT_ELF): $(BOOT_SRC) $(SM_TEST_LD) $(BUILD_DIR)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_TEST_INCLUDES)) $(SM_TEST_LDFLAGS) -T $(SM_TEST_LD) $(BOOT_SRC) -o $@
 
-SM_TEST_INCLUDES := \
-	$(COMMON_DIR) \
-	$(PLATFORM_DIR) \
-	$(API_DIR) \
-	$(SM_TEST_DIR) \
-
 IDPT_BIN := $(BUILD_DIR)/idpt.bin
 
 $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 	$(PYTHON) $(SM_DIR)/scripts/idpt.py $(PLATFORM_DIR)/parameters.h $@
 
 ALL_TESTS_SRC := \
-	$(COMMON_DIR)/htif/htif.c \
 	$(SM_TEST_DIR)/test_entry.S \
 	$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
 	$(SM_TEST_DIR)/null_boot_loader/sm.S \
 	$(PLATFORM_DIR)/idpt.S \
+	$(PLATFORM_DIR)/htif/htif.c \
+	$(SM_TEST_DIR)/sbi/console.c \
 
 UNIT_TESTS_DIR := $(SM_TEST_DIR)/unit_tests
 
@@ -58,8 +62,8 @@ TEST_TASKS := $(addsuffix .task, $(TEST_NAMES))
 null_test: $(BUILD_DIR)/null_test.elf
 
 .PHONY: run_null_test
-run_null_test: $(BUILD_DIR)/null_test.elf $(NULL_BOOT_BINARY)
-	$(QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/null_test.elf --bios $(NULL_BOOT_BINARY)
+run_null_test: check_env $(NULL_BOOT_BINARY) $(BUILD_DIR)/null_test.elf
+	$(SANCTUM_QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/null_test.elf --bios $(NULL_BOOT_BINARY)
 
 
 MASTER_TEST_SRC := \
@@ -74,9 +78,9 @@ $(BUILD_DIR)/master_test.elf: $(MASTER_TEST_SRC) $(SM_TEST_LD) $(BUILD_DIR) $(SM
 master_test: $(BUILD_DIR)/master_test.elf
 
 .PHONY: run_master_test
-run_master_test: $(BUILD_DIR)/master_test.elf $(NULL_BOOT_BINARY)
-	$(QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/master_test.elf --bios $(NULL_BOOT_BINARY)
+run_master_test: check_env $(NULL_BOOT_BINARY) $(BUILD_DIR)/master_test.elf
+	$(SANCTUM_QEMU) $(QEMU_FLAGS) --kernel $(BUILD_DIR)/master_test.elf --bios $(NULL_BOOT_BINARY)
 
 .PHONY: debug_master_test
-debug_master_test: $(BUILD_DIR)/master_test.elf $(NULL_BOOT_BINARY)
-	$(QEMU) $(QEMU_FLAGS) $(DEBUG_QEMU_FLAGS) --kernel $(BUILD_DIR)/master_test.elf --bios $(NULL_BOOT_BINARY)
+debug_master_test: check_env $(NULL_BOOT_BINARY) $(BUILD_DIR)/master_test.elf 
+	$(SANCTUM_QEMU) $(QEMU_FLAGS) $(DEBUG_QEMU_FLAGS) --kernel $(BUILD_DIR)/master_test.elf --bios $(NULL_BOOT_BINARY)

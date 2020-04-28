@@ -14,21 +14,18 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_send.c \
 	$(SM_SRC_DIR)/api/mail_receive.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
-	$(COMMON_DIR)/clib/memcpy.c \
-	$(COMMON_DIR)/clib/memset.c \
+	$(SM_SRC_DIR)/clib/memcpy.c \
+	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(PLATFORM_DIR)/platform_panic.S \
 
-SM_LD := $(SM_SRC_DIR)/sm.lds
-.INTERMEDIATE: $(SM_LD)
+SM_LD := $(BUILD_DIR)/sm.lds
+# Preprocessor fills out linker script constants
+$(SM_LD) : $(SM_SRC_DIR)/sm.lds.in $(BUILD_DIR)
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
 
 SM_SRC := \
 	$(SM_COMMON_SRC) \
-	$(COMMON_DIR)/htif/htif.c \
-	$(COMMON_DIR)/htif/htif_util.c \
-	$(COMMON_DIR)/clib/strcmp.c \
-	$(COMMON_DIR)/clib/strlen.c \
-	$(COMMON_DIR)/ed25519/sha512.c \
 	$(PLATFORM_DIR)/stacks.S \
 	$(PLATFORM_DIR)/platform_init.c \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
@@ -40,6 +37,11 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
 	$(PLATFORM_DIR)/platform_helper.c \
 	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
+	$(PLATFORM_DIR)/htif/htif.c \
+	$(PLATFORM_DIR)/htif/htif_util.c \
+	$(SM_SRC_DIR)/clib/strcmp.c \
+	$(SM_SRC_DIR)/clib/strlen.c \
+	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
 	$(SM_SRC_DIR)/common/enclave_handler.S \
@@ -76,15 +78,17 @@ SM_SRC := \
 	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
 	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
 
-SM_ENCLAVE_LD := $(SM_SRC_DIR)/sm.enclave.lds
-.INTERMEDIATE: $(SM_ENCLAVE_LD)
+SM_ENCLAVE_LD := $(BUILD_DIR)/sm.enclave.lds
+# Preprocessor fills out linker script constants
+$(SM_ENCLAVE_LD): $(SM_SRC_DIR)/sm.enclave.lds.in $(BUILD_DIR)
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
 
 HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
-	$(COMMON_DIR)/clib/memcmp.c \
 	$(PLATFORM_DIR)/platform_helper.c \
+	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/api/get_attestation_key.c \
@@ -95,7 +99,6 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
 
 SM_INCLUDES := \
-	$(COMMON_DIR) \
 	$(PLATFORM_DIR) \
 	$(API_DIR) \
 	$(SM_SRC_DIR) \
