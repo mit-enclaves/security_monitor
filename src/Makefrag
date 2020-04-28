@@ -3,12 +3,11 @@
 # Assumes: $(CC)
 # Assumes: $(OBJCOPY)
 
-# -mcmodel=medany is *very* important - it ensures the program addressing is PC-relative. Ensure no global variables are used. To quote from the spec, "the program and its statically defined symbols must lie within any single 2 GiB address range. Addressing for global symbols uses lui/addi instruction pairs, which emit the R_RISCV_PCREL_HI20/R_RISCV_PCREL_LO12_I sequences."
-
+# Flags
 SM_CFLAGS := $(CFLAGS)
-
 SM_LDFLAGS := $(LDFLAGS)
 
+# Common Sources
 SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_accept.c \
 	$(SM_SRC_DIR)/api/mail_send.c \
@@ -19,11 +18,60 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(PLATFORM_DIR)/platform_panic.S \
 
+
+## SM Enclave Handler
+
+# Linker Script
+SM_ENCLAVE_LD := $(BUILD_DIR)/sm.enclave.lds
+# Preprocessor fills out linker script constants
+$(SM_ENCLAVE_LD): $(SM_SRC_DIR)/sm.enclave.lds.in $(BUILD_DIR)
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
+
+# Targets
+HANDLER_ELF := $(BUILD_DIR)/sm.enclave.elf
+HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
+
+# Sources
+SM_ENCLAVE_SRC := \
+	$(SM_COMMON_SRC) \
+	$(PLATFORM_DIR)/platform_helper.c \
+	$(SM_SRC_DIR)/clib/memcmp.c \
+	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
+	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
+	$(SM_SRC_DIR)/api/get_attestation_key.c \
+	$(SM_SRC_DIR)/api/get_public_field.c \
+	$(SM_SRC_DIR)/api/region_block.c \
+	$(SM_SRC_DIR)/api/region_check_owned.c \
+	$(SM_SRC_DIR)/api/region_owner.c \
+	$(SM_SRC_DIR)/api/enclave_exit.c \
+
+# Headers
+SM_INCLUDES := \
+	$(PLATFORM_DIR) \
+	$(API_DIR) \
+	$(SM_SRC_DIR) \
+
+# Rules
+$(HANDLER_ELF): $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
+	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
+
+$(HANDLER_BIN): $(HANDLER_ELF)
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
+
+
+## SM
+
+# Linker Script
 SM_LD := $(BUILD_DIR)/sm.lds
 # Preprocessor fills out linker script constants
 $(SM_LD) : $(SM_SRC_DIR)/sm.lds.in $(BUILD_DIR)
 	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
 
+# Targets
+SM_ELF:=$(BUILD_DIR)/sm.elf
+SM_BIN:=$(BUILD_DIR)/sm.bin
+
+# Sources
 SM_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/stacks.S \
@@ -78,48 +126,11 @@ SM_SRC := \
 	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
 	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
 
-SM_ENCLAVE_LD := $(BUILD_DIR)/sm.enclave.lds
-# Preprocessor fills out linker script constants
-$(SM_ENCLAVE_LD): $(SM_SRC_DIR)/sm.enclave.lds.in $(BUILD_DIR)
-	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
-
-HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
-
-SM_ENCLAVE_SRC := \
-	$(SM_COMMON_SRC) \
-	$(PLATFORM_DIR)/platform_helper.c \
-	$(SM_SRC_DIR)/clib/memcmp.c \
-	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
-	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
-	$(SM_SRC_DIR)/api/get_attestation_key.c \
-	$(SM_SRC_DIR)/api/get_public_field.c \
-	$(SM_SRC_DIR)/api/region_block.c \
-	$(SM_SRC_DIR)/api/region_check_owned.c \
-	$(SM_SRC_DIR)/api/region_owner.c \
-	$(SM_SRC_DIR)/api/enclave_exit.c \
-
-SM_INCLUDES := \
-	$(PLATFORM_DIR) \
-	$(API_DIR) \
-	$(SM_SRC_DIR) \
-
-$(BUILD_DIR)/sm.elf: $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(HANDLER_BIN)
+# Rules
+$(SM_ELF): $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(HANDLER_BIN)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_LD) $(SM_SRC) -D ENCLAVE_HANDLER_FILE=\"$(HANDLER_BIN)\" -o $@
 
-.INTERMEDIATE: $(SM_LD)
-
-$(BUILD_DIR)/sm.enclave.elf: $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
-	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
-
-.INTERMEDIATE: $(SM_ENCLAVE_LD)
-
-$(HANDLER_BIN): $(BUILD_DIR)/sm.enclave.elf
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
-
-.PHONY: sm
-sm: $(BUILD_DIR)/sm.enclave.elf $(BUILD_DIR)/sm.elf $(BUILD_DIR)/sm.bin
-
-$(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
+$(SM_BIN): $(SM_ELF)
 	$(OBJCOPY) -O binary \
 	--only-section=.text \
 	--only-section=.rodata \
@@ -129,3 +140,8 @@ $(BUILD_DIR)/sm.bin: $(BUILD_DIR)/sm.elf
 	--keep-symbol=tohost \
 	--keep-symbol=fromhost \
 	$< $@
+
+.PHONY: sm
+sm: $(SM_BIN)
+
+ALL+=sm
