@@ -14,3 +14,7 @@ tools
 gdb.txt
 
 core
+
+# Tmp
+*.tmp
+*.bak
