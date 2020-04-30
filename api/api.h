@@ -21,6 +21,10 @@
 // `num_mailboxes` is the number of mailboxes that the enclave will have. Valid
 // mailbox IDs for this enclave will range from 0 to num_mailboxes - 1.
 //
+// 'timer_limit' is the maximum number of timer interupts and enclave can 
+// receive before performing an AEX. Any unsigned integer is a valid 
+// timer_limit
+//
 // `debug` is set for debug enclaves. A security monitor that supports
 // enclave debugging implements copy_debug_enclave_page, which can only be used
 // on debug enclaves.
@@ -31,6 +35,7 @@ api_result_t sm_enclave_create (
   uintptr_t ev_base,
   uintptr_t ev_mask,
   uint64_t num_mailboxes,
+  uint64_t timer_limit,
   bool debug);
 
 // Frees up all DRAM regions and the metadata associated with an enclave.

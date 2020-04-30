@@ -4,7 +4,7 @@
 #include "api_types.h"
 
 // Handles for SM API
-api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes,bool debug);
+api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, uint64_t timer_limit, bool debug);
 
 api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id);
 

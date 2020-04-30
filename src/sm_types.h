@@ -61,6 +61,7 @@ typedef struct enclave_metadata_t {
   platform_csr_t platform_csr;
 
   int64_t num_mailboxes;
+  int64_t timer_limit;
   bool debug;
 
   // Measurement

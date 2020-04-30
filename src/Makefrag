@@ -17,6 +17,8 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(PLATFORM_DIR)/platform_panic.S \
+	$(PLATFORM_DIR)/platform_clean_core.S \
+	$(PLATFORM_DIR)/platform_purge_core.S \
 
 
 ## SM Enclave Handler
@@ -38,6 +40,8 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
+	$(SM_SRC_DIR)/handle_enclave/enclave_aex.c \
+	$(SM_SRC_DIR)/handle_enclave/handlers/timer_interrupt_handler.c \
 	$(SM_SRC_DIR)/api/get_attestation_key.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/region_block.c \
@@ -79,8 +83,6 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
 	$(PLATFORM_DIR)/platform_core_init.c \
-	$(PLATFORM_DIR)/platform_clean_core.S \
-	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
 	$(PLATFORM_DIR)/platform_helper.c \

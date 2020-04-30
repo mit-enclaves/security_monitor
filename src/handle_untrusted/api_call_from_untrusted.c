@@ -24,7 +24,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
     switch(code) {
       // Enclaves
       case SM_ENCLAVE_CREATE:
-        retval = sm_internal_enclave_create( arg0, arg1, arg2, arg3, (bool)arg4 );
+        retval = sm_internal_enclave_create( arg0, arg1, arg2, arg3, arg4, (bool)arg5 );
         break;
 
       case SM_ENCLAVE_DELETE:

@@ -41,7 +41,7 @@ enclave_interrupt_table:
   .word (.bad_event-.i_tab_root)          //  4: user timer interrupt
   .word (.bad_event-.i_tab_root)          //  5: supervisor timer interrupt
   .word (.bad_event-.i_tab_root)          //  6: (reserved)
-  .word (.bad_event-.i_tab_root)          //  7: machine timer interrupt
+  .word (.timer_int_handler-.i_tab_root)          //  7: machine timer interrupt
   .word (.bad_event-.i_tab_root)          //  8: user external interrupt
   .word (.bad_event-.i_tab_root)          //  9: supervisor external interrupt
   .word (.bad_event-.i_tab_root)          // 10: (reserved)
@@ -104,6 +104,14 @@ trap_vector_from_enclave:
 .ecall_from_e_trap:
   call .save_regs_and_set_args
   call ecall_from_enclave_trap
+  call .restore_regs
+  j .perform_mret
+
+# Timer interrupt
+.globl .timer_int_handler
+.timer_int_handler:
+  call .save_regs_and_set_args
+  call timer_interrupt_handler
   call .restore_regs
   j .perform_mret
 

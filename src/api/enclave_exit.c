@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t sm_internal_enclave_exit() { // TODO: noreturn
+api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: noreturn
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -64,8 +64,9 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
     unlock_regions(&locked_regions);
     return MONITOR_CONCURRENT_CALL;
   }
-
-  thread_metadata->aex_present = false; // TODO: Usefull?
+  
+  // Signal AEX happend
+  thread_metadata->aex_present = aex_present;
 
   // Set MSTATUS
   uint64_t mstatus_tmp = read_csr(mstatus);
@@ -114,13 +115,20 @@ api_result_t sm_internal_enclave_exit() { // TODO: noreturn
   unlock_regions(&locked_regions);
   // </TRANSACTION>
 
-  // Restaure registers and perform mret
+  // Restore registers and perform mret
   register uintptr_t t0 asm ("t0") = SM_sp;
   // Procede to mret \\ TODO : purge the core?
   asm volatile (" \
   mv sp, t0; \n \
+  call platform_clean_core; \n \
+  call platform_purge_core; \n \
   call .restore_regs; \n \
   j .perform_mret"  : : "r" (t0));
 
   return MONITOR_OK; // Unreachable
 }
+
+api_result_t sm_internal_enclave_exit() { 
+  return sm_internal_perform_enclave_exit(false); 
+}
+
