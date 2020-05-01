@@ -60,7 +60,7 @@ static inline api_result_t sm_region_block (region_id_t id) {
   return SM_API_CALL(SM_REGION_BLOCK, id, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_region_flush () {
+static inline api_result_t sm_region_flush (void) {
   return SM_API_CALL(SM_REGION_FLUSH, 0, 0, 0, 0, 0, 0);
 }
 
@@ -72,11 +72,11 @@ static inline api_result_t sm_region_metadata_create (region_id_t dram_region) {
   return SM_API_CALL(SM_REGION_METADATA_CREATE, dram_region, 0, 0, 0, 0, 0);
 }
 
-static inline uint64_t sm_region_metadata_pages() {
+static inline uint64_t sm_region_metadata_pages(void) {
   return SM_API_CALL(SM_REGION_METADATA_PAGES, 0, 0, 0, 0, 0, 0);
 }
 
-static inline uint64_t sm_region_metadata_start() {
+static inline uint64_t sm_region_metadata_start(void) {
   return SM_API_CALL(SM_REGION_METADATA_START, 0, 0, 0, 0, 0, 0);
 }
 
@@ -96,7 +96,7 @@ static inline api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t 
   return SM_API_CALL(SM_THREAD_LOAD, enclave_id, thread_id, entry_pc, entry_stack, fault_pc, fault_stack);
 }
 
-static inline uint64_t sm_thread_metadata_pages() {
+static inline uint64_t sm_thread_metadata_pages(void) {
   return SM_API_CALL(SM_THREAD_METADATA_PAGES, 0, 0, 0, 0, 0, 0);
 }
 

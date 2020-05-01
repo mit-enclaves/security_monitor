@@ -4,7 +4,7 @@
 #include "api_types.h"
 #include "api_util.h"
 
-static inline api_result_t sm_exit_enclave() {
+static inline api_result_t sm_exit_enclave(void) {
    return SM_API_CALL(SM_ENCLAVE_EXIT, 0, 0, 0, 0, 0, 0);
 }
 
