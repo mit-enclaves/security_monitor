@@ -82,13 +82,13 @@ static void delegate_traps()
 
 void kernel_init() {
   delegate_traps();
-  //hls_init(0);
+  hls_init(0);
 
-  //query_mem(FDT_ADDR);
+  query_mem(FDT_ADDR);
   query_harts(FDT_ADDR);
   query_clint(FDT_ADDR);
-  //query_plic(FDT_ADDR);
-  //query_chosen(FDT_ADDR);
+  query_plic(FDT_ADDR);
+  query_chosen(FDT_ADDR);
 
   plic_init();
   hart_plic_init();
