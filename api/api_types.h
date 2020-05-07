@@ -1,6 +1,9 @@
 #ifndef API_TYPES_H
 #define API_TYPES_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
 // SM API Types
 // --------------------
 
