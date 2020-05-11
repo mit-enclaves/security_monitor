@@ -1,6 +1,5 @@
 #include <sm.h>
 #include "../handles_enclave.h"
-#include <stdint.h>
 
 uint64_t timer_counter = 0;
 

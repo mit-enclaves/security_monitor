@@ -37,7 +37,7 @@ enclave_interrupt_table:
   .word (.bad_event-.i_tab_root)          //  0: user software interrupt
   .word (.bad_event-.i_tab_root)          //  1: supervisor software interrupt
   .word (.bad_event-.i_tab_root)          //  2: (reserved)
-  .word (.bad_event-.i_tab_root)          //  3: machine softwre interrupt
+  .word (.sw_int_handler-.i_tab_root)          //  3: machine softwre interrupt
   .word (.bad_event-.i_tab_root)          //  4: user timer interrupt
   .word (.bad_event-.i_tab_root)          //  5: supervisor timer interrupt
   .word (.bad_event-.i_tab_root)          //  6: (reserved)
@@ -45,7 +45,7 @@ enclave_interrupt_table:
   .word (.bad_event-.i_tab_root)          //  8: user external interrupt
   .word (.bad_event-.i_tab_root)          //  9: supervisor external interrupt
   .word (.bad_event-.i_tab_root)          // 10: (reserved)
-  .word (.bad_event-.i_tab_root)          // 11: machine external interrupt
+  .word (.ext_int_handler-.i_tab_root)          // 11: machine external interrupt
 
 # Handler for events originating from an enclave
 # ====================================================
@@ -107,11 +107,27 @@ trap_vector_from_enclave:
   call .restore_regs
   j .perform_mret
 
+# Software interrupt
+.globl .sw_int_handler
+.sw_int_handler:
+  call .save_regs_and_set_args
+  call software_interrupt_handler
+  call .restore_regs
+  j .perform_mret
+
 # Timer interrupt
 .globl .timer_int_handler
 .timer_int_handler:
   call .save_regs_and_set_args
   call timer_interrupt_handler
+  call .restore_regs
+  j .perform_mret
+
+# External interrupt
+.globl .ext_int_handler
+.ext_int_handler:
+  call .save_regs_and_set_args
+  call external_interrupt_handler
   call .restore_regs
   j .perform_mret
 
