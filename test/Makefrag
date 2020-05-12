@@ -50,6 +50,8 @@ IDPT_BIN := $(BUILD_DIR)/idpt.bin
 $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 	$(PYTHON) $(SM_DIR)/scripts/idpt.py $(PLATFORM_DIR)/parameters.h $@
 
+ALL+=$(IDPT_BIN)
+
 # Sources
 ALL_TESTS_SRC := \
 	$(SM_TEST_DIR)/test_entry.S \

@@ -58,7 +58,7 @@ typedef struct enclave_metadata_t {
   hash_context_t hash_context;
 
   // Parameters
-  platform_csr_t platform_csr;
+  enclave_platform_csr_t platform_csr;
 
   int64_t num_mailboxes;
   int64_t timer_limit;
@@ -100,6 +100,9 @@ typedef struct thread_metadata_t {
   // AEX - asynchronous enclave exit state
   bool aex_present;
   platform_core_state_t aex_state;
+
+  // Save Platform Specific Context
+  thread_platform_csr_t platform_csr;
 } thread_metadata_t;
 
 typedef enum { // NOTE must fit into 12 bits

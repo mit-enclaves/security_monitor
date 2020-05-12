@@ -37,10 +37,6 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
     return MONITOR_CONCURRENT_CALL;
   }
 
-  enclave_id_t enclave_id = core_metadata->owner;
-  uint64_t region_id_enclave = addr_to_region_id(enclave_id);
-  enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
-
   thread_id_t thread_id = core_metadata->thread;
   uint64_t region_id_thread = addr_to_region_id(thread_id);
   thread_metadata_t *thread_metadata = (thread_metadata_t *) thread_id;
@@ -56,10 +52,6 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
 
   // <TRANSACTION>
   // Lock the thread's metadata region
-  if(!add_lock_region(region_id_enclave, &locked_regions)) {
-    return MONITOR_CONCURRENT_CALL;
-  }
-
   if(!add_lock_region(region_id_thread, &locked_regions)) {
     unlock_regions(&locked_regions);
     return MONITOR_CONCURRENT_CALL;
@@ -81,21 +73,9 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
 
   write_csr(mstatus, mstatus_tmp);
 
-  // WARNING !!! Big Hack
-  // TODO moove this code in platform specific functions
+  platform_memory_protection_exit_enclave(thread_metadata);
 
-  swap_csr(CSR_MEVBASE, enclave_metadata->platform_csr.ev_base);
-  swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
-
-  uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
-  swap_csr(CSR_MEMRBM, memrbm); //CSR_MEMRBM
-
-  swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
-  swap_csr(CSR_MEPARMASK, enclave_metadata->platform_csr.meparmask);
-
-  //platform_memory_protection_exit_enclave(enclave_metadata);
-
-  swap_csr(CSR_MEATP, enclave_metadata->platform_csr.eptbr);
+  platform_restore_untrusted_page_table(thread_metadata);
 
   // Prepare untrusted pc
   write_csr(mepc, thread_metadata->untrusted_pc);

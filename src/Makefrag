@@ -37,6 +37,8 @@ HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/platform_helper.c \
+	$(PLATFORM_DIR)/platform_memory_protection_enclave_exit.c \
+	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
@@ -108,7 +110,6 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/enclave_create.c \
 	$(SM_SRC_DIR)/api/enclave_delete.c \
 	$(SM_SRC_DIR)/api/enclave_enter.c \
-	$(SM_SRC_DIR)/api/enclave_exit.c \
 	$(SM_SRC_DIR)/api/enclave_init.c \
 	$(SM_SRC_DIR)/api/enclave_load_handler.c \
 	$(SM_SRC_DIR)/api/enclave_load_page_table.c \

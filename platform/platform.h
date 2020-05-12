@@ -65,19 +65,16 @@ void platform_jump_to_untrusted ( uint64_t virtual_pc, uint64_t virtual_sp, uint
 
 void platform_initialize_memory_protection(sm_state_t *sm);
 
-void platform_set_enclave_page_table(enclave_metadata_t *enclave_metadata);
-void platfrom_restore_untrusted_page_table(enclave_metadata_t *enclave_metadata);
+void platform_set_enclave_page_table(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
+void platform_restore_untrusted_page_table(thread_metadata_t *thread_metadata);
 
 void platform_protect_enclave_sm_handler(enclave_metadata_t *enclave_metadata, uintptr_t phys_addr);
 
 void platform_update_untrusted_regions(sm_state_t* sm, uint64_t index_id, bool flag);
 void platform_update_enclave_regions(enclave_metadata_t *enclave_metadata, uint64_t index_id, bool flag);
 
-void platform_hack_enclave_memory_protection(void); // TODO get rid of this
-void platform_hack_exit_enclave_memory_protection(void);
-
-void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata);
-void platform_memory_protection_exit_enclave(enclave_metadata_t *enclave_metadata);
+void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
+void platform_memory_protection_exit_enclave(thread_metadata_t *thread_metadata);
 
 void platform_panic(void) __attribute__((noreturn));
 

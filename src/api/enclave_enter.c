@@ -115,20 +115,18 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   write_csr(mstatus, mstatus_tmp);
 
   // Swap the page table root
-  platform_set_enclave_page_table(enclave_metadata);
+  platform_set_enclave_page_table(enclave_metadata, thread_metadata);
 
   // Setup the platform's memory protection mechanisms
-  platform_memory_protection_enter_enclave(enclave_metadata);
-
-  //platform_hack_enclave_memory_protection(); // TODO implement platform protection and get rid of Hack
-
+  platform_memory_protection_enter_enclave(enclave_metadata, thread_metadata);
+  
   // Set trap handler
-  swap_csr(mtvec, thread_metadata->fault_pc);
+  write_csr(mtvec, thread_metadata->fault_pc);
 
   // Prepare enclave pc
   write_csr(mepc, thread_metadata->entry_pc);
   // Prepare enclave sp
-  swap_csr(mscratch, thread_metadata->fault_sp);
+  write_csr(mscratch, thread_metadata->fault_sp);
 
   // Release locks
   unlock_regions(&locked_regions);

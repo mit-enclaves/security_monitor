@@ -18,6 +18,20 @@ typedef struct {
   uintptr_t meparmask;
   
   uintptr_t eptbr;
-} platform_csr_t;
+} enclave_platform_csr_t;
+
+typedef struct {
+  uintptr_t ev_base;
+  uintptr_t ev_mask;
+
+  uintptr_t memrbm;
+
+  uintptr_t meparbase;
+  uintptr_t meparmask;
+  
+  uintptr_t eptbr;
+
+  uintptr_t mie;
+} thread_platform_csr_t;
 
 #endif // SM_PLATFORM_TYPES_H

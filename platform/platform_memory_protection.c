@@ -21,17 +21,21 @@ void platform_protect_enclave_sm_handler(enclave_metadata_t *enclave_metadata, u
   return;
 }
 
-void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata) {
+void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata) {
 
-  swap_csr(CSR_MEVBASE, enclave_metadata->platform_csr.ev_base);
-  swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
+  thread_metadata->platform_csr.ev_base =
+    swap_csr(CSR_MEVBASE, enclave_metadata->platform_csr.ev_base);
+  thread_metadata->platform_csr.ev_mask =
+    swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
 
-  // TODO fix this
   uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
-  swap_csr(CSR_MEMRBM, memrbm);
+  thread_metadata->platform_csr.memrbm =
+    swap_csr(CSR_MEMRBM, memrbm);
 
-  swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
-  swap_csr(CSR_MEPARMASK, enclave_metadata->platform_csr.meparmask);
+  thread_metadata->platform_csr.meparbase =
+    swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
+  thread_metadata->platform_csr.meparmask =
+    swap_csr(CSR_MEPARMASK, enclave_metadata->platform_csr.meparmask);
 
   return;
 }

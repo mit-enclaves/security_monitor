@@ -1,15 +1,14 @@
 #include <sm.h>
 
-void platform_memory_protection_exit_enclave(enclave_metadata_t *enclave_metadata) {
+void platform_memory_protection_exit_enclave(thread_metadata_t *thread_metadata) {
 
-  swap_csr(CSR_MEVBASE, enclave_metadata->platform_csr.ev_base);
-  swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
+  write_csr(CSR_MEVBASE, thread_metadata->platform_csr.ev_base);
+  write_csr(CSR_MEVMASK, thread_metadata->platform_csr.ev_mask);
 
-  uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
-  swap_csr(CSR_MEMRBM, memrbm);
+  write_csr(CSR_MEMRBM, thread_metadata->platform_csr.memrbm);
 
-  swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
-  swap_csr(CSR_MEPARMASK, enclave_metadata->platform_csr.meparmask);
+  write_csr(CSR_MEPARBASE, thread_metadata->platform_csr.meparbase);
+  write_csr(CSR_MEPARMASK, thread_metadata->platform_csr.meparmask);
 
   return;
 }

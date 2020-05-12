@@ -52,7 +52,6 @@
 #define swap_csr(reg, val) _swap_csr(reg, val)
 #define _swap_csr(reg, val) ({ unsigned long __tmp; \
   asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "rK"(val)); \
-  val = __tmp; \
   __tmp;})
 
 #define set_csr(reg, bit) _set_csr(reg, bit)
