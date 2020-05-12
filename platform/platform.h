@@ -76,6 +76,9 @@ void platform_update_enclave_regions(enclave_metadata_t *enclave_metadata, uint6
 void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
 void platform_memory_protection_exit_enclave(thread_metadata_t *thread_metadata);
 
+void platform_interrupts_enter_enclave(thread_metadata_t *thread_metadata);
+void platform_interrupts_exit_enclave(thread_metadata_t *thread_metadata);
+
 void platform_panic(void) __attribute__((noreturn));
 
 // Platform helpers

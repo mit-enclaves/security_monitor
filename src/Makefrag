@@ -19,6 +19,8 @@ SM_COMMON_SRC := \
 	$(PLATFORM_DIR)/platform_panic.S \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
+	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
+	$(PLATFORM_DIR)/platform_interrupts.c \
 
 
 ## SM Enclave Handler
@@ -38,7 +40,6 @@ SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/platform_helper.c \
 	$(PLATFORM_DIR)/platform_memory_protection_enclave_exit.c \
-	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
@@ -90,7 +91,6 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
 	$(PLATFORM_DIR)/platform_helper.c \
-	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(PLATFORM_DIR)/htif/htif_util.c \
 	$(SM_SRC_DIR)/clib/strcmp.c \

@@ -119,6 +119,9 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
 
   // Setup the platform's memory protection mechanisms
   platform_memory_protection_enter_enclave(enclave_metadata, thread_metadata);
+
+  // Setup enclave interrupts
+  platform_interrupts_enter_enclave(thread_metadata);
   
   // Set trap handler
   write_csr(mtvec, thread_metadata->fault_pc);
