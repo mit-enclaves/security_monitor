@@ -29,7 +29,7 @@
 
 #define SM_ADDR         0x80003000
 #define HANDLER_LEN         0x4000
-#define SM_LEN             0x20000
+#define SM_LEN             0x40000
 
 #define UNTRUSTED_ENTRY  0x82000000
 #define PAYLOAD_MAXLEN    0xC000000

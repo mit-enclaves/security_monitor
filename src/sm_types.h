@@ -22,6 +22,8 @@ typedef struct sm_keys_t {
   secret_key_t software_secret_key;
   signature_t software_signature;
 
+  aes_key_t aes_key;
+  
   size_t software_measured_bytes;
   uint8_t* software_measured_binary[];
 } sm_keys_t;

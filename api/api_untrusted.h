@@ -28,8 +28,8 @@ static inline api_result_t sm_enclave_load_page_table (enclave_id_t enclave_id, 
   return SM_API_CALL(SM_ENCLAVE_LOAD_PAGE_TABLE, enclave_id, phys_addr, virtual_addr, level, acl, 0);
 }
 
-static inline api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl) {
-  return SM_API_CALL(SM_ENCLAVE_LOAD_PAGE, enclave_id, phys_addr, virtual_addr, os_addr, acl, 0);
+static inline api_result_t sm_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl, aes_nonce_t *nonce) {
+  return SM_API_CALL(SM_ENCLAVE_LOAD_PAGE, enclave_id, phys_addr, virtual_addr, os_addr, acl, nonce);
 }
 
 static inline uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes) {

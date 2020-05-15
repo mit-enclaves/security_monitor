@@ -4,6 +4,12 @@
 #include "sbi/console.h"
 #include <parameters.h>
 
+// AES_SM
+typedef struct aes_nonce_t {
+  uint8_t bytes[16]; 
+}aes_nonce_t;
+//
+
 void test_entry (void)  __attribute__((noreturn));
 
 static inline void test_completed (void) __attribute__((noreturn));

@@ -48,7 +48,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         break;
 
       case SM_ENCLAVE_LOAD_PAGE:
-        retval = sm_internal_enclave_load_page( arg0, arg1, arg2, arg3, arg4 );
+        retval = sm_internal_enclave_load_page( arg0, arg1, arg2, arg3, arg4, arg5);
         break;
 
       case SM_ENCLAVE_METADATA_PAGES:

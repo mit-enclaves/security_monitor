@@ -126,9 +126,22 @@ void test_entry(void) {
 
   int num_pages_enclave = (((uint64_t) &enclave_end) - ((uint64_t) &enclave_start)) / PAGE_SIZE;
 
-  for(int i = 0; i < num_pages_enclave; i++) {
+  print_str("Load ");
+  print_int(num_pages_enclave);
+  print_str(" enclave pages\n");
 
-    result = sm_enclave_load_page(enclave_id, phys_addr, virtual_addr, os_addr, LEAF_ACL);
+  if(num_pages_enclave != 2) {
+    print_str("ERROR num_pages_enclave is different form 2\n");
+    test_completed();
+  }
+  
+  aes_nonce_t nonces[2] = \
+  {{{0xc7, 0x9a, 0x0a, 0x11, 0xbe, 0x12, 0x55, 0x0b, 0xac, 0xc8, 0x56, 0xad, 0xa5, 0x26, 0xec, 0x98}}, \
+    {{0xfb, 0x68, 0x70, 0x80, 0xf4, 0xcc, 0xeb, 0x3b, 0xeb, 0x20, 0x5e, 0xfe, 0x65, 0xe7, 0x7a, 0xfd}}};
+
+  for(int i = 0; i < 2; i++) {
+
+    result = sm_enclave_load_page(enclave_id, phys_addr, virtual_addr, os_addr, LEAF_ACL, &nonces[i]);
     if(result != MONITOR_OK) {
       print_str("sm_enclave_load_page FAILED with error code ");
       print_int(result);
