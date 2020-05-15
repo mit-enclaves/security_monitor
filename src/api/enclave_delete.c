@@ -54,8 +54,10 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
   // Block and erase all regions belonging to the enclave (these are already locked above)
   for ( int i=0; i<NUM_REGIONS; i++ ) {
     if ( enclave_metadata->regions.flags[i] == true ) {
-      // Block the region
-      sm->regions[i].state = REGION_STATE_BLOCKED;
+      // Free the region
+      sm->regions[i].state = REGION_STATE_FREE;
+      sm->regions[i].owner = OWNER_UNTRUSTED;
+      platform_update_untrusted_regions(sm, region_id, true);
 
       if (!CLEAN_REGIONS_ON_FREE) {
         // Erase the region - we may erase regions during free() instead, which departs a bit from the Sanctum paper

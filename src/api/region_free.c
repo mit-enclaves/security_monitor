@@ -59,13 +59,14 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   enclave_id_t former_owner = region_metadata->owner;
   region_metadata->owner = OWNER_UNTRUSTED;
 
-  // Remove the region from owner's page map
-  if ( former_owner == OWNER_UNTRUSTED ) {
-    platform_update_untrusted_regions(sm, region_id, false);
-  } else if ( former_owner != OWNER_SM ){
+  // Remove the region from owner's region map
+  if ((former_owner != OWNER_UNTRUSTED) && (former_owner != OWNER_SM)){
     enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(former_owner);
     platform_update_enclave_regions(enclave_metadata, region_id, false);
   }
+
+  // Add the region to the untrusted region map
+  platform_update_untrusted_regions(sm, region_id, true);
 
   if (CLEAN_REGIONS_ON_FREE) {
     // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
