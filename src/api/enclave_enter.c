@@ -74,7 +74,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     return MONITOR_INVALID_STATE;
   }
 
-  if(memcmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64) != 0) {
+  if(memncmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64) != 0) {
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }

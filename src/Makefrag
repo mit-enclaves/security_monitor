@@ -14,6 +14,7 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_receive.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
 	$(SM_SRC_DIR)/clib/memcpy.c \
+	$(SM_SRC_DIR)/clib/memncmp.c \
 	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(PLATFORM_DIR)/platform_panic.S \
@@ -40,7 +41,6 @@ SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/platform_helper.c \
 	$(PLATFORM_DIR)/platform_memory_protection_enclave_exit.c \
-	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/handle_enclave/enclave_aex.c \
@@ -95,7 +95,6 @@ SM_SRC := \
 	$(PLATFORM_DIR)/htif/htif_util.c \
 	$(SM_SRC_DIR)/clib/strcmp.c \
 	$(SM_SRC_DIR)/clib/strlen.c \
-	$(SM_SRC_DIR)/clib/memcmp.c \
 	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
 	$(SM_SRC_DIR)/crypto/crypto_stream/afternm.c \
 	$(SM_SRC_DIR)/crypto/crypto_stream/beforenm.c \
