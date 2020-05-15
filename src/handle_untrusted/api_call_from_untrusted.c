@@ -32,7 +32,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         break;
 
       case SM_ENCLAVE_ENTER:
-        retval = sm_internal_enclave_enter( arg0, arg1, regs );
+        retval = sm_internal_enclave_enter( arg0, arg1, arg2, regs );
         break;
 
       case SM_ENCLAVE_INIT:

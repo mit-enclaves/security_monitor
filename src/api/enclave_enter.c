@@ -3,7 +3,7 @@
 extern uintptr_t trap_vector_from_untrusted;
 extern uintptr_t stack_ptr;
 
-api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
+api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t hash_ptr, uintptr_t *regs) {
 
   // Validate inputs
   // ---------------
@@ -13,6 +13,8 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     - the enclave must be in state ENCLAVE_STATE_INITIALIZED
     - thread_id must be valid
     - the thread must not be scheduled
+    - the hash must be in OS physical memory
+    - the enclave hash should be the same than the given hash
   */
 
   // Lock the enclave and thread's metadata region (if different)
@@ -66,6 +68,17 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     return MONITOR_CONCURRENT_CALL;
   }
 
+  // Check that hash points into a DRAM region owned by the os
+  if(region_owner(addr_to_region_id(hash_ptr)) != OWNER_UNTRUSTED){
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE;
+  }
+
+  if(memcmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64) != 0) {
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE;
+  }
+  
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition

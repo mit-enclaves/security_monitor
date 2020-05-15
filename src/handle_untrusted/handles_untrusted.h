@@ -8,7 +8,7 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
 
 api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id);
 
-api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs); // TODO rename the handles etc...
+api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t hash_ptr, uintptr_t *regs); // TODO rename the handles etc...
 
 api_result_t sm_internal_enclave_init (enclave_id_t enclave_id);
 

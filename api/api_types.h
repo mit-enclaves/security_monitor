@@ -13,6 +13,10 @@ typedef phys_ptr_t thread_id_t;
 typedef unsigned long long region_id_t;
 typedef unsigned long long  mailbox_id_t;
 
+typedef struct hash_t {
+  uint8_t bytes[64];
+} hash_t;
+
 // reserved, "special" enclave_id values. These must not be valid (this implementation requires enclave_id_t be page-aligned, so these values are safe).
 #define OWNER_UNTRUSTED (1)
 #define OWNER_SM        (2)

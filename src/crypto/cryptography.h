@@ -4,12 +4,9 @@
 // Hash
 #include "ed25519/sha512.h"
 #include "crypto_stream/crypto_stream.h"
+#include <api_types.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-typedef struct hash_t {
-  uint8_t bytes[64];
-} hash_t;
 
 typedef sha512_context hash_context_t;
 

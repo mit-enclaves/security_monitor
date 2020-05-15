@@ -12,8 +12,8 @@ static inline api_result_t sm_enclave_delete (enclave_id_t enclave_id) {
   return SM_API_CALL(SM_ENCLAVE_DELETE, enclave_id, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id) {
-  return SM_API_CALL(SM_ENCLAVE_ENTER, enclave_id, thread_id, 0, 0, 0, 0);
+static inline api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, hash_t *hash) {
+  return SM_API_CALL(SM_ENCLAVE_ENTER, enclave_id, thread_id, hash, 0, 0, 0);
 }
 
 static inline api_result_t sm_enclave_init (enclave_id_t enclave_id) {
