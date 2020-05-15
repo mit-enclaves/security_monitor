@@ -3,6 +3,7 @@
 
 // Hash
 #include "ed25519/sha512.h"
+#include "crypto_stream/crypto_stream.h"
 #include <stdint.h>
 #include <stdbool.h>
 

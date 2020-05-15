@@ -96,6 +96,13 @@ SM_SRC := \
 	$(SM_SRC_DIR)/clib/strcmp.c \
 	$(SM_SRC_DIR)/clib/strlen.c \
 	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/afternm.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/beforenm.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/common.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/consts.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/int128.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/stream.c \
+	$(SM_SRC_DIR)/crypto/crypto_stream/xor_afternm.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
 	$(SM_SRC_DIR)/common/enclave_handler.S \

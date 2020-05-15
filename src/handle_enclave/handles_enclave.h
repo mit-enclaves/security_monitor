@@ -1,7 +1,7 @@
 #ifndef SM_HANDLES_H
 #define SM_HANDLES_H
 
-#include "api_types.h"
+#include "sm_types.h"
 
 // Handles for SM API
 api_result_t sm_internal_enclave_exit ();

@@ -1,7 +1,7 @@
 #ifndef SM_HANDLES_H
 #define SM_HANDLES_H
 
-#include "api_types.h"
+#include "sm_types.h"
 
 // Handles for SM API
 api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, uint64_t timer_limit, bool debug);
@@ -16,7 +16,7 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
 
 api_result_t sm_internal_enclave_load_page_table (enclave_id_t enclave_id, phys_ptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl);
 
-api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl);
+api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uintptr_t os_addr, uintptr_t acl, uintptr_t nonce);
 
 uint64_t sm_internal_enclave_metadata_pages (uint64_t num_mailboxes);
 

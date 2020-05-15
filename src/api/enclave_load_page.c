@@ -4,7 +4,8 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
   phys_ptr_t phys_addr,
   uintptr_t virtual_addr,
   uintptr_t os_addr,
-  uintptr_t acl) {
+  uintptr_t acl,
+  uintptr_t nonce) {
 
   // Validate inputs
   // ---------------
@@ -19,7 +20,7 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
     - os_addr must be page aligned
     - os_addr must point to a region own by the OS
     - acl must be valid and a leaf acl
-    -
+    - aes_nonce_t must point to a region own by the OS
   */
 
   // Lock the enclave's metadata's region, the phys_addr region and the os_addr region
@@ -78,6 +79,12 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
+  
+  // Check that nonce points into a DRAM region owned by the os
+  if(region_owner(addr_to_region_id(nonce)) != OWNER_UNTRUSTED){
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE;
+  }
 
   // ACL must be valid
   if(((acl & PTE_V) == 0) ||
@@ -116,13 +123,17 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
   // Update the enclave state
   enclave_metadata->init_state = ENCLAVE_STATE_PAGE_DATA_LOADED;
 
-  // Load page
-  memcpy((void *) phys_addr, (void *) os_addr, PAGE_SIZE);
+  // Load the AES nonce and Key
+  aes_nonce_t aes_nonce = *((aes_nonce_t *) nonce);
+  sm_state_t * sm = get_sm_state_ptr();
+  aes_key_t aes_key = sm->keys.aes_key;
+
+  crypto_stream_xor((unsigned char *) phys_addr,(unsigned char *) os_addr, PAGE_SIZE, aes_nonce.bytes, aes_key.bytes);
 
   // Update measurement
   hash_extend(&enclave_metadata->hash_context, &virtual_addr, sizeof(virtual_addr));
   hash_extend(&enclave_metadata->hash_context, &acl, sizeof(acl));
-  hash_extend(&enclave_metadata->hash_context, (const void *) os_addr, PAGE_SIZE);
+  hash_extend(&enclave_metadata->hash_context, (const void *) phys_addr, PAGE_SIZE);
 
   // Release locks
   unlock_regions(&locked_regions);

@@ -21,6 +21,12 @@ typedef struct signature_t {
   uint8_t bytes[64];
 } signature_t;
 
+// AES_SM
+typedef struct aes_key_t {
+  uint8_t bytes[16]; 
+}aes_key_t;
+//
+
 typedef struct boot_image_header_t {
   public_key_t manufacturer_public_key;
 
@@ -32,10 +38,15 @@ typedef struct boot_image_header_t {
   secret_key_t software_secret_key;
   signature_t software_signature;
 
+  // AES_SM
+  aes_key_t aes_key;
+  //
+
   size_t software_measured_bytes;
   uint8_t* software_measured_binary[];
 } boot_image_header_t;
 
 // TODO: initialize this
 
-boot_image_header_t sm_keys __attribute__ ((section (".sm.state"))) = {0};
+boot_image_header_t sm_keys __attribute__ ((section (".sm.state"))) = \
+{.aes_key = {{0x44, 0x90, 0x76, 0xe5, 0xc1, 0x9b, 0xe6, 0x9b, 0xf4, 0xbc, 0x4d, 0x4b, 0xd0, 0x7a, 0xc5, 0x25}}};
