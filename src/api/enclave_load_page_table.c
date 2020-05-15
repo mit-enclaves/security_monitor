@@ -18,6 +18,7 @@ api_result_t sm_internal_enclave_load_page_table (enclave_id_t enclave_id,
     - virtual addr must be within the enclave evrange
     - level must be no greater than 3
     - acl must be valid
+    - leaf pte must be inserted at level 0
   */
 
   // Lock the enclave's metadata's region and the phys_addr region
@@ -74,6 +75,11 @@ api_result_t sm_internal_enclave_load_page_table (enclave_id_t enclave_id,
   // ACL must be valid
   if(((acl & PTE_V) == 0) ||
        (((acl & PTE_R) == 0) && ((acl & PTE_W) == PTE_W))) {
+    return MONITOR_INVALID_VALUE;
+  }
+
+  // Forbid Megapages
+  if((((acl & PTE_R) != 0) || ((acl & PTE_X) != 0)) && (level != 0)) {
     return MONITOR_INVALID_VALUE;
   }
 
