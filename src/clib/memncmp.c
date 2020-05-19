@@ -6,8 +6,7 @@ int memncmp(const void* s1, const void* s2,size_t n)
   int pdiff;
   int res = 0;
   while(n--) {
-    pdiff = *p1 - *p2;
-    res = res | pdiff;
+    res = res | ((*p1 - *p2) != 0);
     p1++,p2++;
   }
   return res;
