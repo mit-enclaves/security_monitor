@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 int memcmp(const void* s1, const void* s2,size_t n);
+int memncmp(const void* s1, const void* s2,size_t n);
 void* memcpy(void* dest, const void* src, size_t len);
 void* memset(void* dest, int byte, size_t len);
 int vsnprintf(char* out, size_t n, const char* s, va_list vl);

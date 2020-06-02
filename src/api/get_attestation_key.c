@@ -37,7 +37,7 @@ api_result_t sm_internal_get_attestation_key ( phys_ptr_t out_buffer ) {
   }
 
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(caller);
-  if ( 0 != memcmp(&enclave_metadata->measurement, &sm->signing_enclave_measurement, sizeof(hash_t) ) ) {
+  if ( 0 != memncmp(&enclave_metadata->measurement, &sm->signing_enclave_measurement, sizeof(hash_t) ) ) {
     return MONITOR_ACCESS_DENIED;
   }
 

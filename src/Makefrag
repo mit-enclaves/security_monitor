@@ -40,7 +40,7 @@ SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/platform_helper.c \
 	$(PLATFORM_DIR)/platform_memory_protection_enclave_exit.c \
-	$(SM_SRC_DIR)/clib/memcmp.c \
+	$(SM_SRC_DIR)/clib/memncmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/handle_enclave/enclave_aex.c \
