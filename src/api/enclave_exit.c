@@ -108,7 +108,7 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
   call platform_clean_core; \n \
   call platform_purge_core; \n \
   call .restore_regs; \n \
-  j .perform_mret"  : : "r" (t0));
+  j .perform_mret_ecall"  : : "r" (t0));
 
   return MONITOR_OK; // Unreachable
 }

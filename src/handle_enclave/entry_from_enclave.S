@@ -105,7 +105,7 @@ trap_vector_from_enclave:
   call .save_regs_and_set_args
   call ecall_from_enclave_trap
   call .restore_regs
-  j .perform_mret
+  j .perform_mret_ecall
 
 # Software interrupt
 .globl .sw_int_handler
