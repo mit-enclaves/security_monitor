@@ -18,13 +18,14 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
     uint64_t arg3 = regs[13];
     uint64_t arg4 = regs[14];
     uint64_t arg5 = regs[15];
+    uint64_t arg6 = regs[16];
 
     uint64_t retval;
 
     switch(code) {
       // Enclaves
       case SM_ENCLAVE_CREATE:
-        retval = sm_internal_enclave_create( arg0, arg1, arg2, arg3, arg4, (bool)arg5 );
+        retval = sm_internal_enclave_create( arg0, arg1, arg2, arg3, (bool)arg4);
         break;
 
       case SM_ENCLAVE_DELETE:
@@ -118,7 +119,7 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         break;
 
       case SM_THREAD_LOAD:
-        retval = sm_internal_thread_load( arg0, arg1, arg2, arg3, arg4, arg5 );
+        retval = sm_internal_thread_load( arg0, arg1, arg2, arg3, arg4, arg5, arg6 );
         break;
 
       case SM_THREAD_METADATA_PAGES:

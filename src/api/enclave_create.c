@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, uint64_t timer_limit, bool debug) {
+api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_base, uintptr_t ev_mask, uint64_t num_mailboxes, bool debug) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -13,7 +13,6 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
     - enclave_id must point to a sequence of enclave_metadata_pages(num_mailboxes) metadata pages of type METADATA_FREE. The sequence must be contained within one region.
     - all configurations of ev_base, ev_mask (including invalid ones) are acceptable; these inputs are covered by measurement.
     - num_mailboxes affects the enclave metadata size, and is covered by measurement.
-    - timer_limit is covered by measurement.
     - debug is covered by measurement.
       */
 
@@ -60,9 +59,6 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
   enclave_metadata->num_mailboxes = num_mailboxes;
   hash_extend(&enclave_metadata->hash_context, &enclave_metadata->num_mailboxes, sizeof(enclave_metadata->num_mailboxes));
 
-  enclave_metadata->timer_limit = timer_limit;
-  hash_extend(&enclave_metadata->hash_context, &enclave_metadata->timer_limit, sizeof(enclave_metadata->timer_limit));
-  
   enclave_metadata->debug = (debug == true);
   hash_extend(&enclave_metadata->hash_context, &enclave_metadata->debug, sizeof(enclave_metadata->debug));
 

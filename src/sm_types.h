@@ -61,7 +61,6 @@ typedef struct enclave_metadata_t {
   enclave_platform_csr_t platform_csr;
 
   int64_t num_mailboxes;
-  int64_t timer_limit;
   bool debug;
 
   // Measurement
@@ -100,6 +99,9 @@ typedef struct thread_metadata_t {
   // AEX - asynchronous enclave exit state
   bool aex_present;
   platform_core_state_t aex_state;
+  
+  // Thread timer limit
+  int64_t timer_limit;
 
   // Save Platform Specific Context
   thread_platform_csr_t platform_csr;
@@ -126,6 +128,7 @@ typedef union metadata_region_t {
 typedef struct sm_core_t {
   enclave_id_t owner;
   thread_id_t thread;
+  uintptr_t hls_ptr;
 
   platform_lock_t lock;
 } sm_core_t;

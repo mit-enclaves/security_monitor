@@ -4,18 +4,7 @@
 #define _RISCV_SBI_H
 
 #include <csr/csr.h>
-
-typedef struct {
-  volatile uint32_t* ipi;
-  volatile int mipi_pending;
-
-  volatile uint64_t* timecmp;
-
-  volatile uint32_t* plic_m_thresh;
-  volatile uintptr_t* plic_m_ie;
-  volatile uint32_t* plic_s_thresh;
-  volatile uintptr_t* plic_s_ie;
-} hls_t;
+#include <platform.h>
 
 #define MACHINE_STACK_TOP() ({ \
   register uintptr_t sp asm ("sp"); \

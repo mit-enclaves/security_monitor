@@ -45,9 +45,8 @@ void test_entry(void) {
 
   enclave_id_t enclave_id = ((uintptr_t) &region3) + (PAGE_SIZE * region_metadata_start);
   uint64_t num_mailboxes = 1;
-  uint64_t timer_limit = 10000;
 
-  result = sm_enclave_create(enclave_id, 0x0, REGION_MASK, num_mailboxes, timer_limit, true);
+  result = sm_enclave_create(enclave_id, 0x0, REGION_MASK, num_mailboxes, true);
   if(result != MONITOR_OK) {
     print_str("sm_enclave_create FAILED with error code ");
     print_int(result);
@@ -145,8 +144,9 @@ void test_entry(void) {
   uint64_t size_enclave_metadata = sm_enclave_metadata_pages(num_mailboxes);
 
   thread_id_t thread_id = enclave_id + (size_enclave_metadata * PAGE_SIZE);
+  uint64_t timer_limit = 10000;
 
-  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, enclave_handler_address, enclave_handler_stack_pointer);
+  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, enclave_handler_address, enclave_handler_stack_pointer, timer_limit);
   if(result != MONITOR_OK) {
     print_str("sm_thread_load FAILED with error code ");
     print_int(result);

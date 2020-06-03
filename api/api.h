@@ -35,7 +35,6 @@ api_result_t sm_enclave_create (
   uintptr_t ev_base,
   uintptr_t ev_mask,
   uint64_t num_mailboxes,
-  uint64_t timer_limit,
   bool debug);
 
 // Frees up all DRAM regions and the metadata associated with an enclave.
@@ -276,7 +275,8 @@ api_result_t sm_thread_load (
   uintptr_t entry_pc,
   uintptr_t entry_stack,
   uintptr_t fault_pc,
-  uintptr_t fault_stack);
+  uintptr_t fault_stack,
+  uint64_t timer_limit);
 
 // Returns the number of pages used by a thread metadata structure.
 uint64_t sm_thread_metadata_pages();

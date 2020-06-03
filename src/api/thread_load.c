@@ -2,7 +2,7 @@
 
 api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
   uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
-  uintptr_t fault_stack) {
+  uintptr_t fault_stack, uint64_t timer_limit) {
 
   // Validate inputs
   // ---------------
@@ -15,6 +15,10 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
    - entry_stack must point to a region owned by the enclave
    - fault_pc must point to a region owned by the enclave
    - fault_stack must point to a region owned by the enclave
+  */
+  
+  /*
+   - timer_limit is covered by measurement.
   */
 
   // Lock the enclave's metadata's region and the thread_id region (if different)
@@ -84,6 +88,7 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
   thread_metadata->entry_sp     = entry_stack;
   thread_metadata->fault_pc     = fault_pc;
   thread_metadata->fault_sp     = fault_stack;
+  thread_metadata->timer_limit  = timer_limit;
 
   /*
   for(int i = 0; i < NUM_REGISTERS; i++) {
@@ -101,7 +106,8 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
   hash_extend(&enclave_metadata->hash_context, &entry_stack, sizeof(entry_stack));
   hash_extend(&enclave_metadata->hash_context, &fault_pc, sizeof(fault_pc));
   hash_extend(&enclave_metadata->hash_context, &fault_stack, sizeof(fault_stack));
-
+  hash_extend(&enclave_metadata->hash_context, &timer_limit, sizeof(timer_limit));
+  
   // Release locks
   unlock_regions(&locked_regions);
   // </TRANSACTION>

@@ -131,6 +131,9 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   // Prepare enclave sp
   write_csr(mscratch, thread_metadata->fault_sp);
 
+  // Set up timer interrupt to kill enclave
+  *(((hls_t *) core_metadata->hls_ptr)->timecmp) = *mtime + thread_metadata->timer_limit; 
+
   // Release locks
   unlock_regions(&locked_regions);
   unlock_core(core_id);

@@ -14,12 +14,12 @@
 #define SBI_SHUTDOWN 8
 
 static inline uintptr_t console_putchar(uint8_t c) {
-   return SM_API_CALL(SBI_CONSOLE_PUTCHAR, c, 0, 0, 0, 0, 0);
+   return SM_API_CALL(SBI_CONSOLE_PUTCHAR, c, 0, 0, 0, 0, 0, 0);
 }
 
 /*
 static uint64_t console_getchar() {
-   return SM_API_CALL(SBI_CONSOLE_GETCHAR, 0, 0, 0, 0, 0, 0);
+   return SM_API_CALL(SBI_CONSOLE_GETCHAR, 0, 0, 0, 0, 0, 0, 0);
 }
 */
 
