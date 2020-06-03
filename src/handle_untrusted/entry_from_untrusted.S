@@ -106,7 +106,7 @@ trap_vector_from_untrusted:
   call .save_regs_and_set_args
   call ecall_from_s_trap
   call .restore_regs
-  j .perform_mret
+  j .perform_mret_ecall
 
 
 # Generic event handlers
@@ -120,7 +120,7 @@ trap_vector_from_untrusted:
   call .save_regs_and_set_args
   call illegal_instruction_trap_handler
   call .restore_regs
-  j .perform_mret
+  j .perform_mret_ecall
 
 .misaligned_load_trap:
   csrr a0, mcause

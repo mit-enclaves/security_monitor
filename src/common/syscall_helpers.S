@@ -83,15 +83,17 @@
   ld t6,31*REGBYTES(sp)
   ret
 
+.globl .perform_mret_ecall
+.perform_mret_ecall:
+  csrr t0, mepc
+  addi t0, t0, 4
+  csrw mepc, t0
+
 .globl .perform_mret
 .perform_mret:
   # Go back whence we came.
   ld t0, 2*REGBYTES(sp)
   csrw mscratch, t0
-
-  csrr t0, mepc
-  addi t0, t0, 4
-  csrw mepc, t0
 
   ld ra, 1*REGBYTES(sp)
   ld t0, 5*REGBYTES(sp)
