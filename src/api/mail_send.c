@@ -2,7 +2,7 @@
 
 // Need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
 
-api_result_t sm_internal_mail_send (mailbox_id_t mailbox_id, enclave_id_t recipient, phys_ptr_t in_message) {
+api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox_id, phys_ptr_t in_message) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
