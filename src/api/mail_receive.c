@@ -119,10 +119,10 @@ api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_m
   // ----------------------
 
   // Copy the sender's Measurement
-  memcpy(&out_sender_measurement, &mailbox->sender_measurement, sizeof(hash_t));
+  memcpy((void *) out_sender_measurement, &mailbox->sender_measurement, sizeof(hash_t));
 
   // Copy the message
-  memcpy(&out_message, &mailbox->message, sizeof(uint8_t) * MAILBOX_SIZE);
+  memcpy((void *) out_message, &mailbox->message, sizeof(uint8_t) * MAILBOX_SIZE);
 
   // Update the mailbox's state
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;

@@ -140,7 +140,7 @@ api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox
   }
 
   // Copy the message
-  memcpy(&mailbox->message, &in_message, sizeof(uint8_t) * MAILBOX_SIZE);
+  memcpy(&mailbox->message, (void *) in_message, sizeof(uint8_t) * MAILBOX_SIZE);
 
   // Update the mailbox's state
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;
