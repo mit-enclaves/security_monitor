@@ -21,10 +21,6 @@
 // `num_mailboxes` is the number of mailboxes that the enclave will have. Valid
 // mailbox IDs for this enclave will range from 0 to num_mailboxes - 1.
 //
-// 'timer_limit' is the maximum number of timer interupts and enclave can 
-// receive before performing an AEX. Any unsigned integer is a valid 
-// timer_limit
-//
 // `debug` is set for debug enclaves. A security monitor that supports
 // enclave debugging implements copy_debug_enclave_page, which can only be used
 // on debug enclaves.
@@ -56,7 +52,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id);
 api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs); // TODO rename the handles etc...
 
 // Ends the currently running enclave thread and returns control to the OS.
-api_result_t sm_enclave_exit ();
+api_result_t sm_enclave_exit (void);
 
 // Marks the given enclave as initialized and ready to execute.
 //
@@ -207,7 +203,7 @@ api_result_t sm_region_check_owned (region_id_t id);
 // System software must invoke this call instead of flushing the TLB directly,
 // as the monitor's state must be updated to reflect the fact that a TLB flush
 // has occurred.
-api_result_t sm_region_flush ();
+api_result_t sm_region_flush (void);
 
 // Frees a DRAM region that was previously blocked.
 api_result_t sm_region_free (region_id_t id);
@@ -223,14 +219,14 @@ api_result_t sm_region_metadata_create (region_id_t dram_region);
 // This may be smaller than the number of total pages in a DRAM region, if the
 // computer does not have continuous DRAM regions and the security monitor does
 // not support using non-continuous regions.
-uint64_t sm_region_metadata_pages();
+uint64_t sm_region_metadata_pages(void);
 
 // Returns the first usable metadata page in a DRAM metadata region.
 //
 // The beginning of each DRAM metadata region is reserved for the monitor's
 // use. This returns the first page number that can be used to store
 // enclave_info_t and thread_info_t structures.
-uint64_t sm_region_metadata_start();
+uint64_t sm_region_metadata_start(void);
 
 // Returns the owner of the DRAM region with the given index.
 //
@@ -267,6 +263,10 @@ api_result_t sm_thread_delete (thread_id_t thread_id);
 // addresses in the enclave's address space. They are used to set the
 // corresponding fields in thread_init_info_t.
 //
+// 'timer_limit' is the maximum number of timer interupts and enclave can 
+// receive before performing an AEX. Any unsigned integer is a valid 
+// timer_limit
+//
 // This must be called after the enclave's root page table is set by a call to
 // load_page_table().
 api_result_t sm_thread_load (
@@ -279,6 +279,6 @@ api_result_t sm_thread_load (
   uint64_t timer_limit);
 
 // Returns the number of pages used by a thread metadata structure.
-uint64_t sm_thread_metadata_pages();
+uint64_t sm_thread_metadata_pages(void);
 
 #endif // SECURITY_MONITOR_API_COMMON_H
