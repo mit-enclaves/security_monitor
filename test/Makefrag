@@ -58,7 +58,6 @@ ALL_TESTS_SRC := \
 	$(SM_TEST_DIR)/null_boot_loader/sm_keys.c \
 	$(SM_TEST_DIR)/null_boot_loader/sm.S \
 	$(PLATFORM_DIR)/idpt.S \
-	$(PLATFORM_DIR)/htif/htif.c \
 	$(SM_TEST_DIR)/sbi/console.c \
 
 # Headers

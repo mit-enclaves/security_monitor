@@ -91,8 +91,6 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \
 	$(PLATFORM_DIR)/platform_helper.c \
-	$(PLATFORM_DIR)/htif/htif.c \
-	$(PLATFORM_DIR)/htif/htif_util.c \
 	$(SM_SRC_DIR)/clib/strcmp.c \
 	$(SM_SRC_DIR)/clib/strlen.c \
 	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
@@ -148,7 +146,6 @@ $(SM_BIN): $(SM_ELF)
 	--only-section=.rodata \
 	--only-section=.data \
 	--only-section=.bss  \
-	--keep-symbol=__htif_base \
 	--keep-symbol=tohost \
 	--keep-symbol=fromhost \
 	$< $@

@@ -1,9 +1,8 @@
-#include <htif/htif.h>
 
 void putstring(const char* s)
 {
   while (*s)
-    htif_putchar(*s++);
+    console_putchar(*s++);
 }
 
 // See LICENSE for license details.
@@ -135,15 +134,15 @@ void printm(const char* s, ...)
 }
 
 void console_putchar(char c) {
-  htif_putchar(c);
+  *(char *)0x62300000 = c;
 }
 
 uint64_t console_getchar() {
-  return htif_getchar();
+  return 0;
 }
 
 void print_char(char c) {
-  htif_putchar(c);
+  console_putchar(c);
 }
 
 
