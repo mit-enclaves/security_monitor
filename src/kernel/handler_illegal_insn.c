@@ -47,6 +47,8 @@ static inline int emulate_read_csr(int num, uintptr_t mstatus, uintptr_t* result
     case CSR_MHPMEVENT4:
       *result = read_csr(mhpmevent4);
       return 0;
+  case 0x5c9:
+      return 0;
   }
   return -1;
 }
@@ -57,6 +59,7 @@ static inline int emulate_write_csr(int num, uintptr_t value, uintptr_t mstatus)
         // Make sure the instruction comes from S mode
         assert((EXTRACT_FIELD(mstatus, MSTATUS_MPP) == PRV_S));
         // Verify that the mode is SV32
+	write_csr(0x817, value);
         assert(((value >> SATP_MODE_OFFSET) == SATP_MODE_SV39));
         write_csr(satp, value);
     case CSR_CYCLE: write_csr(mcycle, value); return 0;
@@ -65,6 +68,9 @@ static inline int emulate_write_csr(int num, uintptr_t value, uintptr_t mstatus)
     case CSR_MHPMCOUNTER4: write_csr(mhpmcounter4, value); return 0;
     case CSR_MHPMEVENT3: write_csr(mhpmevent3, value); return 0;
     case CSR_MHPMEVENT4: write_csr(mhpmevent4, value); return 0;
+    case 0x5c9:
+	write_csr(0x7c9, value);
+	return 0;
   }
   return -1;
 }
