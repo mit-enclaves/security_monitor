@@ -4,8 +4,8 @@
 // SM Parameters:
 // --------------
 
-#define BOOT_ADDR (0x1000)
-#define BOOT_MAXLEN (0x10)
+#define BOOT_ADDR (0x70000000)
+#define BOOT_MAXLEN (0x20)
 
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
