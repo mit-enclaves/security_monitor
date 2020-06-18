@@ -46,6 +46,7 @@ static void hart_plic_init()
 
 static void prci_test()
 {
+#if 0
   assert(!(read_csr(mip) & MIP_MSIP));
   *HLS()->ipi = 1;
   assert(read_csr(mip) & MIP_MSIP);
@@ -57,6 +58,7 @@ static void prci_test()
   assert(read_csr(mip) & MIP_MTIP);
   *HLS()->timecmp = -1ULL;
   assert(!(read_csr(mip) & MIP_MTIP));
+#endif
 }
 
 // send S-mode interrupts and most exceptions straight to S-mode
