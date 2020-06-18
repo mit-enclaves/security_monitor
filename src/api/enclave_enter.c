@@ -74,6 +74,24 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     return MONITOR_INVALID_STATE;
   }
 
+  for (int j = 0; j < 2; j++) {
+    const char *label[] = {
+      "actual measurement:  ",
+      "expected measurement: ",
+    };
+    printm(label[j]);
+    uint8_t *bytes[] = {
+      enclave_metadata->measurement.bytes,
+      ((hash_t *) hash_ptr)->bytes
+    };
+    for (int i = 0; i < 64; i++) {
+      if (i)
+	printm(", ");
+      printm("0x%x", bytes[j][i]);
+    }
+    printm("\n");
+  }
+  printm("memncmp %d\n", memncmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64));
   if(memncmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64) != 0) {
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
