@@ -135,4 +135,6 @@ typedef enum {
 #define SM_THREAD_LOAD                      (1041)
 #define SM_THREAD_METADATA_PAGES            (1042)
 
+#define SM_RANDOM                           (1050)
+
 #endif // API_TYPE_H

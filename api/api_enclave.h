@@ -37,4 +37,9 @@ static inline api_result_t sm_mail_send(enclave_id_t enclave_id, mailbox_id_t ma
    return SM_API_CALL(SM_MAIL_SEND, enclave_id, mailbox_id, phys_addr, 0, 0, 0);
 }
 
+// Returns 64 random bits
+static inline api_result_t sm_random() {
+   return SM_API_CALL(SM_RANDOM, 0, 0, 0, 0, 0, 0);
+}
+
 #endif // API_ENCLAVE_H
