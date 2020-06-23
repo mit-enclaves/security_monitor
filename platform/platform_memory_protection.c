@@ -8,6 +8,7 @@ void platform_initialize_memory_protection(sm_state_t *sm) {
 
   uint64_t mmrbm = regions_to_bitmap(&(sm->untrusted_regions));
   write_csr(CSR_MMRBM, mmrbm);
+  *(uint64_t *)0x63000000 = ~mmrbm;
 
   uint64_t mparbase = SM_STATE_ADDR;
   uint64_t mparmask = REGION_MASK;
@@ -28,9 +29,15 @@ void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metada
   thread_metadata->platform_csr.ev_mask =
     swap_csr(CSR_MEVMASK, enclave_metadata->platform_csr.ev_mask);
 
+  uint64_t mmrbm = read_csr(CSR_MMRBM);
   uint64_t memrbm = regions_to_bitmap(&(enclave_metadata->regions));
   thread_metadata->platform_csr.memrbm =
     swap_csr(CSR_MEMRBM, memrbm);
+  *(uint64_t *)0x63000000 = ~mmrbm | memrbm;
+#ifdef DEBUG_MEM_FILTER
+  *(uint64_t *)0x51000000 = 0xeeeeeeee;
+  *(uint64_t *)0x51000000 = ~mmrbm | memrbm;
+#endif
 
   thread_metadata->platform_csr.meparbase =
     swap_csr(CSR_MEPARBASE, enclave_metadata->platform_csr.meparbase);
