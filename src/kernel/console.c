@@ -1,4 +1,6 @@
 
+void console_putchar(char c);
+
 void putstring(const char* s)
 {
   while (*s)
