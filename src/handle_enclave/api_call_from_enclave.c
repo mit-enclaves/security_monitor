@@ -48,6 +48,10 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
       retval = sm_internal_region_check_owned((region_id_t) arg0);
       break;
 
+    case SM_RANDOM:
+      retval = sm_internal_random((uintptr_t) arg0, (size_t)arg1);
+      break;
+
     // All other calls are unsupported
     default:
       retval = MONITOR_UNSUPPORTED;

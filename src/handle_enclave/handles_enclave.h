@@ -27,4 +27,6 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present);
 
 void sm_internal_enclave_aex (uintptr_t *regs);
 
+api_result_t sm_internal_random (uintptr_t random_buf, size_t num_bytes);
+
 #endif // API_TYPES_H
