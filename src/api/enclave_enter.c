@@ -54,6 +54,12 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     return result;
   }
 
+  // thread must belong to this enclave
+  if (thread_metadata->owner != enclave_id) {
+      unlock_regions(&locked_regions);
+      return MONITOR_INVALID_STATE;
+  }
+
   // the tread must not be scheduled
   if(thread_metadata->is_scheduled) {
     unlock_regions(&locked_regions);
