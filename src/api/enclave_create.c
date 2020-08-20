@@ -19,6 +19,11 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
 
   region_map_t locked_regions = (const region_map_t){ 0 };
 
+  // mailboxes must fit in on 256MB region
+  if (num_mailboxes > ((256*1024*1024 - sizeof(enclave_metadata_t)) / sizeof(mailbox_t))) {
+    return MONITOR_INVALID_VALUE;
+  }
+
   uint64_t enclave_pages = enclave_metadata_pages(num_mailboxes);
 
   // <TRANSACTION>
