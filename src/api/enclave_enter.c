@@ -98,6 +98,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     printm("\n");
   }
   printm("memncmp %d\n", memncmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64));
+#define ENFORCE_ENCLAVE_MEASUREMENT
 #ifdef ENFORCE_ENCLAVE_MEASUREMENT
   if(memncmp(enclave_metadata->measurement.bytes,((hash_t *) hash_ptr)->bytes, 64) != 0) {
     unlock_regions(&locked_regions);
