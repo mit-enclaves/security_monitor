@@ -9,7 +9,8 @@
 
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
-#define CLEAN_REGIONS_ON_FREE   (true)
+// clean regions on region_free (true) or enclave_delete (false)
+#define CLEAN_REGIONS_ON_FREE   (false)
 
 // Stack Parameter
 #define STACK_SIZE          (0x1000)
