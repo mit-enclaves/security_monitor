@@ -124,12 +124,14 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   platform_interrupts_enter_enclave(thread_metadata);
   
   // Set trap handler
-  write_csr(mtvec, thread_metadata->fault_pc);
+  write_csr(mtvec, enclave_metadata->fault_pc);
 
   // Prepare enclave pc
   write_csr(mepc, thread_metadata->entry_pc);
-  // Prepare enclave sp
-  write_csr(mscratch, thread_metadata->fault_sp);
+  
+  // Prepare trap handler sp
+  uintptr_t fault_sp = enclave_metadata->fault_sp_base - (core_id * STACK_SIZE) - INTEGER_CONTEXT_SIZE;
+  write_csr(mscratch, fault_sp);
 
   // Set up timer interrupt to kill enclave
   *(((hls_t *) core_metadata->hls_ptr)->timecmp) = *mtime + thread_metadata->timer_limit; 

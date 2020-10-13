@@ -11,7 +11,7 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
    - phys_addr must be page alligned
    - phys_addr must be greater than the last physical address loaded (that should be zero)
    - phys_addr must point to a region owned by the enclave
-   - the handler should fit in one region
+   - the handler and the fault stacks should fit in one region
   */
 
   enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(enclave_id);
@@ -23,7 +23,6 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   if ( MONITOR_OK != result ) {
    return result;
   }
-
 
   // enclave must be ENCLAVE_STATE_CREATED
   if(enclave_metadata->init_state > ENCLAVE_STATE_CREATED) {
@@ -46,9 +45,11 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   // Check that the handlers fit in one region
   uint64_t size_handler = ((uint64_t) &enclave_handler_end) - ((uint64_t) &enclave_handler_start);
 
-  uintptr_t end_phys_addr = phys_addr + size_handler;
+  uint64_t size_stacks = NUM_CORES * STACK_SIZE;
 
-  // Make sure the handlers are not larger than a region
+  uintptr_t end_phys_addr = phys_addr + size_stacks + size_handler;
+
+  // Make sure the handlers and the stacks are not larger than a region
   if(addr_to_region_id(phys_addr) != addr_to_region_id(end_phys_addr)){
    unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
@@ -70,19 +71,33 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   // Apply state transition
   // ----------------------
 
+  // Instanciate the SM stack base with the physical address
+  enclave_metadata->fault_sp_base = phys_addr + size_stacks;
+
+  // Zero the memory for the SM stacks
+  memset((void *) phys_addr, 0, size_stacks); 
+
+  phys_addr += size_stacks;
+  
+  // Set memory protection for the SM code
   platform_protect_enclave_sm_handler(enclave_metadata, phys_addr);
 
   // Copy the handlers
   memcpy((void *) phys_addr, (void *) &enclave_handler_start, size_handler);
 
   // Update the measurement
-  hash_extend(&enclave_metadata->hash_context, &enclave_handler_start, size_handler);
+  hash_extend(&enclave_metadata->hash_context, (void *) phys_addr, size_handler);
 
   // Update the enclave state
   enclave_metadata->init_state = ENCLAVE_STATE_HANDLER_LOADED;
 
+  // Instanciate the fault pc with the handler physical address
+  enclave_metadata->fault_pc = phys_addr;
+
+  // Allocate NUM_CORE pages for the fault stack
+  // 
   // Update the last physical address loaded
-  enclave_metadata->last_phys_addr_loaded = phys_addr;
+  enclave_metadata->last_phys_addr_loaded = end_phys_addr;
 
   // Release locks
   unlock_regions(&locked_regions);

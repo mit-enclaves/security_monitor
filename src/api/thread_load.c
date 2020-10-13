@@ -1,8 +1,7 @@
 #include <sm.h>
 
 api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id,
-  uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc,
-  uintptr_t fault_stack, uint64_t timer_limit) {
+  uintptr_t entry_pc, uintptr_t entry_stack, uint64_t timer_limit) {
 
   // Validate inputs
   // ---------------
@@ -13,8 +12,6 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
    - thread_id must point to a free metadata region
    - entry_pc must point to a region owned by the enclave
    - entry_stack must point to a region owned by the enclave
-   - fault_pc must point to a region owned by the enclave
-   - fault_stack must point to a region owned by the enclave
   */
   
   /*
@@ -54,18 +51,6 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
     return result;
   }
 
-  // fault_pc must point to a region owned by the enclave
-  if(region_owner(addr_to_region_id(fault_pc)) != enclave_id){
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
-  // fault_stack must point to a region owned by the enclave
-  if(region_owner(addr_to_region_id(fault_stack)) != enclave_id){
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
@@ -86,8 +71,6 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
   //thread_metadata->untrusted_pc = 0;
   thread_metadata->entry_pc     = entry_pc;
   thread_metadata->entry_sp     = entry_stack;
-  thread_metadata->fault_pc     = fault_pc;
-  thread_metadata->fault_sp     = fault_stack;
   thread_metadata->timer_limit  = timer_limit;
 
   /*
@@ -104,8 +87,6 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
   // Hash the arguments into enclave state
   hash_extend(&enclave_metadata->hash_context, &entry_pc, sizeof(entry_pc));
   hash_extend(&enclave_metadata->hash_context, &entry_stack, sizeof(entry_stack));
-  hash_extend(&enclave_metadata->hash_context, &fault_pc, sizeof(fault_pc));
-  hash_extend(&enclave_metadata->hash_context, &fault_stack, sizeof(fault_stack));
   hash_extend(&enclave_metadata->hash_context, &timer_limit, sizeof(timer_limit));
   
   // Release locks

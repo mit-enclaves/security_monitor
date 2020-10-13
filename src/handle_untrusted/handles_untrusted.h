@@ -48,7 +48,7 @@ region_state_t sm_internal_region_state (region_id_t id);
 
 api_result_t sm_internal_thread_delete (thread_id_t thread_id);
 
-api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc, uintptr_t fault_stack, uint64_t timer_limit);
+api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t entry_pc, uintptr_t entry_stack, uint64_t timer_limit);
 
 uint64_t sm_internal_thread_metadata_pages();
 

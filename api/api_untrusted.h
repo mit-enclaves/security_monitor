@@ -92,8 +92,8 @@ static inline api_result_t sm_thread_delete (thread_id_t thread_id) {
   return SM_API_CALL(SM_THREAD_DELETE, thread_id, 0, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t entry_pc, uintptr_t entry_stack, uintptr_t fault_pc, uintptr_t fault_stack, uint64_t timer_limit) {
-  return SM_API_CALL(SM_THREAD_LOAD, enclave_id, thread_id, entry_pc, entry_stack, fault_pc, fault_stack, timer_limit);
+static inline api_result_t sm_thread_load (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t entry_pc, uintptr_t entry_stack, uint64_t timer_limit) {
+  return SM_API_CALL(SM_THREAD_LOAD, enclave_id, thread_id, entry_pc, entry_stack, timer_limit, 0, 0);
 }
 
 static inline uint64_t sm_thread_metadata_pages(void) {

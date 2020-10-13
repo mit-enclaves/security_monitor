@@ -65,6 +65,10 @@ typedef struct enclave_metadata_t {
 
   // Measurement
   hash_t measurement;
+ 
+  // SM pc and sp base
+  uintptr_t fault_pc;
+  uintptr_t fault_sp_base;
 
   // State
   int64_t num_threads;
@@ -92,8 +96,6 @@ typedef struct thread_metadata_t {
   uintptr_t untrusted_fault_sp;
 
   // Enclave state buffer in the event of a trap/interrupt/fault
-  uintptr_t fault_pc;
-  uintptr_t fault_sp;
   platform_core_state_t fault_state;
 
   // AEX - asynchronous enclave exit state

@@ -111,7 +111,7 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id,
   }
 
   // Update the last physical address loaded
-  enclave_metadata->last_phys_addr_loaded = phys_addr;
+  enclave_metadata->last_phys_addr_loaded = phys_addr + PAGE_SIZE;
 
   // Update the enclave state
   enclave_metadata->init_state = ENCLAVE_STATE_PAGE_DATA_LOADED;
