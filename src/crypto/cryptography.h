@@ -48,16 +48,20 @@ static inline void hash_finalize(
 #define ED25519_NO_SEED 1
 #include "ed25519/ed25519.h"
 
-typedef struct public_key_seed_t {
-  uint8_t bytes[32];
+#define LENGTH_SEED 32
+#define LENGTH_PK 32
+#define LENGTH_SK 64
+
+typedef struct private_key_seed_t {
+  uint8_t bytes[LENGTH_SEED];
 } key_seed_t;
 
 typedef struct public_key_t {
-  uint8_t bytes[32];
+  uint8_t bytes[LENGTH_PK];
 } public_key_t;
 
 typedef struct secret_key_t {
-  uint8_t bytes[64];
+  uint8_t bytes[LENGTH_SK];
 } secret_key_t;
 
 typedef struct symmetric_key_t {
