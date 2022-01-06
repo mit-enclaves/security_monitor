@@ -146,7 +146,7 @@ void test_entry(void) {
   thread_id_t thread_id = enclave_id + (size_enclave_metadata * PAGE_SIZE);
   uint64_t timer_limit = 10000;
 
-  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, enclave_handler_address, enclave_handler_stack_pointer, timer_limit);
+  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, timer_limit);
   if(result != MONITOR_OK) {
     print_str("sm_thread_load FAILED with error code ");
     print_int(result);
