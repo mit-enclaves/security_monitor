@@ -14,6 +14,7 @@
 typedef struct sm_keys_t {
   public_key_t manufacturer_public_key;
 
+  uint32_t device_public_key_present;
   public_key_t device_public_key;
   signature_t device_signature;
 

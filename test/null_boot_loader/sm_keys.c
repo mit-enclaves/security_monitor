@@ -24,6 +24,7 @@ typedef struct signature_t {
 typedef struct boot_image_header_t {
   public_key_t manufacturer_public_key;
 
+  uint32_t device_public_key_present;
   public_key_t device_public_key;
   signature_t device_signature;
 
