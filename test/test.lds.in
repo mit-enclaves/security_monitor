@@ -1,14 +1,14 @@
 #include <parameters.h>
 
 OUTPUT_ARCH( "riscv" )
-ENTRY( boot_entry )
+ENTRY( sm_entry )
 
 MEMORY
 {
   BOOT (ax) :      ORIGIN = BOOT_ADDR,       LENGTH = BOOT_MAXLEN
   HTIF (awx)   :  ORIGIN = HTIF_BASE,        LENGTH = HTIF_LEN
-  SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   SM (awx) :       ORIGIN = SM_ADDR,         LENGTH = SM_LEN
+  SM_STATE (aw) :  ORIGIN = SM_STATE_ADDR,   LENGTH = SM_STATE_LEN
   PAYLOAD (awx) :  ORIGIN = UNTRUSTED_ENTRY, LENGTH = PAYLOAD_MAXLEN
 }
 
@@ -37,14 +37,6 @@ SECTIONS
 
 SECTIONS
 {
-  . = ORIGIN(SM_STATE);
-  .sm.state : {
-    *(.sm.state) /* Your payload goes here */
-  } > SM_STATE =0x0
-}
-
-SECTIONS
-{
   . = ORIGIN(SM);
   .sm : {
     PROVIDE( sm_entry = . );
@@ -52,6 +44,13 @@ SECTIONS
   } > SM =0x0
 }
 
+SECTIONS
+{
+  . = ORIGIN(SM_STATE);
+  .sm.state : {
+    *(.sm.state) /* Your payload goes here */
+  } > SM_STATE =0x0
+}
 
 SECTIONS
 {

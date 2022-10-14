@@ -5,3 +5,4 @@
 
 li ra, SM_ADDR
 jr ra
+nop
