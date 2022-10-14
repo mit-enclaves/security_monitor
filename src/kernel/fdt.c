@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+uintptr_t FDT_ADDR;
+
 void filter_and_copy_device_tree(void) {
   uintptr_t src_fdt_addr = FDT_ADDR;
   uintptr_t out_fdt_addr = platform_get_device_tree_addr();

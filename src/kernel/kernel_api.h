@@ -12,6 +12,6 @@ void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
 
 void illegal_instruction_trap_handler(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc);
 
-void kernel_init(void);
+void kernel_init(uintptr_t ftd_addr);
 
 #endif // KERNEL_API_H

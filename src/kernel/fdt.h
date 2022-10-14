@@ -6,7 +6,7 @@
 #define FDT_MAGIC	0xd00dfeed
 #define FDT_VERSION	17
 
-#define FDT_ADDR ((uintptr_t) (BOOT_ADDR + BOOT_MAXLEN))
+extern uintptr_t FDT_ADDR;
 
 struct fdt_header {
   uint32_t magic;

@@ -80,9 +80,11 @@ static void delegate_traps()
   //assert(read_csr(medeleg) == exceptions);
 }
 
-void kernel_init() {
+void kernel_init(uintptr_t ftd_addr) {
   delegate_traps();
   hls_init(0);
+  
+  FDT_ADDR = ftd_addr;
 
   query_mem(FDT_ADDR);
   query_harts(FDT_ADDR);

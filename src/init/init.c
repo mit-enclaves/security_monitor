@@ -9,7 +9,7 @@ extern uintptr_t stack_ptr;
   #define SIGNING_ENCLAVE_MEASUREMENT {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #endif
 
-void sm_init(void) {
+void sm_init(uintptr_t fdt_boot_addr) {
   sm_state_t * sm = get_sm_state_ptr();
 
   // IMPORTANT: this will be run by *all* cores
@@ -52,7 +52,7 @@ void sm_init(void) {
     platform_init();
 
     // Initialize kernel
-    kernel_init();
+    kernel_init(fdt_boot_addr);
 
     // Resume other cores
     platform_interrupt_other_cores();
@@ -69,8 +69,8 @@ void sm_init(void) {
   platform_initialize_memory_protection(sm);
 
   // Walk the device tree and get its address
-  uintptr_t fdt_addr = platform_get_device_tree_addr();
+  uintptr_t fdt_os_addr = platform_get_device_tree_addr();
 
   // payload must set its own stack pointer.
-  platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0, core_id, fdt_addr);
+  platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0, core_id, fdt_os_addr);
 }

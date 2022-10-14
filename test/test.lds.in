@@ -20,6 +20,8 @@ SECTIONS
     *(.boot.text.entry)
     *(.boot.*)
     *(.boot)
+    . = ALIGN(0x8);
+    _device_tree = .;
   } > BOOT =0x0
 }
 
