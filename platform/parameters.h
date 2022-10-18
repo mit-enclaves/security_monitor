@@ -9,7 +9,7 @@
 
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
-#define CLEAN_REGIONS_ON_FREE   (true)
+#define CLEAN_REGIONS_MEMSET   (false)
 
 // Stack Parameter
 #define STACK_SIZE          (0x1000)
@@ -67,6 +67,9 @@
 #define PN_OFFSET     (9)
 #define PPN2_OFFSET   (26)
 #define PAGE_ENTRY_ACL_OFFSET (10)
+
+#define MVBASE_DEFAULT (0xFFFFFFFFFFFFFFFF)
+#define MVMASK_DEFAULT (0)
 
 // Register file parameters
 #define NUM_REGISTERS (32)

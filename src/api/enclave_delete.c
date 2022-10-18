@@ -59,7 +59,7 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
       sm->regions[i].owner = OWNER_UNTRUSTED;
       platform_update_untrusted_regions(sm, region_id, true);
 
-      if (!CLEAN_REGIONS_ON_FREE) {
+      if (!CLEAN_REGIONS_MEMSET) {
         // Erase the region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
         memset( region_id_to_addr(i), 0x00, REGION_SIZE );
       }

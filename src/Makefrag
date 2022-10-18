@@ -95,6 +95,7 @@ SM_SRC := \
 	$(PLATFORM_DIR)/htif/htif_util.c \
 	$(SM_SRC_DIR)/clib/strcmp.c \
 	$(SM_SRC_DIR)/clib/strlen.c \
+	$(SM_SRC_DIR)/clib/strcpy.c \
 	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \

@@ -30,17 +30,17 @@ static void hart_plic_init()
     return;
 
   size_t ie_words = (plic_ndevs + 8 * sizeof(uintptr_t) - 1) /
-		(8 * sizeof(uintptr_t));
+    (8 * sizeof(uintptr_t));
   for (size_t i = 0; i < ie_words; i++) {
-     if (HLS()->plic_s_ie) {
-        // Supervisor not always present
-        HLS()->plic_s_ie[i] = ULONG_MAX;
-     }
+    if (HLS()->plic_s_ie) {
+      // Supervisor not always present
+      HLS()->plic_s_ie[i] = ULONG_MAX;
+    }
   }
   *HLS()->plic_m_thresh = 1;
   if (HLS()->plic_s_thresh) {
-      // Supervisor not always present
-      *HLS()->plic_s_thresh = 0;
+    // Supervisor not always present
+    *HLS()->plic_s_thresh = 0;
   }
 }
 
@@ -65,14 +65,14 @@ static void delegate_traps()
   uintptr_t interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
 
   /*
-  uintptr_t exceptions =
-    (1U << CAUSE_MISALIGNED_FETCH) |
-    (1U << CAUSE_FETCH_PAGE_FAULT) |
-    (1U << CAUSE_BREAKPOINT) |
-    (1U << CAUSE_LOAD_PAGE_FAULT) |
-    (1U << CAUSE_STORE_PAGE_FAULT) |
-    (1U << CAUSE_USER_ECALL);
-  */
+     uintptr_t exceptions =
+     (1U << CAUSE_MISALIGNED_FETCH) |
+     (1U << CAUSE_FETCH_PAGE_FAULT) |
+     (1U << CAUSE_BREAKPOINT) |
+     (1U << CAUSE_LOAD_PAGE_FAULT) |
+     (1U << CAUSE_STORE_PAGE_FAULT) |
+     (1U << CAUSE_USER_ECALL);
+     */
 
   write_csr(mideleg, interrupts);
   //write_csr(medeleg, exceptions);
@@ -83,14 +83,20 @@ static void delegate_traps()
 void kernel_init(uintptr_t ftd_addr) {
   delegate_traps();
   hls_init(0);
-  
+
   FDT_ADDR = ftd_addr;
 
+  printm("query_mem\n");
   query_mem(FDT_ADDR);
+  printm("query_harts\n");
   query_harts(FDT_ADDR);
+  printm("query_clint\n");
   query_clint(FDT_ADDR);
+  printm("query_plic\n");
   query_plic(FDT_ADDR);
+  printm("query_chosen\n");
   query_chosen(FDT_ADDR);
+  printm("query over\n");
 
   plic_init();
   hart_plic_init();

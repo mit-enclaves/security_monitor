@@ -2,7 +2,7 @@
 
 #include "kernel.h"
 
-#include <string.h>
+//#include <string.h>
 
 uintptr_t FDT_ADDR;
 

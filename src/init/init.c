@@ -10,6 +10,7 @@ extern uintptr_t stack_ptr;
 #endif
 
 void sm_init(uintptr_t fdt_boot_addr) {
+  printm("Enter sm_init\n");
   sm_state_t * sm = get_sm_state_ptr();
 
   // IMPORTANT: this will be run by *all* cores
@@ -53,9 +54,11 @@ void sm_init(uintptr_t fdt_boot_addr) {
 
     // Initialize kernel
     kernel_init(fdt_boot_addr);
+    printm("K\n");
 
     // Resume other cores
     platform_interrupt_other_cores();
+    printm("P\n");
 
   } else {
     // All cores but core 0 sleep until shared state is initialized
@@ -71,6 +74,7 @@ void sm_init(uintptr_t fdt_boot_addr) {
   // Walk the device tree and get its address
   uintptr_t fdt_os_addr = platform_get_device_tree_addr();
 
+  printm("Jump\n");
   // payload must set its own stack pointer.
   platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0, core_id, fdt_os_addr);
 }

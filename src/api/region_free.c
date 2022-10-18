@@ -68,7 +68,7 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   // Add the region to the untrusted region map
   platform_update_untrusted_regions(sm, region_id, true);
 
-  if (CLEAN_REGIONS_ON_FREE) {
+  if (CLEAN_REGIONS_MEMSET) {
     // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
     memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
 
