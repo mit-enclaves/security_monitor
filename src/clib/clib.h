@@ -14,5 +14,6 @@ void* memset(void* dest, int byte, size_t len);
 int vsnprintf(char* out, size_t n, const char* s, va_list vl);
 int strcmp(const char* s1, const char* s2);
 size_t strlen(const char *s);
+char* strcpy(char* destination, const char *source);
 
 #endif // CLIB_H
