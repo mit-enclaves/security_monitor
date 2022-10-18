@@ -3,8 +3,8 @@
 // TODO : Implement...
 
 void platform_initialize_memory_protection(sm_state_t *sm) {
-  write_csr(CSR_MEVBASE, 0);
-  write_csr(CSR_MEVMASK, 0xFFFFFFFFFFFFFFFF);
+  write_csr(CSR_MEVBASE, 0xFFFFFFFFFFFFFFFF);
+  write_csr(CSR_MEVMASK, 0);
 
   uint64_t mmrbm = regions_to_bitmap(&(sm->untrusted_regions));
   write_csr(CSR_MMRBM, mmrbm);
