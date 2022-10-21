@@ -47,6 +47,10 @@ send_ipi:
     case SBI_SHUTDOWN:
       retval = mcall_shutdown();
       break; */
+    case SBI_EXIT:
+      send_exit_cmd(arg0);
+      retval = 0; 
+      break;
     case SBI_SET_TIMER:
       retval = mcall_set_timer(arg0);
       break;

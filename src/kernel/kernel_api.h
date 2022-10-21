@@ -2,7 +2,7 @@
 #define KERNEL_API_H
 
 #define KERNEL_ECALL_CODE_MIN (0x0)
-#define KERNEL_ECALL_CODE_MAX (0x8)
+#define KERNEL_ECALL_CODE_MAX (0x9)
 
 #include <stdint.h>
 

@@ -25,5 +25,6 @@ hls_t* hls_init(uintptr_t hart_id);
 #define SBI_REMOTE_SFENCE_VMA 6
 #define SBI_REMOTE_SFENCE_VMA_ASID 7
 #define SBI_SHUTDOWN 8
+#define SBI_EXIT 9
 
 #endif

@@ -12,9 +12,15 @@
 #define SBI_REMOTE_SFENCE_VMA 6
 #define SBI_REMOTE_SFENCE_VMA_ASID 7
 #define SBI_SHUTDOWN 8
+#define SBI_SHUTDOWN 8
+#define SBI_EXIT 9
 
 static inline uintptr_t console_putchar(uint8_t c) {
    return SM_API_CALL(SBI_CONSOLE_PUTCHAR, c, 0, 0, 0, 0, 0, 0);
+}
+
+static inline uintptr_t console_exit(int c) {
+   return SM_API_CALL(SBI_EXIT, c, 0, 0, 0, 0, 0, 0);
 }
 
 /*

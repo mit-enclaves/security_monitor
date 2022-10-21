@@ -15,4 +15,6 @@ void printm(const char* s, ...);
 void vprintm(const char *s, va_list args);
 void putstring(const char* s);
 
+void send_exit_cmd(int c);
+
 #endif // CONSOLE_H

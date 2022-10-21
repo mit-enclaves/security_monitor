@@ -164,3 +164,12 @@ void print_int(uint64_t n) {
    }
    return;
 }
+
+void send_exit_cmd(int c){
+  if(c == 0) {
+    tohost = TOHOST_CMD(0, 0, 0b01); // report test done; 0 exit code
+  }
+  else {
+    tohost = TOHOST_CMD(0, 0, 0b11); // report test done; 1 exit code
+  }
+}

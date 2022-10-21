@@ -155,3 +155,8 @@ void print_int(uint64_t n) {
    }
    return;
 }
+
+
+void send_exit_cmd(int c) {
+  console_exit(c); 
+}
