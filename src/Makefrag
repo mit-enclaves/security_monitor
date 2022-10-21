@@ -65,7 +65,7 @@ $(HANDLER_ELF): $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
 
 $(HANDLER_BIN): $(HANDLER_ELF)
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* $< $@
 
 
 ## SM
@@ -140,8 +140,10 @@ $(SM_BIN): $(SM_ELF)
 	$(OBJCOPY) -O binary \
 	--only-section=.text \
 	--only-section=.rodata \
+	--only-section=.srodata* \
 	--only-section=.data \
 	--only-section=.bss  \
+	--only-section=.sbss  \
 	--keep-symbol=__htif_base \
 	--keep-symbol=tohost \
 	--keep-symbol=fromhost \
