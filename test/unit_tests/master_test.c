@@ -145,7 +145,10 @@ void test_entry(void) {
   uintptr_t os_addr = (uintptr_t) &enclave_start;
   uintptr_t virtual_addr = 0;
 
-  int num_pages_enclave = (((uint64_t) &enclave_end) - ((uint64_t) &enclave_start)) / PAGE_SIZE;
+  uint64_t size = ((uint64_t) &enclave_end) - ((uint64_t) &enclave_start);
+  int num_pages_enclave = size / PAGE_SIZE;
+
+  if((size % PAGE_SIZE) != 0) num_pages_enclave++;
 
   for(int i = 0; i < num_pages_enclave; i++) {
 
@@ -165,14 +168,16 @@ void test_entry(void) {
 
   }
 
+  uintptr_t enclave_sp = virtual_addr;
+  
   uint64_t size_enclave_metadata = sm_enclave_metadata_pages(num_mailboxes);
 
   thread_id_t thread_id = enclave_id + (size_enclave_metadata * PAGE_SIZE);
   uint64_t timer_limit = 10000;
-
+  
   print_str("Thread Load\n");
 
-  result = sm_thread_load(enclave_id, thread_id, 0x0, 0x1000, timer_limit);
+  result = sm_thread_load(enclave_id, thread_id, 0x0, enclave_sp, timer_limit);
   if(result != MONITOR_OK) {
     print_str("sm_thread_load FAILED with error code ");
     print_int(result);
