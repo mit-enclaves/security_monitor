@@ -16,7 +16,6 @@ SECTIONS
   }
 
   .data ALIGN(64)  : {
-    KEEP(*(.data.stack))
     *(.data.*)
     *(.data)  /* initialized data */
   }
@@ -24,5 +23,10 @@ SECTIONS
   .bss ALIGN(64)  : {
     *(.bss)   /* uninitialized data */
     *(.bss.*)
+  }
+
+  .stack ALIGN(64) : {
+    *(.stack)
+    *(.stack.*)
   }
 }

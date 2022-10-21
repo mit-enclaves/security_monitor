@@ -1,6 +1,6 @@
 #include <parameters.h>
 
-.section ".data.stack"
+.section ".stack"
 .align PAGE_SHIFT
 .globl enclave_stack_base, enclave_stack_ptr
 enclave_stack_base:

@@ -23,7 +23,7 @@ $(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(addprefix -I , $(ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(ENCLAVE_LD) $< $(ENCLAVE_COMMON_SRC) -o $@
 
 $(ENCLAVE_BIN): $(ENCLAVE_ELF)
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.data --only-section=.bss $< $@
+	$(OBJCOPY) -O binary --remove-section=.stack $< $@
 
 .PHONY: enclave
 enclave : $(ENCLAVE_BIN)

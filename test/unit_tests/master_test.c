@@ -145,7 +145,12 @@ void test_entry(void) {
   uintptr_t os_addr = (uintptr_t) &enclave_start;
   uintptr_t virtual_addr = 0;
 
-  int num_pages_enclave = (((uint64_t) &enclave_end) - ((uint64_t) &enclave_start)) / PAGE_SIZE;
+  uint64_t size_enclave = ((uint64_t) &enclave_end) - ((uint64_t) &enclave_start);
+  int num_pages_enclave = size_enclave / PAGE_SIZE;
+
+  if(size_enclave % PAGE_SIZE != 0){
+    num_pages_enclave += 1;
+  }
 
   for(int i = 0; i < num_pages_enclave; i++) {
 
