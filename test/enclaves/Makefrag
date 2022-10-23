@@ -55,10 +55,12 @@ ENCLAVE_COMMON_SRC := \
 	$(ENCLAVE_SRC_DIR)/enclave_entry.S \
   $(ENCLAVE_SRC_DIR)/enclave_code.c \
   $(ENCLAVE_SRC_DIR)/enclave_stack.S \
+  $(ENCLAVE_SRC_DIR)/clib/memset.c \
+  $(ENCLAVE_SRC_DIR)/clib/memcpy.c \
 
 ENCLAVE_LD := $(ENCLAVE_SRC_DIR)/enclave.lds
 
-$(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR)
+$(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR) $(LIB_SRCS)
 	echo $(LIB_SRCS)
 	$(CC) $(CFLAGS) $(addprefix -I , $(ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(ENCLAVE_LD) $< $(ENCLAVE_COMMON_SRC) $(LIB_SRCS) -o $@
 

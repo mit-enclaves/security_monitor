@@ -1,6 +1,8 @@
 #ifndef LIBNACL_H
 #define LIBNACL_H
 
+#include "clib/clib.h"
+
 extern void crypto_core_hsalsa20(unsigned char *, const unsigned char *, const unsigned char *, const unsigned char *);
 extern void crypto_core_salsa20(unsigned char *, const unsigned char *, const unsigned char *, const unsigned char *);
 extern void crypto_core_salsa208(unsigned char *, const unsigned char *, const unsigned char *, const unsigned char *);
