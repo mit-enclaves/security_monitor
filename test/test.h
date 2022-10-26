@@ -4,7 +4,7 @@
 #include "sbi/console.h"
 #include <parameters.h>
 
-void test_entry (void)  __attribute__((noreturn));
+void test_entry(int core_id, uintptr_t fdt_addr) __attribute__((noreturn));
 
 static inline void test_completed (void) __attribute__((noreturn));
 static inline void test_completed (void) {
