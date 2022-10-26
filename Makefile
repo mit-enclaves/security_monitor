@@ -20,7 +20,7 @@ ifndef SANCTUM_QEMU
 	$(error SANCTUM_QEMU is undefined)
 endif
 
-QEMU_FLAGS= -machine sanctum -m 2G -nographic
+QEMU_FLAGS= -smp cpus=2 -machine sanctum -m 2G -nographic
 DEBUG_QEMU_FLAGS= -S -s
 
 # Define Directories

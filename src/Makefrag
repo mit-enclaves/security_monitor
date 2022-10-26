@@ -85,8 +85,8 @@ SM_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/stacks.S \
 	$(PLATFORM_DIR)/platform_init.c \
-	$(PLATFORM_DIR)/platform_interrupt_other_cores.S \
-	$(PLATFORM_DIR)/platform_wait_for_interrupt.S \
+	$(PLATFORM_DIR)/platform_interrupt_other_cores.c \
+	$(PLATFORM_DIR)/platform_wait_for_interrupt.c \
 	$(PLATFORM_DIR)/platform_core_init.c \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
 	$(PLATFORM_DIR)/platform_memory_protection.c \

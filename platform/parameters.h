@@ -1,6 +1,7 @@
 #ifndef SM_PARAMETERS_H
 #define SM_PARAMETERS_H
 
+
 // SM Parameters:
 // --------------
 
@@ -40,7 +41,8 @@
 
 #define REGION_SHIFT  (25)
 
-#define NUM_CORES     (1)
+#define MAX_HARTS 2
+#define NUM_CORES     (2)
 
 // SATP configuration
 #define SATP_MODE_SV39 (8ul)
@@ -51,6 +53,7 @@
 #define MSTATUS_MPP_MASK   (0x00001800)
 #define MSTATUS_MPP_OFFSET (11)
 #define MSTATUS_MPIE_MASK  (0x00000080)
+#define MSTATUS_MIE_MASK   (0x00000008)
 #define MSTATUS_SIE_MASK   (0x00000002)
 #define MSTATUS_UIE_MASK   (0x00000001)
 

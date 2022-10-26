@@ -19,11 +19,11 @@ static void plic_init()
     plic_priorities[i] = 1;
 }
 
-static void hart_plic_init()
+static void hart_plic_init(int hart)
 {
   // clear pending interrupts
-  *HLS()->ipi = 0;
-  //*HLS()->timecmp = -1ULL;
+  *OTHER_HLS(hart)->ipi = 0;
+  //*OTHER_HLS(hart)->timecmp = -1ULL;
   write_csr(mip, 0);
 
   if (!plic_ndevs)
@@ -32,15 +32,15 @@ static void hart_plic_init()
   size_t ie_words = (plic_ndevs + 8 * sizeof(uintptr_t) - 1) /
     (8 * sizeof(uintptr_t));
   for (size_t i = 0; i < ie_words; i++) {
-    if (HLS()->plic_s_ie) {
+    if (OTHER_HLS(hart)->plic_s_ie) {
       // Supervisor not always present
-      HLS()->plic_s_ie[i] = ULONG_MAX;
+      OTHER_HLS(hart)->plic_s_ie[i] = ULONG_MAX;
     }
   }
-  *HLS()->plic_m_thresh = 1;
-  if (HLS()->plic_s_thresh) {
+  *OTHER_HLS(hart)->plic_m_thresh = 1;
+  if (OTHER_HLS(hart)->plic_s_thresh) {
     // Supervisor not always present
-    *HLS()->plic_s_thresh = 0;
+    *OTHER_HLS(hart)->plic_s_thresh = 0;
   }
 }
 
@@ -82,7 +82,6 @@ static void delegate_traps()
 
 void kernel_init(uintptr_t ftd_addr) {
   delegate_traps();
-  hls_init(0);
 
   FDT_ADDR = ftd_addr;
 
@@ -99,7 +98,9 @@ void kernel_init(uintptr_t ftd_addr) {
   printm("query over\n");
 
   plic_init();
-  hart_plic_init();
+  for(int hart = 0; hart < MAX_HARTS; ++hart) {
+    hart_plic_init(hart);
+  }
   prci_test();
   memory_init();
 

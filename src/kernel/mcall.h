@@ -12,9 +12,11 @@
 
 // hart-local storage, at top of stack
 #define HLS() ((hls_t*)(MACHINE_STACK_TOP() - HLS_SIZE))
-#define OTHER_HLS(id) ((hls_t*)((void*)HLS() + PAGE_SIZE * ((id) - read_csr(mhartid))))
+#define OTHER_HLS(id) ((hls_t*)((void*)HLS() - (STACK_SIZE * ((id) - read_csr(mhartid)))))
 
 hls_t* hls_init(uintptr_t hart_id);
+void send_ipi(uintptr_t recipient, int event);
+void send_ipi_many(uintptr_t* pmask, int event);
 
 #define SBI_SET_TIMER 0
 #define SBI_CONSOLE_PUTCHAR 1

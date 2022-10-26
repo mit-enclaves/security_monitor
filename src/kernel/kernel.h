@@ -23,8 +23,6 @@ extern void* kernel_end;
 
 typedef uintptr_t insn_t;
 
-#define MAX_HARTS 1
-
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))
 

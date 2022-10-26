@@ -463,7 +463,7 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
     }
     value += 2;
   }
-#if 0
+#if 1
   printm("PLIC: prio %x devs %d\r\n", (uint32_t)(uintptr_t)plic_priorities, plic_ndevs);
   for (int i = 0; i < MAX_HARTS; ++i) {
     hls_t *hls = OTHER_HLS(i);

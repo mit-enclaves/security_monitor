@@ -48,10 +48,6 @@
 
 // TODO: region_type_t fits into uint8_t
 
-#if (NUM_CORES != 1)
-  #error One core is currently supported! While the SM appropriately includes locks, the initialization code does not currently tolerate multiple cores executing the init code.
-#endif
-
 #if (NUM_REGIONS > 64)
   #error The platform uses an XLEN (uint64_t) register to set a region permission bitmap; The platform code therefore can only work with <= 64 regions.
 #endif
