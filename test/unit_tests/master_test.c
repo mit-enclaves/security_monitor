@@ -93,7 +93,7 @@ void test_entry(void) {
   }
 
   uintptr_t enclave_handler_address = (uintptr_t) &region2;
-  uintptr_t enclave_handler_stack_pointer = enclave_handler_address + HANDLER_LEN + STACK_SIZE;
+  uintptr_t enclave_handler_stack_pointer = enclave_handler_address + HANDLER_LEN + (STACK_SIZE * NUM_CORES);
 
   print_str("Enclave Load Handler\n");
 

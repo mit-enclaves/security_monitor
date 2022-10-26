@@ -9,8 +9,6 @@ static uintptr_t mcall_console_putchar(uint8_t ch);
 static uintptr_t mcall_console_getchar();
 static uintptr_t mcall_set_timer(uint64_t when);
 static uintptr_t mcall_clear_ipi();
-static void send_ipi(uintptr_t recipient, int event);
-static void send_ipi_many(uintptr_t* pmask, int event);
 
 void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
   uintptr_t code = regs[17];
@@ -95,7 +93,7 @@ static uintptr_t mcall_set_timer(uint64_t when)
   return 0;
 }
 
-static void send_ipi(uintptr_t recipient, int event)
+void send_ipi(uintptr_t recipient, int event)
 {
   //if (((disabled_hart_mask >> recipient) & 1)) return;
   atomic_or(&OTHER_HLS(recipient)->mipi_pending, event);
@@ -103,7 +101,7 @@ static void send_ipi(uintptr_t recipient, int event)
   *OTHER_HLS(recipient)->ipi = 1;
 }
 
-static void send_ipi_many(uintptr_t* pmask, int event)
+void send_ipi_many(uintptr_t* pmask, int event)
 {
   uintptr_t mask = hart_mask;
   if (pmask)
