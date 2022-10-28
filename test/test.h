@@ -9,7 +9,8 @@ void test_entry(int core_id, uintptr_t fdt_addr) __attribute__((noreturn));
 static inline void test_completed (void) __attribute__((noreturn));
 static inline void test_completed (void) {
   print_str("END TEST\n");
-  send_exit_cmd(0);  
+  while(1);
+  //send_exit_cmd(0);  
 }
 
 #define PAGE_SIZE (1<<PAGE_SHIFT)

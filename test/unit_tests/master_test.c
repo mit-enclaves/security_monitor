@@ -2,6 +2,8 @@
 #include <csr/csr.h>
 #include <api_untrusted.h>
 
+#define SHARED_MEM_REG (0x8a000000)
+
 //extern uintptr_t region1;
 extern uintptr_t region2;
 extern uintptr_t region3;
@@ -206,6 +208,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
   else {
-    while(1);
+    int *magic = (int *) SHARED_MEM_REG;
+    *magic = 1234;
+    while(*magic!= 4321);
+    *magic = 5678;
   }
 }

@@ -22,8 +22,8 @@ enclave_trap_table:
   .word (.bad_event-.t_tab_root)          //  6: misaligned store/AMO addr
   .word (.bad_event-.t_tab_root)          //  7: store/AMO access fault
   .word (.ecall_from_e_trap-.t_tab_root)  //  8: ECALL from U-mode
+  .word (.ecall_from_e_trap-.t_tab_root)  //  9: ECALL from S-mode
   .word (.bad_event-.t_tab_root)          // 10: (reserved)
-  .word (.bad_event-.t_tab_root)          //  9: ECALL from S-mode
   .word (.bad_event-.t_tab_root)          // 11: ECALL from M-mode
   .word (.bad_event-.t_tab_root)          // 12: instruction page fault
   .word (.bad_event-.t_tab_root)          // 13: load page fault
