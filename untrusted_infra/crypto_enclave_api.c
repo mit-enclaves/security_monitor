@@ -1,9 +1,21 @@
-#ifndef CRYPTO_ENCLAVE_API_H
-#define CRYPTO_ENCLAVE_API_H
+#include <crypto_enclave_api.h>
+#include <os_util.h>
+#include <msgq.h>
 
-#include "crypto_enclave/crypto_enclave_util.h"
+int crypto_onetimeauth(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *ki) {
+  queue_t *q = SHARED_QUEUE;  
+  msg_t *m = malloc(sizeof(msg_t));
+  m->f = F_ONETIMEAUTH;
+  m->args[0] = out;
+  m->args[1] = in;
+  m->args[2] = inlen;
+  m->args[3] = ki;
+  int ret = 1;
+  while(ret != 0) {
+    ret = push(q, msgs[i]);
+  }
+}
 
-int crypto_onetimeauth(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *ki);
 int crypto_onetimeauth_verify(const unsigned char *h,const unsigned char *in,unsigned long long inlen,const unsigned char *k);
 
 int crypto_scalarmult(unsigned char *, const unsigned char *, const unsigned char *);
@@ -29,5 +41,3 @@ int crypto_secretbox_open(unsigned char *m, const unsigned char *c,unsigned long
 
 int crypto_box(unsigned char *c, const unsigned char *m, unsigned long long mlen, const unsigned char *n, const unsigned char *pk, const unsigned char *sk);
 int crypto_box_open(unsigned char *m, const unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *pk, const unsigned char *sk);
-
-#endif // CRYPTO_ENCLAVE_API_H

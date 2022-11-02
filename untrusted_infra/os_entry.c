@@ -4,7 +4,6 @@
 #include <crypto_enclave_api.h>
 #include <msgq.h>
 
-#define SHARED_MEM_REG (0x8a000000)
 #define NUM_MSG (63)
 
 //extern uintptr_t region1;
@@ -211,21 +210,10 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
   else {
-    queue_t * q = (queue_t *) SHARED_MEM_REG;
-    uintptr_t base_msg = SHARED_MEM_REG + sizeof(queue_t);
-    msg_t *msgs[NUM_MSG];
+    init_heap();
 
-    for(int i = 0; i < NUM_MSG; i++) {
-      msgs[i] = (msg_t *) (base_msg + (i * sizeof(msg_t)));
-      msgs[i]->f = F_ADDITION;
-      msgs[i]->args[0] = 45;
-      msgs[i]->args[1] = 45 - i;
-      int ret = 1;
-      while(ret != 0) {
-        ret = push(q, msgs[i]);
-      }
-    }
-    msg_t *m = (msg_t *) (base_msg + ((NUM_MSG + 1) * sizeof(msg_t)));
+    queue_t *q = SHARED_QUEUE;  
+    msg_t *m = (msg_t *) malloc(sizeof(msg_t));
     m->f = F_EXIT;
     int ret = 1;
     while(ret != 0) {

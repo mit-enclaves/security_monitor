@@ -1,6 +1,7 @@
 #ifndef OS_H
 #define OS_H
 
+#include <stdio.h>
 #include "sbi/console.h"
 #include <parameters.h>
 
@@ -25,5 +26,11 @@ static inline uint64_t addr_to_region_id (uintptr_t addr) {
 static inline void * region_id_to_addr (uint64_t region_id) {
   return (void *)(RAM_BASE + (region_id << REGION_SHIFT));
 }
+
+#define SHARED_MEM_REG (0x8a000000)
+#define SHARED_QUEUE ((queue_t *) SHARED_MEM_REG)
+
+void init_heap();
+void *malloc(size_t size);
 
 #endif // OS_H

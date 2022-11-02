@@ -66,12 +66,13 @@ INFRA_INCLUDES := \
 
 # Sources
 PAYLOAD_SRC := \
-	$(INFRA_DIR)/os_entry.c \
-	$(INFRA_DIR)/enclave_bin.S \
-  $(QUEUE_SRC_DIR)/msgq.c \
-	$(INFRA_DIR)/os_entry.S \
 	$(INFRA_DIR)/sm_keys.c \
 	$(INFRA_DIR)/sm_binary.S \
+	$(INFRA_DIR)/enclave_bin.S \
+	$(INFRA_DIR)/os_entry.S \
+	$(INFRA_DIR)/os_entry.c \
+	$(INFRA_DIR)/os_util.c \
+  $(QUEUE_SRC_DIR)/msgq.c \
 	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(INFRA_DIR)/sbi/console.c \
