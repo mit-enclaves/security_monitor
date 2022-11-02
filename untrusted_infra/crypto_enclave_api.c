@@ -6,14 +6,15 @@ int crypto_onetimeauth(unsigned char *out, const unsigned char *in, unsigned lon
   queue_t *q = SHARED_QUEUE;  
   msg_t *m = malloc(sizeof(msg_t));
   m->f = F_ONETIMEAUTH;
-  m->args[0] = out;
-  m->args[1] = in;
-  m->args[2] = inlen;
-  m->args[3] = ki;
+  m->args[0] = (uintptr_t) out;
+  m->args[1] = (uintptr_t) in;
+  m->args[2] = (uintptr_t) inlen;
+  m->args[3] = (uintptr_t) ki;
   int ret = 1;
   while(ret != 0) {
-    ret = push(q, msgs[i]);
+    ret = push(q, m);
   }
+  return 0;
 }
 
 int crypto_onetimeauth_verify(const unsigned char *h,const unsigned char *in,unsigned long long inlen,const unsigned char *k);

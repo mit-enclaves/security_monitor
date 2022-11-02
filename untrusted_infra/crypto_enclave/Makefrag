@@ -44,7 +44,7 @@ $(BUILD_NACL)/%.o: %.S
 
 # Enclave
 
-CRYPTO_ENCLAVE_ELF := $(BUILD_DIR)/crytpo_enclave.elf
+CRYPTO_ENCLAVE_ELF := $(BUILD_DIR)/crypto_enclave.elf
 CRYPTO_ENCLAVE_BIN := $(BUILD_DIR)/crypto_enclave.bin
 
 CRYPTO_ENCLAVE_INCLUDES := \

@@ -1,6 +1,7 @@
 #ifndef CRYPTO_ENCLAVE_API_H
 #define CRYPTO_ENCLAVE_API_H
 
+#include <stdint.h>
 #include "crypto_enclave/crypto_enclave_util.h"
 
 int crypto_onetimeauth(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *ki);

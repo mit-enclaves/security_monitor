@@ -23,6 +23,7 @@ void enclave_entry() {
             (const unsigned char *) m->args[1],
             (unsigned long long) m->args[2],
             (const unsigned char *) m->args[3]);
+        break;
       case F_EXIT:
         sm_exit_enclave();
       default:
