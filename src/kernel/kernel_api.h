@@ -5,7 +5,7 @@
 #define KERNEL_ECALL_CODE_MAX (0x9)
 
 #include <stdint.h>
-
+#include <platform_types.h>
 #include "console.h"
 
 void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc);
@@ -13,5 +13,9 @@ void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
 void illegal_instruction_trap_handler(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc);
 
 void kernel_init(uintptr_t ftd_addr);
+
+hls_t* hls_init(uintptr_t hart_id);
+void send_ipi(uintptr_t recipient, int event);
+void send_ipi_many(uintptr_t* pmask, int event);
 
 #endif // KERNEL_API_H

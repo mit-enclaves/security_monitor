@@ -1,7 +1,7 @@
 #include <api_enclave.h>
 #include <libnacl.h>
 #include <msgq.h>
-#include <enclave_api.h>
+#include <crypto_enclave_api.h>
 
 #define SHARED_MEM_REG (0x8a000000)
 
@@ -11,7 +11,7 @@ void enclave_entry() {
   int ret;
 
   while(true) {
-    ret = pop(q, &m);
+    ret = pop(q, (void **) &m);
     if(ret != 0) continue;
     switch((m)->f) {
       case F_ADDITION:

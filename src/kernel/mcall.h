@@ -3,14 +3,6 @@
 #ifndef _RISCV_SBI_H
 #define _RISCV_SBI_H
 
-#include <csr/csr.h>
-#include <platform.h>
-
-
-hls_t* hls_init(uintptr_t hart_id);
-void send_ipi(uintptr_t recipient, int event);
-void send_ipi_many(uintptr_t* pmask, int event);
-
 #define SBI_SET_TIMER 0
 #define SBI_CONSOLE_PUTCHAR 1
 #define SBI_CONSOLE_GETCHAR 2

@@ -1,6 +1,6 @@
 # Assumes: $(SM_DIR)
 # Assumes: $(BUILD_DIR)
-# Assumes: $(ENCLAVE_SRC_DIR)
+# Assumes: $(CRYPTO_ENCLAVE_SRC_DIR)
 # Assumes: $(QUEUE_SRC_DIR)
 # Assumes: $(CC)
 # Assumes: $(CC-AR)
@@ -16,7 +16,7 @@ $(BUILD_NACL):
 
 LIB_MODULES=crypto_core/hsalsa20/opt crypto_core/salsa20/opt crypto_core/salsa208/opt crypto_core/salsa2012/opt crypto_box/curve25519xsalsa20poly1305 crypto_onetimeauth/poly1305/Radix2.26 crypto_onetimeauth/poly1305/Verify crypto_scalarmult/curve25519/Radix2.26 crypto_secretbox/xsalsa20poly1305 crypto_stream/salsa20 crypto_stream/salsa208 crypto_stream/salsa2012 crypto_stream/xsalsa20 crypto_verify/16 crypto_verify/32
 
-LIB_MODULES_FULL_PATH=$(addprefix $(ENCLAVE_SRC_DIR)/, $(LIB_MODULES))
+LIB_MODULES_FULL_PATH=$(addprefix $(CRYPTO_ENCLAVE_SRC_DIR)/, $(LIB_MODULES))
 
 LIB_SRCS_S=$(foreach subdir, $(LIB_MODULES_FULL_PATH), $(wildcard $(subdir)/*.S))
 LIB_SRCS_C=$(foreach subdir, $(LIB_MODULES_FULL_PATH), $(wildcard $(subdir)/*.c)) 
@@ -44,32 +44,31 @@ $(BUILD_NACL)/%.o: %.S
 
 # Enclave
 
-ENCLAVE_ELF := $(BUILD_DIR)/enclave.elf
-ENCLAVE_BIN := $(BUILD_DIR)/enclave.bin
+CRYPTO_ENCLAVE_ELF := $(BUILD_DIR)/crytpo_enclave.elf
+CRYPTO_ENCLAVE_BIN := $(BUILD_DIR)/crypto_enclave.bin
 
-ENCLAVE_INCLUDES := \
+CRYPTO_ENCLAVE_INCLUDES := \
 	$(PLATFORM_DIR) \
 	$(API_DIR) \
-	$(SM_TEST_DIR) \
-	$(ENCLAVE_SRC_DIR) \
+	$(INFRA_DIR) \
+	$(CRYPTO_ENCLAVE_SRC_DIR) \
 	$(QUEUE_SRC_DIR) \
 
-ENCLAVE_COMMON_SRC := \
-	$(ENCLAVE_SRC_DIR)/enclave_entry.S \
-  $(ENCLAVE_SRC_DIR)/enclave_code.c \
-  $(ENCLAVE_SRC_DIR)/enclave_stack.S \
-  $(ENCLAVE_SRC_DIR)/clib/memset.c \
-  $(ENCLAVE_SRC_DIR)/clib/memcpy.c \
+CRYPTO_ENCLAVE_SRC := \
+	$(CRYPTO_ENCLAVE_SRC_DIR)/enclave_entry.S \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_code.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_stack.S \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/clib/memset.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/clib/memcpy.c \
   $(QUEUE_SRC_DIR)/msgq.c \
 
-ENCLAVE_LD := $(ENCLAVE_SRC_DIR)/enclave.lds
+CRYPTO_ENCLAVE_LD := $(CRYPTO_ENCLAVE_SRC_DIR)/enclave.lds
 
-$(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR) $(LIB_SRCS)
-	echo $(LIB_SRCS)
-	$(CC) $(CFLAGS) $(addprefix -I , $(ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(ENCLAVE_LD) $< $(ENCLAVE_COMMON_SRC) $(LIB_SRCS) -o $@
+$(CRYPTO_ENCLAVE_ELF): $(CRYPTO_ENCLAVE_SRC) $(CRYPTO_ENCLAVE_LD) $(BUILD_DIR) $(LIB_SRCS)
+	$(CC) $(CFLAGS) $(addprefix -I , $(CRYPTO_ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(CRYPTO_ENCLAVE_LD) $< $(CRYPTO_ENCLAVE_SRC) $(LIB_SRCS) -o $@
 
-$(ENCLAVE_BIN): $(ENCLAVE_ELF)
+$(CRYPTO_ENCLAVE_BIN): $(CRYPTO_ENCLAVE_ELF)
 	$(OBJCOPY) -O binary $< $@
 
-.PHONY: enclave
-enclave : $(ENCLAVE_BIN)
+.PHONY: crypto_enclave
+crypto_enclave : $(CRYPTO_ENCLAVE_BIN)
