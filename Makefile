@@ -30,6 +30,7 @@ API_DIR := $(SM_DIR)/api
 SM_SRC_DIR := $(SM_DIR)/src
 SM_TEST_DIR := $(SM_DIR)/test
 ENCLAVE_SRC_DIR := $(SM_DIR)/test/enclaves
+QUEUE_SRC_DIR := $(SM_DIR)/test/msgq
 
 # Targets
 $(BUILD_DIR):

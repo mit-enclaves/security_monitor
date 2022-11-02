@@ -42,3 +42,16 @@ enclave_id_t region_owner (region_id_t region_id) {
 
   return region_owner;
 }
+
+enclave_id_t region_owner_lock_free (region_id_t region_id) {
+  if ( !is_valid_region_id(region_id) ) {
+    return MONITOR_INVALID_VALUE;
+  }
+
+  sm_state_t * sm = get_sm_state_ptr();
+  sm_region_t * region_metadata = &sm->regions[region_id];
+
+  enclave_id_t region_owner = region_metadata->owner;
+
+  return region_owner;
+}

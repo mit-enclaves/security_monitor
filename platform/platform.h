@@ -6,7 +6,7 @@
 #include <parameters.h>
 #include <csr/csr.h>
 #include <sm_types.h>
-
+#include <platform_lock.h>
 
 // Atomic operations
 
@@ -18,19 +18,6 @@
 # define atomic_or(ptr, inc) __sync_fetch_and_or(ptr, inc)
 # define atomic_swap(ptr, swp) __sync_lock_test_and_set(ptr, swp)
 # define atomic_cas(ptr, cmp, swp) __sync_val_compare_and_swap(ptr, cmp, swp)
-
-// Lock
-// ----
-#define platform_lock_acquire(lock) ({ unsigned long __tmp; \
-      asm volatile ("amoswap.w.aq %[result], %[value], (%[address]) \n": [result] "=r"(__tmp) : [value] "r"(1), [address] "r"(&((lock)->lock_flag))); \
-      ~__tmp; })
-
-#define platform_lock_release(lock) ({ \
-      asm volatile ("amoswap.w.rl x0, x0, (%[address]) \n" :: [address] "r"(&((lock)->lock_flag))); })
-
-static inline bool platform_lock_state(platform_lock_t *lock) {
-  return ((lock->lock_flag) != 0);
-}
 
 // mtime device
 extern volatile uint64_t* mtime;

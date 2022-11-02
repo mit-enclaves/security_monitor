@@ -95,7 +95,7 @@ api_result_t sm_internal_enclave_load_page_table (enclave_id_t enclave_id,
   // ----------------------
 
   // Load page table entry in page table and check arguments
-  result = load_page_table_entry(enclave_id, phys_addr, virtual_addr, level, acl);
+  result = load_page_table_entry(enclave_id, phys_addr, virtual_addr, level, acl, &locked_regions);
   if ( MONITOR_OK != result ) {
     unlock_regions(&locked_regions);
     return result;

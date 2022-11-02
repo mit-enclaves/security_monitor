@@ -23,6 +23,14 @@ extern void* kernel_end;
 
 typedef uintptr_t insn_t;
 
+#define MACHINE_STACK_TOP() ({ \
+  register uintptr_t sp asm ("sp"); \
+  (void*)((sp + PAGE_SIZE) & -PAGE_SIZE); })
+
+// hart-local storage, at top of stack
+#define HLS() ((hls_t*)(MACHINE_STACK_TOP() - HLS_SIZE))
+#define OTHER_HLS(id) ((hls_t*)((void*)HLS() - (STACK_SIZE * ((id) - read_csr(mhartid)))))
+
 #define EXTRACT_FIELD(val, which) (((val) & (which)) / ((which) & ~((which)-1)))
 #define INSERT_FIELD(val, which, fieldval) (((val) & ~(which)) | ((fieldval) * ((which) & ~((which)-1))))
 

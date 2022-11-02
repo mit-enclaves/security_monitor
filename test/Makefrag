@@ -2,6 +2,7 @@
 # Assumes: $(BUILD_DIR)
 # Assumes: $(SM_TEST_DIR)
 # Assumes: $(ENCLAVE_SRC_DIR)
+# Assumes: $(QUEUE_SRC_DIR)
 # Assumes: $(CC)
 # Assumes: $(OBJCOPY)
 
@@ -67,6 +68,7 @@ SM_TEST_INCLUDES := \
 	$(API_DIR) \
 	$(SM_TEST_DIR) \
 	$(SM_SRC_DIR) \
+	$(QUEUE_SRC_DIR) \
 
 # Test Directory
 UNIT_TESTS_DIR := $(SM_TEST_DIR)/unit_tests
@@ -98,6 +100,7 @@ MASTER_TEST_ELF:=$(BUILD_DIR)/master_test.elf
 MASTER_TEST_SRC := \
 	$(UNIT_TESTS_DIR)/master_test.c \
 	$(UNIT_TESTS_DIR)/enclave_bin.S \
+  $(QUEUE_SRC_DIR)/msgq.c \
 	$(ALL_TESTS_SRC) \
 
 # Rules

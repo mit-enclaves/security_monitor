@@ -1,6 +1,6 @@
 #include <sm.h>
 
-api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl) {
+api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr, uintptr_t virtual_addr, uint64_t level, uintptr_t acl, region_map_t *locked_regions) {
 
   // Validate inputs
   // ---------------
@@ -19,7 +19,8 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr
   }
   else {
     uintptr_t pte_base = (enclave_metadata->platform_csr.eptbr & SATP_PPN_MASK) << PAGE_SHIFT;
-    if(region_owner(addr_to_region_id(pte_base)) != enclave_id){
+    int pte_region_id = addr_to_region_id(pte_base);
+    if(!(locked_regions->flags[pte_region_id]) || (region_owner_lock_free(pte_region_id) != enclave_id)){
        return MONITOR_INVALID_STATE;
     }
 
@@ -36,8 +37,8 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id, uintptr_t phys_addr
           }
 
           pte_base = (((*pte_addr) & PPNs_MASK) >> PAGE_ENTRY_ACL_OFFSET)  << PAGE_SHIFT;
-
-          if(region_owner(addr_to_region_id(pte_base)) != enclave_id){
+          pte_region_id = addr_to_region_id(pte_base);
+          if(!(locked_regions->flags[pte_region_id]) || (region_owner_lock_free(pte_region_id) != enclave_id)) {
              return MONITOR_INVALID_STATE;
           }
        }

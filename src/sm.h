@@ -36,6 +36,7 @@ static inline sm_state_t * get_sm_state_ptr (void) {
 
 // Region helpers
 enclave_id_t region_owner (region_id_t region_id);
+enclave_id_t region_owner_lock_free (region_id_t region_id);
 
 static inline region_id_t addr_to_region_id (uintptr_t addr) {
   return ((addr-RAM_BASE) & REGION_MASK) >> REGION_SHIFT; // will return an illegally large number in case of an address outside RAM. CAUTION!
@@ -144,6 +145,7 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id,
   uintptr_t phys_addr,
   uintptr_t virtual_addr,
   uint64_t level,
-  uintptr_t acl);
+  uintptr_t acl,
+  region_map_t *locked_regions);
 
 #endif // SECURITY_MONITOR_H
