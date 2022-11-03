@@ -5,11 +5,11 @@
 squeeze226asm:
     mv    a5, a0          # store address
     mv    a6, ra          #
-    lw    a0, 0(a5)       #
-    lw    a1, 4(a5)       # in[1]
-    lw    a2, 8(a5)       # in[2]
-    lw    a3, 12(a5)      # in[3]
-    lw    a4, 16(a5)      # in[4]
+    lwu    a0, 0(a5)       #
+    lwu    a1, 4(a5)       # in[1]
+    lwu    a2, 8(a5)       # in[2]
+    lwu    a3, 12(a5)      # in[3]
+    lwu    a4, 16(a5)      # in[4]
 
     call  squeeze226param
     

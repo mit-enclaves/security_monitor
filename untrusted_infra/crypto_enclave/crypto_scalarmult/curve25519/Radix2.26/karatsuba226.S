@@ -20,38 +20,38 @@ karatsuba226_255:
     addi  a0, sp, 40    # result x
     call karatsuba226_255_5asm # A0..A4 *B0..B4 = x
 
-    lw    t0, 0(s1)     # A0
-    lw    t5, 20(s1)    # A5
-    lw    t1, 4(s1)     # A2
+    lwu    t0, 0(s1)     # A0
+    lwu    t5, 20(s1)    # A5
+    lwu    t1, 4(s1)     # A2
     li    a6, 0x4000000 # 2^26
     sub   t0, t0, t5    # A0-A5
     srai  a0, t0, 31    # sign of t0
     and   a1, a6, a0    # mask 2^26 with the sign
-    lw    t6, 24(s1)    # A6
+    lwu    t6, 24(s1)    # A6
     add   t0, t0, a1    # apply borrow
     andi  a0, a0, 1     # borrow from A1
     sub   t1, t1, a0    #
     sub   t1, t1, t6    # A1-A6
-    lw    t2, 8(s1)     # A2
+    lwu    t2, 8(s1)     # A2
     srai  a0, t1, 31    # sign of A1
     and   a1, a6, a0    # mask 2^26 with the sign
-    lw    t5, 28(s1)    # A7
+    lwu    t5, 28(s1)    # A7
     add   t1, t1, a1    # apply borrow
     andi  a0, a0, 1     # borrow from A2
     sub   t2, t2, a0    #
     sub   t2, t2, t5    #
-    lw    t3, 12(s1)    # A3
+    lwu    t3, 12(s1)    # A3
     srai  a0, t2, 31    # sign of A2
     and   a1, a6, a0    # mask 2^26 with sign
-    lw    t6, 32(s1)    # A8
+    lwu    t6, 32(s1)    # A8
     add   t2, a1, t2    # apply borrow
     andi  a0, a0, 1     # borrow from A3
     sub   t3, t3, a0    #
     sub   t3, t3, t6    # A3-A8
-    lw    t4, 16(s1)    # A4
+    lwu    t4, 16(s1)    # A4
     srai  a0, t3, 31    # sign of A3
     and   a1, a6, a0    # mask 2^26 with sign
-    lw    t5, 36(s1)    # A9
+    lwu    t5, 36(s1)    # A9
     add   t3, a1, t3    # apply borrow
     andi  a0, a0, 1     # borrow from A4
     sub   t4, t4, a0    #
@@ -72,37 +72,37 @@ karatsuba226_255:
     sw    t3, 92(sp)    #
     sw    t4, 96(sp)    #
 
-    lw    t0, 0(s2)     # B0
-    lw    t5, 20(s2)    # B5
-    lw    t1, 4(s2)     # B2
+    lwu    t0, 0(s2)     # B0
+    lwu    t5, 20(s2)    # B5
+    lwu    t1, 4(s2)     # B2
     sub   t0, t0, t5    # B0-B5
     srai  a0, t0, 31    # sign of t0
     and   a1, a6, a0    # mask 2^26 with the sign
-    lw    t6, 24(s2)    # B6
+    lwu    t6, 24(s2)    # B6
     add   t0, t0, a1    # apply borrow
     andi  a0, a0, 1     # borrow from B1
     sub   t1, t1, a0    #
     sub   t1, t1, t6    # B1-B6
-    lw    t2, 8(s2)     # B2
+    lwu    t2, 8(s2)     # B2
     srai  a0, t1, 31    # sign of B1
     and   a1, a6, a0    # mask 2^26 with the sign
-    lw    t5, 28(s2)    # B7
+    lwu    t5, 28(s2)    # B7
     add   t1, t1, a1    # apply borrow
     andi  a0, a0, 1     # borrow from B2
     sub   t2, t2, a0    #
     sub   t2, t2, t5    # B2-B7
-    lw    t3, 12(s2)    # B3
+    lwu    t3, 12(s2)    # B3
     srai  a0, t2, 31    # sign of B2
     and   a1, a6, a0    # mask 2^26 with sign
-    lw    t6, 32(s2)    # B8
+    lwu    t6, 32(s2)    # B8
     add   t2, t2, a1    # apply borrow
     andi  a0, a0, 1     # borrow from B3
     sub   t3, t3, a0    #
     sub   t3, t3, t6    # B3-B8
-    lw    t4, 16(s2)    # B4
+    lwu    t4, 16(s2)    # B4
     srai  a0, t3, 31    # sign of B3
     and   a1, a6, a0    # mask 2^26 with sign
-    lw    t5, 36(s2)    # B9
+    lwu    t5, 36(s2)    # B9
     add   t3, a1, t3    # apply borrow
     andi  a0, a0, 1     # borrow from B4
     sub   t4, t4, a0    #
@@ -133,26 +133,26 @@ karatsuba226_255:
     addi  a2, s2, 20    # address B5..B9
     call   karatsuba226_255_5asm # (A5..A9)*(B5..B9) = y
 
-    lw    t4, 60(sp)    # x_5
-    lw    t5, 64(sp)    # x_6
-    lw    t6, 68(sp)    # x_7
-    lw    a0, 72(sp)    # x_8
-    lw    a1, 76(sp)    # x_9
+    lwu    t4, 60(sp)    # x_5
+    lwu    t5, 64(sp)    # x_6
+    lwu    t6, 68(sp)    # x_7
+    lwu    a0, 72(sp)    # x_8
+    lwu    a1, 76(sp)    # x_9
 
-    lw    a2, 80(sp)    # y_0
-    lw    a3, 84(sp)    # y_1
-    lw    a4, 88(sp)    # y_2
-    lw    a5, 92(sp)    # y_3
-    lw    a6, 96(sp)    # y_4
+    lwu    a2, 80(sp)    # y_0
+    lwu    a3, 84(sp)    # y_1
+    lwu    a4, 88(sp)    # y_2
+    lwu    a5, 92(sp)    # y_3
+    lwu    a6, 96(sp)    # y_4
 
     add   a2, a2, t4    # res[5] = x_5+y_0
-    lw    t0, 100(sp)   # y_5
+    lwu    t0, 100(sp)   # y_5
     add   a3, a3, t5    # res[6] = x_6+y_1
     add   a4, a4, t6    # res[7] = x_7+y_2
     add   a5, a5, a0    # res[8] = x_8+y_3
     add   a6, a6, a1    # res[9] = x_9+y_4
 
-    lw    t3, 104(sp)   # y_6
+    lwu    t3, 104(sp)   # y_6
     add   t4, a2, t0    # res[0] = x_5+y_0+y_5
     slli  t1, t0, 1     # y_5*2
     slli  t2, t0, 4     # y_5*16
@@ -163,7 +163,7 @@ karatsuba226_255:
     and   t0, t0, s4    # y_5*608_l
     add   a2, a2, t0    # res[5] += 608*y_5
 
-    lw    t0, 108(sp)   # y_7
+    lwu    t0, 108(sp)   # y_7
     add   t5, a3, t3    # res[1] = x_5+y_1+y_6
     slli  t1, t3, 1     # y_6*2
     slli  t2, t3, 4     # y_6*16
@@ -175,7 +175,7 @@ karatsuba226_255:
     add   t3, t3, s1    # carry from y_5*608
     add   a3, a3, t3    # res[6] += 608*y_6
 
-    lw    t3, 112(sp)   # y_8
+    lwu    t3, 112(sp)   # y_8
     add   t6, a4, t0    # res[2] = x_6+y_2+y_7
     slli  t1, t0, 1     # y_7*2
     slli  t2, t0, 4     # y_7*16
@@ -187,7 +187,7 @@ karatsuba226_255:
     add   t1, t1, s2    # carry from y_6*608
     add   a4, a4, t1    # res[7] += 608*y_7
     
-    lw    t0, 116(sp)   # y_9
+    lwu    t0, 116(sp)   # y_9
     add   a0, a5, t3    # res[3] = x_7+y_3+y_8
     slli  t1, t3, 1     # y_8*2
     slli  t2, t3, 4     # y_8*16
@@ -199,7 +199,7 @@ karatsuba226_255:
     add   t1, t1, s1    # carry from y_7*608
     add   a5, a5, t1    # res[8] += 608*y_8
 
-    lw    t3, 20(sp)    # m_5
+    lwu    t3, 20(sp)    # m_5
     add   a1, a6, t0    # res[4] = x_8+y_4+y_9
     slli  t1, t0, 1     # y_9*2
     slli  t2, t0, 4     # y_9*16
@@ -216,7 +216,7 @@ karatsuba226_255:
     slli  t1, t1, 5     # y_9*608 overflow *608
     add   t4, t4, t1    # res[0] += 608*overflow
 
-    lw    t0, 24(sp)    # m_6
+    lwu    t0, 24(sp)    # m_6
     add   t3, t3, s3    # negative if negflag is set otherwise leave as is
     xor   t3, t3, s3    #
     sub   t4, t4, t3    # res[0] -= m_5
@@ -230,7 +230,7 @@ karatsuba226_255:
     add   t5, t5, t1    #
     and   t4, t4, s4    #
      
-    lw    t3, 28(sp)    # m_7
+    lwu    t3, 28(sp)    # m_7
     add   t0, t0, s3    # negative if negflag is set other leave as is
     xor   t0, t0, s3    #
     sub   t5, t5, t0    # res[1] -= m_6
@@ -243,7 +243,7 @@ karatsuba226_255:
     add   t6, t6, t1    #
     and   t5, t5, s4    #
 
-    lw    t0, 32(sp)    # m_8
+    lwu    t0, 32(sp)    # m_8
     add   t3, t3, s3    # negative if negflag is set otherwise leave as is
     xor   t3, t3, s3    #
     sub   t6, t6, t3    # res[2] -= m_7
@@ -256,7 +256,7 @@ karatsuba226_255:
     add   a0, a0, t1    #
     and   t6, t6, s4    #
 
-    lw    t3, 36(sp)    # m_9
+    lwu    t3, 36(sp)    # m_9
     add   t0, t0, s3    # negative if negflag is set otherwise leave as is
     xor   t0, t0, s3    #
     sub   a0, a0, t0    # res[3] -= m_8
@@ -333,14 +333,14 @@ karatsuba226_255:
     add   a1, a1, s2    # res[3]*608 overflow
     add   a2, a2, s1    # res[5] += res[4]*608 overflow
 
-    lw    t0, 40(sp)    # x_0
-    lw    t1, 44(sp)    # x_1
-    lw    t2, 48(sp)    # x_2
-    lw    s2, 52(sp)    # x_3
-    lw    t3, 56(sp)    # x_4
+    lwu    t0, 40(sp)    # x_0
+    lwu    t1, 44(sp)    # x_1
+    lwu    t2, 48(sp)    # x_2
+    lwu    s2, 52(sp)    # x_3
+    lwu    t3, 56(sp)    # x_4
     add   a2, a2, t0    # res[5] += x_0
     add   t4, t4, t0    # res[0] += x_0
-    lw    t0, 0(sp)     # m_0
+    lwu    t0, 0(sp)     # m_0
     add   a3, a3, t1    # res[6] += x_1
     add   t5, t5, t1    # res[1] += x_1
     add   a4, a4, t2    # res[7] += x_2
@@ -350,7 +350,7 @@ karatsuba226_255:
     add   a6, a6, t3    # res[9] += x_4
     add   a1, a1, t3    # res[4] += x_4
 
-    lw    t3, 4(sp)     # m_1
+    lwu    t3, 4(sp)     # m_1
     add   t0, t0, s3    # negative if negflag otherwise leave as is
     xor   t0, t0, s3    #
     sub   a2, a2, t0    # res[5] -= m_0
@@ -360,7 +360,7 @@ karatsuba226_255:
     and   t1, t1, a7    # 2^26 masked
     add   a2, a2, t1    #
 
-    lw    t0, 8(sp)     # m_2
+    lwu    t0, 8(sp)     # m_2
     add   t3, t3, s3    # negative if negflag otherwise leave as is
     xor   t3, t3, s3    #
     sub   a3, a3, t3    # res[6] -= m_1
@@ -370,7 +370,7 @@ karatsuba226_255:
     and   t1, t1, a7    # 2^26 masked
     add   a3, a3, t1    #
 
-    lw    t3, 12(sp)    # m_3
+    lwu    t3, 12(sp)    # m_3
     add   t0, t0, s3    # negative if negflag otherwise leave as is
     xor   t0, t0, s3    #
     sub   a4, a4, t0    # res[7] -= m_2
@@ -380,7 +380,7 @@ karatsuba226_255:
     and   t1, t1, a7    # 2^26 masked
     add   a4, a4, t1    #
 
-    lw    t0, 16(sp)    # m_4
+    lwu    t0, 16(sp)    # m_4
     add   t3, t3, s3    # negative if negflag otherwise leave as is
     xor   t3, t3, s3    #
     sub   a5, a5, t3    # res[8] -= m_3
@@ -448,11 +448,11 @@ karatsuba226_255:
     sw    a5, 32(s0)    #
     sw    a6, 36(s0)    #
 
-    lw    s0, 140(sp)   # restore variables
-    lw    s1, 136(sp)   #
-    lw    s2, 132(sp)   #
-    lw    s3, 128(sp)   #
-    lw    s4, 124(sp)   #
-    lw    ra, 120(sp)   #
+    lwu    s0, 140(sp)   # restore variables
+    lwu    s1, 136(sp)   #
+    lwu    s2, 132(sp)   #
+    lwu    s3, 128(sp)   #
+    lwu    s4, 124(sp)   #
+    lwu    ra, 120(sp)   #
     addi  sp, sp, 144   #
     ret

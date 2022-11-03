@@ -4,16 +4,16 @@
 .type squeeze226_255, @function
 
 squeeze226_255:
-    lw    t0, 0(a0)     # load a
-    lw    t1, 4(a0)     #
-    lw    t2, 8(a0)     #
-    lw    t3, 12(a0)    #
-    lw    t4, 16(a0)    #
-    lw    t5, 20(a0)    #
-    lw    t6, 24(a0)    #
-    lw    a1, 28(a0)    #
-    lw    a2, 32(a0)    #
-    lw    a3, 36(a0)    # 
+    lwu    t0, 0(a0)     # load a
+    lwu    t1, 4(a0)     #
+    lwu    t2, 8(a0)     #
+    lwu    t3, 12(a0)    #
+    lwu    t4, 16(a0)    #
+    lwu    t5, 20(a0)    #
+    lwu    t6, 24(a0)    #
+    lwu    a1, 28(a0)    #
+    lwu    a2, 32(a0)    #
+    lwu    a3, 36(a0)    # 
 
     srli  a4, t0, 26    # u = a[0]>>26
     li    a6, 0x3ffffff # 2^26-1

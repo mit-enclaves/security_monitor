@@ -30,7 +30,7 @@ loop:
     or     a0, a0, t1    # c[0] << 2 +in[2]
     lbu    t1, 0(s0)     # in[0]
     slli   a0, a0, 8     #
-    lw     t4, 0(s2)     # h[0] 
+    lwu     t4, 0(s2)     # h[0] 
     or     a0, a0, t0    # c[0] << 8 + in[1]
     slli   a0, a0, 8     # 
     or     a0, a0, t1    # c[0] << 8 + in[0]
@@ -45,7 +45,7 @@ loop:
     or     a0, a0, t1    # c[1] += in[5]
     slli   a0, a0, 8     # c[1] << 8
     or     a0, a0, t0    # c[1] += in[4]
-    lw     t4, 4(s2)     # load h[1]
+    lwu     t4, 4(s2)     # load h[1]
     slli   a0, a0, 6     # c[1] << 6 
     srli   t2, t2, 2     # in[3] >> 2
     or     a0, a0, t2    # c[1] += in[3]
@@ -59,7 +59,7 @@ loop:
     slli   a0, a0, 8     # c[2] <<= 2
     or     a0, a0, t1    # c[2] += in[8]
     slli   a0, a0, 8     # c[2] <<= 8
-    lw     t4, 8(s2)     # load h[2]
+    lwu     t4, 8(s2)     # load h[2]
     or     a0, a0, t0    # c[2] += in[7]
     slli   a0, a0, 4     # c[2] <<= 2 
     srli   t3, t3, 4     # in[6] >> 4
@@ -74,7 +74,7 @@ loop:
     or     a0, a0, t1    # c[3] += in[11]
     slli   a0, a0, 8     # c[3] <<= 8
     or     a0, a0, t0    # c[3] += in[10]
-    lw     t4, 12(s2)    # load h[3]
+    lwu     t4, 12(s2)    # load h[3]
     slli   a0, a0, 2     # c[3] <<= 2
     srli   t2, t2, 6     # in[9] >> 6
     or     a0, a0, t2    # c[3] += in[9]
@@ -86,7 +86,7 @@ loop:
     lbu    t2, 13(s0)    # in[13]
     addi   a0, a0, 0x100 # append the 1 bit at the end
     slli   a0, a0, 8     # c[4] <<= 8
-    lw     t4, 16(s2)    # load h[4]
+    lwu     t4, 16(s2)    # load h[4]
     or     a0, a0, t1    # c[4] += in[14]
     slli   a0, a0, 8     # c[4] <<= 8
     or     a0, a0, t2    # c[4] += in[13]
@@ -103,13 +103,13 @@ loop:
     
 end_loop:
     mv     a0, s1        # return inlen
-    lw     s0, 28(sp)    # restore values
-    lw     s1, 24(sp)    #
-    lw     s2, 20(sp)    #
-    lw     s3, 16(sp)    #
-    lw     s4, 12(sp)    #
-    lw     s5,  8(sp)    #
-    lw     s6,  4(sp)    #
-    lw     ra,  0(sp)    #
+    lwu     s0, 28(sp)    # restore values
+    lwu     s1, 24(sp)    #
+    lwu     s2, 20(sp)    #
+    lwu     s3, 16(sp)    #
+    lwu     s4, 12(sp)    #
+    lwu     s5,  8(sp)    #
+    lwu     s6,  4(sp)    #
+    lwu     ra,  0(sp)    #
     addi   sp, sp, 32    
     ret

@@ -15,23 +15,23 @@ mainloop226_asm:
     mv    s0, a0        # store work pointer
     mv    s1, a1        # store e pointer
 
-    lw    t0, 0(s0)     # preload work[0]
-    lw    t1, 4(s0)     # preload work[1]
+    lwu    t0, 0(s0)     # preload work[0]
+    lwu    t1, 4(s0)     # preload work[1]
 
-    lw    t2, 8(s0)     # work[2]
-    lw    t3, 12(s0)    # work[3]
+    lwu    t2, 8(s0)     # work[2]
+    lwu    t3, 12(s0)    # work[3]
     sw    t0, 0(sp)     # xzm1[0]=work[0]
     sw    t1, 4(sp)     # xzm1[1]
-    lw    t0, 16(s0)    # work[4]
-    lw    t1, 20(s0)    # work[5]
+    lwu    t0, 16(s0)    # work[4]
+    lwu    t1, 20(s0)    # work[5]
     sw    t2, 8(sp)     # xzm1[2]
     sw    t3, 12(sp)    # xzm1[3]
-    lw    t2, 24(s0)    # work[6]
-    lw    t3, 28(s0)    # work[7]
+    lwu    t2, 24(s0)    # work[6]
+    lwu    t3, 28(s0)    # work[7]
     sw    t0, 16(sp)    # xzm1[4]
     sw    t1, 20(sp)    # xzm1[5]
-    lw    t0, 32(s0)    # work[8]
-    lw    t1, 36(s0)    # work[9]
+    lwu    t0, 32(s0)    # work[8]
+    lwu    t1, 36(s0)    # work[9]
     sw    t2, 24(sp)    # xzm1[6]
     sw    t3, 28(sp)    # xzm1[7]
     sw    t0, 32(sp)    # xzm1[8]
@@ -69,7 +69,7 @@ mainloop226_asm:
     sw    zero, 152(sp) #
     sw    zero, 156(sp) #
 
-    lw    s5, 36(s1)    # e[9]
+    lwu    s5, 36(s1)    # e[9]
     li    s3, 20        # loop variable
 
 firstloop:
@@ -185,7 +185,7 @@ firstloop:
     addi  s2, s1, 32    # outerloop variable
 
 outerloop:
-    lw    s5, 0(s2)     # e[i]
+    lwu    s5, 0(s2)     # e[i]
     li    s3, 25        # innerloop variable
 
 innerloop:
@@ -301,16 +301,16 @@ innerloop:
     addi  s2, s2, -4    # update i loop variable
     ble   s1, s2, outerloop
 
-    lw    t0, 80(sp)    # xzm[0]
-    lw    t1, 84(sp)    # xzm[1]
-    lw    t2, 88(sp)    # xzm[2]
-    lw    t3, 92(sp)    # xzm[3]
-    lw    t4, 96(sp)    # xzm[4]
-    lw    t5, 100(sp)   # xzm[5]
-    lw    t6, 104(sp)   # xzm[6]
-    lw    a0, 108(sp)   # xzm[7]
-    lw    a1, 112(sp)   # xzm[8]
-    lw    a2, 116(sp)   # xzm[9]
+    lwu    t0, 80(sp)    # xzm[0]
+    lwu    t1, 84(sp)    # xzm[1]
+    lwu    t2, 88(sp)    # xzm[2]
+    lwu    t3, 92(sp)    # xzm[3]
+    lwu    t4, 96(sp)    # xzm[4]
+    lwu    t5, 100(sp)   # xzm[5]
+    lwu    t6, 104(sp)   # xzm[6]
+    lwu    a0, 108(sp)   # xzm[7]
+    lwu    a1, 112(sp)   # xzm[8]
+    lwu    a2, 116(sp)   # xzm[9]
     sw    t0, 0(s0)     # work[0]
     sw    t1, 4(s0)     # work[1]
     sw    t2, 8(s0)     # work[2]
@@ -322,16 +322,16 @@ innerloop:
     sw    a1, 32(s0)    # work[8]
     sw    a2, 36(s0)    # work[9]
 
-    lw    t0, 120(sp)   # xzm[10]
-    lw    t1, 124(sp)   # xzm[11]
-    lw    t2, 128(sp)   # xzm[12]
-    lw    t3, 132(sp)   # xzm[13]
-    lw    t4, 136(sp)   # xzm[14]
-    lw    t5, 140(sp)   # xzm[15]
-    lw    t6, 144(sp)   # xzm[16]
-    lw    a0, 148(sp)   # xzm[17]
-    lw    a1, 152(sp)   # xzm[18]
-    lw    a2, 156(sp)   # xzm[19]
+    lwu    t0, 120(sp)   # xzm[10]
+    lwu    t1, 124(sp)   # xzm[11]
+    lwu    t2, 128(sp)   # xzm[12]
+    lwu    t3, 132(sp)   # xzm[13]
+    lwu    t4, 136(sp)   # xzm[14]
+    lwu    t5, 140(sp)   # xzm[15]
+    lwu    t6, 144(sp)   # xzm[16]
+    lwu    a0, 148(sp)   # xzm[17]
+    lwu    a1, 152(sp)   # xzm[18]
+    lwu    a2, 156(sp)   # xzm[19]
     sw    t0, 40(s0)    # work[10]
     sw    t1, 44(s0)    # work[11]
     sw    t2, 48(s0)    # work[12]
@@ -343,13 +343,13 @@ innerloop:
     sw    a1, 72(s0)    # work[18]
     sw    a2, 76(s0)    # work[19]
 
-    lw    s0, 428(sp)  # restore variables
-    lw    s1, 424(sp)  # 
-    lw    s2, 420(sp)  # 
-    lw    s3, 416(sp)  # 
-    lw    s4, 412(sp)  # 
-    lw    s5, 408(sp)  # 
-    lw    ra, 404(sp)  # 
+    lwu    s0, 428(sp)  # restore variables
+    lwu    s1, 424(sp)  # 
+    lwu    s2, 420(sp)  # 
+    lwu    s3, 416(sp)  # 
+    lwu    s4, 412(sp)  # 
+    lwu    s5, 408(sp)  # 
+    lwu    ra, 404(sp)  # 
     addi  sp, sp, 432  # 
     ret
 

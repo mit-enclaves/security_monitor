@@ -405,78 +405,78 @@ loop:
     addi  s7, s7, -2    # update loop counter
     bgtz  s7,  loop
 
-    lw    t0, 32(sp)    # j0
-    lw    t1, 36(sp)    # j1
+    lwu    t0, 32(sp)    # j0
+    lwu    t1, 36(sp)    # j1
     add   t2, t2, t0    # x0
     sw    t2, 0(a0)     # store x0
 
-    lw    t0, 40(sp)    # j2
+    lwu    t0, 40(sp)    # j2
     add   t3, t3, t1    # x1
     sw    t3, 4(a0)     # store x1
 
-    lw    t1, 44(sp)    # j3
+    lwu    t1, 44(sp)    # j3
     add   t4, t4, t0    # x2
     sw    t4, 8(a0)     # store x2
     
-    lw    t0, 48(sp)    # j4
+    lwu    t0, 48(sp)    # j4
     add   t5, t5, t1    # x3
     sw    t5, 12(a0)    # store x3
     
-    lw    t1, 52(sp)     # j5
+    lwu    t1, 52(sp)     # j5
     add   t6, t6, t0    # x4
     sw    t6, 16(a0)    # store x4
 
-    lw    t0, 56(sp)    # j6
+    lwu    t0, 56(sp)    # j6
     add   a4, a4, t1    # x5
     sw    a4, 20(a0)    # store x5
 
-    lw    t1, 60(sp)    # j7
+    lwu    t1, 60(sp)    # j7
     add   a5, a5, t0    # x6
     sw    a5, 24(a0)    # store x6
 
-    lw    t0, 64(sp)    # j8
+    lwu    t0, 64(sp)    # j8
     add   a6, a6, t1    # x7
     sw    a6, 28(a0)    # store x7
 
-    lw    t1, 68(sp)    # j9
+    lwu    t1, 68(sp)    # j9
     add   a7, a7, t0    # x8
     sw    a7, 32(a0)    # store x8
 
-    lw    t0, 72(sp)    # j10
+    lwu    t0, 72(sp)    # j10
     add   s0, s0, t1    # x9
     sw    s0, 36(a0)    # store x9
 
-    lw    t1, 76(sp)    # j11
+    lwu    t1, 76(sp)    # j11
     add   s1, s1, t0    # x10
     sw    s1, 40(a0)    # store x10
 
-    lw    t0, 80(sp)    # j12
+    lwu    t0, 80(sp)    # j12
     add   s2, s2, t1    # x11
     sw    s2, 44(a0)    # store x11
 
-    lw    t1, 84(sp)    # j13
+    lwu    t1, 84(sp)    # j13
     add   s3, s3, t0    # x12
     sw    s3, 48(a0)    # store x12
 
-    lw    t0, 88(sp)    # j14
+    lwu    t0, 88(sp)    # j14
     add   s4, s4, t1    # x13
     sw    s4, 52(a0)    # store x13
 
-    lw    t1, 92(sp)    # j15
+    lwu    t1, 92(sp)    # j15
     add   s5, s5, t0    # x14
     sw    s5, 56(a0)    # store x14
 
     add   s6, s6, t1    # x15
     sw    s6, 60(a0)    # store x15
 
-    lw    s0, 28(sp)    # restore variables
-    lw    s1, 24(sp)    #
-    lw    s2, 20(sp)    #
-    lw    s3, 16(sp)    #
-    lw    s4, 12(sp)    #
-    lw    s5, 8(sp)     #
-    lw    s6, 4(sp)     #
-    lw    s7, 0(sp)     #
+    lwu    s0, 28(sp)    # restore variables
+    lwu    s1, 24(sp)    #
+    lwu    s2, 20(sp)    #
+    lwu    s3, 16(sp)    #
+    lwu    s4, 12(sp)    #
+    lwu    s5, 8(sp)     #
+    lwu    s6, 4(sp)     #
+    lwu    s7, 0(sp)     #
     addi  sp, sp, 96    #
 
     ret

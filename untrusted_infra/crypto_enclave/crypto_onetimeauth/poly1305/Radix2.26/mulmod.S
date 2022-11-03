@@ -17,17 +17,17 @@ mulmod226asm:
     sw    s9, 0(sp)    #
 
     mv    s8, a0       # store A address
-    lw    a5, 0(a1)    # load B 
-    lw    a6, 4(a1)    #
-    lw    s0, 8(a1)    #
-    lw    s1, 12(a1)   #
-    lw    s2, 16(a1)   #
+    lwu    a5, 0(a1)    # load B 
+    lwu    a6, 4(a1)    #
+    lwu    s0, 8(a1)    #
+    lwu    s1, 12(a1)   #
+    lwu    s2, 16(a1)   #
     
-    lw    a0, 0(s8)    # load A
-    lw    a1, 4(s8)    #
-    lw    a2, 8(s8)    #
-    lw    a3, 12(s8)   #
-    lw    a4, 16(s8)   #
+    lwu    a0, 0(s8)    # load A
+    lwu    a1, 4(s8)    #
+    lwu    a2, 8(s8)    #
+    lwu    a3, 12(s8)   #
+    lwu    a4, 16(s8)   #
 
     mul   t0, a0, a5   # A_0*B_0
     mulh  t1, a0, a5   #
@@ -267,16 +267,16 @@ mulmod226asm:
     sw    a3, 12(s8)   #
     sw    a4, 16(s8)   #
 
-    lw    ra, 40(sp)   # restore variables
-    lw    s0, 36(sp)   #
-    lw    s1, 32(sp)   #
-    lw    s2, 28(sp)   #
-    lw    s3, 24(sp)   #
-    lw    s4, 20(sp)   #
-    lw    s5, 16(sp)   #
-    lw    s6, 12(sp)   #
-    lw    s7, 8(sp)    #
-    lw    s8, 4(sp)    #
-    lw    s9, 0(sp)    #
+    lwu    ra, 40(sp)   # restore variables
+    lwu    s0, 36(sp)   #
+    lwu    s1, 32(sp)   #
+    lwu    s2, 28(sp)   #
+    lwu    s3, 24(sp)   #
+    lwu    s4, 20(sp)   #
+    lwu    s5, 16(sp)   #
+    lwu    s6, 12(sp)   #
+    lwu    s7, 8(sp)    #
+    lwu    s8, 4(sp)    #
+    lwu    s9, 0(sp)    #
     addi  sp, sp, 48   #
     ret

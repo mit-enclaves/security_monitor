@@ -1,6 +1,8 @@
 #ifndef CRYPTO_ENCLAVE_UTIL_H
 #define CRYPTO_ENCLAVE_UTIL_H
 
+#include <stdbool.h>
+
 #define F_ADDITION             0
 #define F_ONETIMEAUTH          1
 #define F_ONETIMEAUTH_VERIF    2
@@ -24,7 +26,9 @@
 
 typedef struct msg_t {
   int f;
-  uintptr_t args[6];
+  uintptr_t args[5];
+  int ret;
+  bool done;
 } msg_t;
 
 #endif // CRYPTO_ENCLAVE_UTIL_H

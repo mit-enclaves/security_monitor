@@ -397,14 +397,14 @@ loop:
     sw    a7, 24(a0)    # x8
     sw    s0, 28(a0)    # x9
 
-    lw    s0, 28(sp)    # restore variables
-    lw    s1, 24(sp)    #
-    lw    s2, 20(sp)    #
-    lw    s3, 16(sp)    #
-    lw    s4, 12(sp)    #
-    lw    s5, 8(sp)     #
-    lw    s6, 4(sp)     #
-    lw    s7, 0(sp)     #
+    lwu    s0, 28(sp)    # restore variables
+    lwu    s1, 24(sp)    #
+    lwu    s2, 20(sp)    #
+    lwu    s3, 16(sp)    #
+    lwu    s4, 12(sp)    #
+    lwu    s5, 8(sp)     #
+    lwu    s6, 4(sp)     #
+    lwu    s7, 0(sp)     #
     addi  sp, sp, 32    #
 
     ret

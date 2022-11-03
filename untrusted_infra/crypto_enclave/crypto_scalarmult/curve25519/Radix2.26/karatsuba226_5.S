@@ -24,21 +24,21 @@ karatsuba226_255_5asm:
 
     li    t6, 0x3ffffff # 2^26-1
 
-    lw    a0, 0(s10)    # load A
-    lw    a5, 0(s9)     # load B
-    lw    a1, 4(s10)    #
-    lw    a6, 4(s9)     #
+    lwu    a0, 0(s10)    # load A
+    lwu    a5, 0(s9)     # load B
+    lwu    a1, 4(s10)    #
+    lwu    a6, 4(s9)     #
 
     mul   t0, a0, a5    # A0*B0
     mulh  t1, a0, a5    #
 
-    lw    a2, 8(s10)    #
-    lw    a3, 12(s10)   #
-    lw    a4, 16(s10)   #
+    lwu    a2, 8(s10)    #
+    lwu    a3, 12(s10)   #
+    lwu    a4, 16(s10)   #
 
-    lw    a7, 8(s9)     #
-    lw    s0, 12(s9)    #
-    lw    s1, 16(s9)    #
+    lwu    a7, 8(s9)     #
+    lwu    s0, 12(s9)    #
+    lwu    s1, 16(s9)    #
     
     mul   t2, a0, a6    # A0*B1
     mulh  t3, a0, a6    #
@@ -332,19 +332,19 @@ karatsuba226_255_5asm:
     sw    s10,32(s11)   #
     sw    t5, 36(s11)   #
 
-    lw    s0, 76(sp)    # restore variables
-    lw    s1, 72(sp)    #
-    lw    s11, 32(sp)   #
-    lw    ra, 28(sp)    #
-    lw    s2, 68(sp)    #
-    lw    s3, 64(sp)    #
-    lw    s4, 60(sp)    #
-    lw    s5, 56(sp)    #
-    lw    s6, 52(sp)    #
-    lw    s7, 48(sp)    #
-    lw    s8, 44(sp)    #
-    lw    s9, 40(sp)    #
-    lw    s10, 36(sp)   #
+    lwu    s0, 76(sp)    # restore variables
+    lwu    s1, 72(sp)    #
+    lwu    s11, 32(sp)   #
+    lwu    ra, 28(sp)    #
+    lwu    s2, 68(sp)    #
+    lwu    s3, 64(sp)    #
+    lwu    s4, 60(sp)    #
+    lwu    s5, 56(sp)    #
+    lwu    s6, 52(sp)    #
+    lwu    s7, 48(sp)    #
+    lwu    s8, 44(sp)    #
+    lwu    s9, 40(sp)    #
+    lwu    s10, 36(sp)   #
     addi  sp, sp, 80    #
     ret
 

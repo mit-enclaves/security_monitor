@@ -14,8 +14,8 @@ crypto_scalarmult_asm:
     mv    a0, sp         # e226
     call  convert_to_radix226_255
 
-    lw    t0, 0(sp)      # e226[0]
-    lw    t1, 36(sp)     # e226[9]
+    lwu    t0, 0(sp)      # e226[0]
+    lwu    t1, 36(sp)     # e226[9]
     li    t2, 0x3fffff8  # 2^26-8
     and   t0, t0, t2     # clear 3 least significant bits
     sw    t0, 0(sp)      # store e226[0]
@@ -49,9 +49,9 @@ crypto_scalarmult_asm:
     addi  a1, sp, 40     # work226
     call toradix28_255
 
-    lw    ra, 140(sp)    # restore variables
-    lw    s0, 136(sp)    #
-    lw    s2, 132(sp)    #
+    lwu    ra, 140(sp)    # restore variables
+    lwu    s0, 136(sp)    #
+    lwu    s2, 132(sp)    #
     addi  sp, sp, 144    #
 
     ret

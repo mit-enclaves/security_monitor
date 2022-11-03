@@ -24,7 +24,7 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
 
   write_csr(mstatus, mstatus_csr);
 
-  printm("Ready to jump\n");
+  printm("Jump\n");
   register uint64_t t0 asm ("t0") = (core_id*STACK_SIZE) + MENTRY_FRAME_SIZE;
   register uintptr_t a0 asm ("a0") = core_id;
   register uintptr_t a1 asm ("a1") = fdt_addr;

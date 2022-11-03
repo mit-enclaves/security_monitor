@@ -9,18 +9,18 @@ mul121665asm:
    sw      s3, 16(sp)   #
    sw      s10, 12(sp)  #
 
-   lw      t0, 0(a1)    # load A0
+   lwu      t0, 0(a1)    # load A0
    mv      s0, a0       # store out address
    mv      s1, a1       # store A address
 
    li      t5, 0x3ffffff# 2^26-1
    li      t6, 121665   # load multiplicand
 
-   lw      t1, 4(s1)    # load A1
+   lwu      t1, 4(s1)    # load A1
    mul     a0, t0, t6   # A0*121666_l
    mulh    a1, t0, t6   # A0*121666_h
 
-   lw      t3, 8(s1)    # Load A2
+   lwu      t3, 8(s1)    # Load A2
    mul     t2, t1, t6   # A1*121666_l
    mulh    a2, t1, t6   # A1*121666_h
 
@@ -38,7 +38,7 @@ mul121665asm:
    or      a2, a2, s10  #
    add     a1, a1, t2   # r[1]
 
-   lw      t0, 12(s1)   # load A3
+   lwu      t0, 12(s1)   # load A3
 
    srli    s10, t4, 26  # base change A2
    and     t4, t4, t5   #
@@ -50,7 +50,7 @@ mul121665asm:
    or      a3, a3, s10  #
    add     a2, a2, t4   # r[2]
 
-   lw      t0, 16(s1)   # Load A4
+   lwu      t0, 16(s1)   # Load A4
 
    srli    s10, t2, 26  # base change A3
    and     t2, t2, t5   #
@@ -62,7 +62,7 @@ mul121665asm:
    or      a4, a4, s10  #
    add     a3, a3, t2   # r[3]
 
-   lw      t0, 20(s1)   # load A5
+   lwu      t0, 20(s1)   # load A5
 
    srli    s10, t1, 26  # base change A4
    and     t1, t1, t5   #
@@ -74,7 +74,7 @@ mul121665asm:
    or      a5, a5, s10  #
    add     a4, a4, t1   # r[4]
 
-   lw      t0, 24(s1)   # load A6
+   lwu      t0, 24(s1)   # load A6
 
    srli    s10, t2, 26  # base change A5
    and     t2, t2, t5   #
@@ -86,7 +86,7 @@ mul121665asm:
    or      a6, a6, s10  #
    add     a5, a5, t2   # r[5]
 
-   lw      t0, 28(s1)   # load A7
+   lwu      t0, 28(s1)   # load A7
 
    srli    s10, t1, 26  # base change A6
    and     t1, t1, t5   #
@@ -98,7 +98,7 @@ mul121665asm:
    or      a7, a7, s10  #
    add     a6, a6, t1   # r[6]
 
-   lw      t0, 32(s1)   # load A8
+   lwu      t0, 32(s1)   # load A8
 
    srli    s10, t2, 26  # base change A7
    and     t2, t2, t5   #
@@ -110,7 +110,7 @@ mul121665asm:
    or      s2, s2, s10  #
    add     a7, a7, t2   # r[7]
 
-   lw      t0, 36(s1)   # load A9
+   lwu      t0, 36(s1)   # load A9
 
    li      t3, 0x1fffff #
    srli    s10, t1, 26  # base change A8
@@ -211,11 +211,11 @@ mul121665asm:
    sw      s2, 32(s0)   #
    sw      s3, 36(s0)   #
 
-   lw      s0, 28(sp)   # restore variables
-   lw      s1, 24(sp)   #
-   lw      s2, 20(sp)   #
-   lw      s3, 16(sp)   #
-   lw      s10, 12(sp)  #
+   lwu      s0, 28(sp)   # restore variables
+   lwu      s1, 24(sp)   #
+   lwu      s2, 20(sp)   #
+   lwu      s3, 16(sp)   #
+   lwu      s10, 12(sp)  #
    addi    sp, sp, 32   #
 
    ret
