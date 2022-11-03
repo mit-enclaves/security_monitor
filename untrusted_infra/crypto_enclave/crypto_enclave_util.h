@@ -4,25 +4,41 @@
 #include <stdbool.h>
 
 #define F_ADDITION             0
-#define F_ONETIMEAUTH          1
-#define F_ONETIMEAUTH_VERIF    2
-#define F_SCALARMULT           3
-#define F_SCALARMULT_BASE      4
-#define F_STREAM_SALSA20       5
-#define F_STREAM_SALSA20_XOR   6
-#define F_STREAM_SALSA208      7
-#define F_STREAM_SALSA208_XOR  8
-#define F_STREAM_SALSA2012     9
-#define F_STREAM_SALSA2012_XOR 10
-#define F_STREAM_XSALSA20      11
-#define F_STREAM_XSALSA20_XOR  12
-#define F_VERIFY_32            13
-#define F_VERIFY_16            14
-#define F_SECRETBOX            15
-#define F_SECRETBOX_OPEN       16
-#define F_BOX                  17
-#define F_BOX_OPEN             18
+#define F_HASH                 1
+#define F_CREATE_SIGN_SK       2
+#define F_COMPUTE_SIGN_PK      3
+#define F_SIGN                 4
+#define F_VERIFY               5
+#define F_KEY_AGREEMENT        6
 #define F_EXIT                 20
+
+typedef struct hash_t {
+  uint8_t bytes[64];
+} hash_t;
+
+#define LENGTH_SEED 32
+#define LENGTH_PK 32
+#define LENGTH_SK 64
+
+typedef struct private_key_seed_t {
+  uint8_t bytes[LENGTH_SEED];
+} key_seed_t;
+
+typedef struct public_key_t {
+  uint8_t bytes[LENGTH_PK];
+} public_key_t;
+
+typedef struct secret_key_t {
+  uint8_t bytes[LENGTH_SK];
+} secret_key_t;
+
+typedef struct symmetric_key_t {
+  uint8_t bytes[64];
+} symmetric_key_t; 
+
+typedef struct signature_t {
+  uint8_t bytes[64];
+} signature_t;
 
 typedef struct msg_t {
   int f;

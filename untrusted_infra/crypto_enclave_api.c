@@ -2,275 +2,98 @@
 #include <os_util.h>
 #include <msgq.h>
 
-int crypto_onetimeauth(unsigned char *out, const unsigned char *in, unsigned long long inlen, const unsigned char *ki) {
+void hash(const void * in_data,
+  size_t in_data_size,
+  hash_t * out_hash) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_ONETIMEAUTH;
-  msg->args[0] = (uintptr_t) out;
-  msg->args[1] = (uintptr_t) in;
-  msg->args[2] = (uintptr_t) inlen;
-  msg->args[3] = (uintptr_t) ki;
+  msg->f = F_HASH;
+  msg->args[0] = (uintptr_t) in_data;
+  msg->args[1] = (uintptr_t) out_hash;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
 }
 
-int crypto_onetimeauth_verify(const unsigned char *h,const unsigned char *in,unsigned long long inlen,const unsigned char *k) {
+void create_secret_signing_key (
+  const key_seed_t * in_seed,
+  secret_key_t * out_secret_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_ONETIMEAUTH_VERIF;
-  msg->args[0] = (uintptr_t) h;
-  msg->args[1] = (uintptr_t) in;
-  msg->args[2] = (uintptr_t) inlen;
-  msg->args[3] = (uintptr_t) k;
+  msg->f = F_CREATE_SIGN_SK;
+  msg->args[0] = (uintptr_t) in_seed;
+  msg->args[1] = (uintptr_t) out_secret_key;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
 }
 
-int crypto_scalarmult(unsigned char *q, const unsigned char *n, const unsigned char *p) {
-  queue_t *qe = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_SCALARMULT;
-  msg->args[0] = (uintptr_t) q;
-  msg->args[1] = (uintptr_t) n;
-  msg->args[2] = (uintptr_t) p;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(qe, msg);
-  }
-  return 0;
-}
-
-int crypto_scalarmult_base(unsigned char *q, const unsigned char *n) {
-  queue_t *qe = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_SCALARMULT_BASE;
-  msg->args[0] = (uintptr_t) q;
-  msg->args[1] = (uintptr_t) n;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(qe, msg);
-  }
-  return 0;
-}
-
-int crypto_stream_salsa20(unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *k) {
+void compute_public_signing_key (
+  const secret_key_t * in_secret_key,
+  public_key_t * out_public_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA20;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) clen;
-  msg->args[2] = (uintptr_t) n;
-  msg->args[3] = (uintptr_t) k;
+  msg->f = F_COMPUTE_SIGN_PK;
+  msg->args[0] = (uintptr_t) in_secret_key;
+  msg->args[1] = (uintptr_t) out_public_key;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
 }
 
-int crypto_stream_salsa20_xor(unsigned char *c, const unsigned char *m,unsigned long long mlen, const unsigned char *n, const unsigned char *k) {
+void sign (
+  const void * in_message,
+  const size_t in_message_size,
+  const public_key_t * in_public_key,
+  const secret_key_t * in_secret_key,
+  signature_t * out_signature) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA20_XOR;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
+  msg->f = F_SIGN;
+  msg->args[0] = (uintptr_t) in_message;
+  msg->args[1] = (uintptr_t) in_message_size;
+  msg->args[2] = (uintptr_t) in_public_key;
+  msg->args[3] = (uintptr_t) in_secret_key;
+  msg->args[4] = (uintptr_t) out_signature;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
 }
 
-int crypto_stream_salsa208(unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *k) {
+void verify (
+  const signature_t * in_signature,
+  const void * in_message,
+  const size_t in_message_size,
+  const public_key_t * in_public_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA208;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) clen;
-  msg->args[2] = (uintptr_t) n;
-  msg->args[3] = (uintptr_t) k;
+  msg->f = F_VERIFY;
+  msg->args[0] = (uintptr_t) in_signature;
+  msg->args[1] = (uintptr_t) in_message;
+  msg->args[2] = (uintptr_t) in_message_size;
+  msg->args[3] = (uintptr_t) in_public_key;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
 }
 
-int crypto_stream_salsa208_xor(unsigned char *c, const unsigned char *m,unsigned long long mlen, const unsigned char *n, const unsigned char *k) {
+void perform_key_agreement (
+  const public_key_t * public_key_A,
+  const secret_key_t * secret_key_B,
+  symmetric_key_t * out_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA208_XOR;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
+  msg->f = F_KEY_AGREEMENT;
+  msg->args[0] = (uintptr_t) public_key_A;
+  msg->args[1] = (uintptr_t) secret_key_B;
+  msg->args[2] = (uintptr_t) out_key;
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
   }
-  return 0;
-}
-
-int crypto_stream_salsa2012(unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA2012;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) clen;
-  msg->args[2] = (uintptr_t) n;
-  msg->args[3] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_stream_salsa2012_xor(unsigned char *c, const unsigned char *m,unsigned long long mlen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_SALSA2012_XOR;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_stream_xsalsa20(unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_XSALSA20;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) clen;
-  msg->args[2] = (uintptr_t) n;
-  msg->args[3] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_stream_xsalsa20_xor(unsigned char *c, const unsigned char *m,unsigned long long mlen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_STREAM_XSALSA20_XOR;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_verify_32(const unsigned char* a0, const unsigned char* a1) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_VERIFY_32;
-  msg->args[0] = (uintptr_t) a0;
-  msg->args[1] = (uintptr_t) a1;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_verify_16(const unsigned char* a0, const unsigned char* a1) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_VERIFY_16;
-  msg->args[0] = (uintptr_t) a0;
-  msg->args[1] = (uintptr_t) a1;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_secretbox(unsigned char *c, const unsigned char *m, unsigned long long mlen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_SECRETBOX;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_secretbox_open(unsigned char *m, const unsigned char *c,unsigned long long clen, const unsigned char *n, const unsigned char *k) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_SECRETBOX_OPEN;
-  msg->args[0] = (uintptr_t) m;
-  msg->args[1] = (uintptr_t) c;
-  msg->args[2] = (uintptr_t) clen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) k;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_box(unsigned char *c, const unsigned char *m, unsigned long long mlen, const unsigned char *n, const unsigned char *pk, const unsigned char *sk) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_BOX;
-  msg->args[0] = (uintptr_t) c;
-  msg->args[1] = (uintptr_t) m;
-  msg->args[2] = (uintptr_t) mlen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) pk;
-  msg->args[5] = (uintptr_t) sk;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
-}
-
-int crypto_box_open(unsigned char *m, const unsigned char *c, unsigned long long clen, const unsigned char *n, const unsigned char *pk, const unsigned char *sk) {
-  queue_t *q = SHARED_QUEUE;  
-  msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_BOX_OPEN;
-  msg->args[0] = (uintptr_t) m;
-  msg->args[1] = (uintptr_t) c;
-  msg->args[2] = (uintptr_t) clen;
-  msg->args[3] = (uintptr_t) n;
-  msg->args[4] = (uintptr_t) pk;
-  msg->args[5] = (uintptr_t) sk;
-  int ret = 1;
-  while(ret != 0) {
-    ret = push(q, msg);
-  }
-  return 0;
 }

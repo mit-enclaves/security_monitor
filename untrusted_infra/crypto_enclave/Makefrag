@@ -3,44 +3,9 @@
 # Assumes: $(CRYPTO_ENCLAVE_SRC_DIR)
 # Assumes: $(QUEUE_SRC_DIR)
 # Assumes: $(CC)
-# Assumes: $(CC-AR)
 # Assumes: $(OBJCOPY)
 
-CC-AR=riscv64-unknown-elf-gcc-ar
 
-# NaCL Library
-BUILD_NACL=$(BUILD_DIR)/libnacl
-
-$(BUILD_NACL):
-	@mkdir -p $@
-
-LIB_MODULES=crypto_core/hsalsa20/opt crypto_core/salsa20/opt crypto_core/salsa208/opt crypto_core/salsa2012/opt crypto_box/curve25519xsalsa20poly1305 crypto_onetimeauth/poly1305/Radix2.26 crypto_onetimeauth/poly1305/Verify crypto_scalarmult/curve25519/Radix2.26 crypto_secretbox/xsalsa20poly1305 crypto_stream/salsa20 crypto_stream/salsa208 crypto_stream/salsa2012 crypto_stream/xsalsa20 crypto_verify/16 crypto_verify/32
-
-LIB_MODULES_FULL_PATH=$(addprefix $(CRYPTO_ENCLAVE_SRC_DIR)/, $(LIB_MODULES))
-
-LIB_SRCS_S=$(foreach subdir, $(LIB_MODULES_FULL_PATH), $(wildcard $(subdir)/*.S))
-LIB_SRCS_C=$(foreach subdir, $(LIB_MODULES_FULL_PATH), $(wildcard $(subdir)/*.c)) 
-LIB_SRCS= $(LIB_SRCS_C) $(LIB_SRCS_S)
-LIB_OBJS=$(patsubst %.S, $(BUILD_NACL)/%.o,$(LIB_SRCS_S)) $(patsubst %.c, $(BUILD_NACL)/%.o, $(LIB_SRCS_C))
-
-SRCS=$(wildcard *.c)
-ASM=$(wildcard *.S)
-
-OBJS_lose=$(SRCS:.c=.o) $(ASM:.S=.o)
-OBJS=$(addprefix $(BUILD_NACL)/, $(OBJS_lose))
-
-LIBNACL=$(BUILD_NACL)/libnacl.a
-
-vpath %.c %.S $(LIB_SRCS)
-$(LIBNACL): $(LIB_OBJS) 
-	rm -f $(LIBNACL)
-	$(CC-AR) --target=elf64-littleriscv -q $(LIBNACL) $(LIB_OBJS) 
-
-$(BUILD_NACL)/%.o: %.c
-	$(CC) -O3 -c $< -march=rv64g -o $@ 
-
-$(BUILD_NACL)/%.o: %.S
-	$(CC) -O3 -c $< -march=rv64g -o $@
 
 # Enclave
 
@@ -60,6 +25,15 @@ CRYPTO_ENCLAVE_SRC := \
   $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_stack.S \
   $(CRYPTO_ENCLAVE_SRC_DIR)/clib/memset.c \
   $(CRYPTO_ENCLAVE_SRC_DIR)/clib/memcpy.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/add_scalar.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/fe.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/ge.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/key_exchange.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/keypair.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/sc.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/sha512.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/sign.c \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/verify.c \
   $(QUEUE_SRC_DIR)/msgq.c \
 
 CRYPTO_ENCLAVE_LD := $(CRYPTO_ENCLAVE_SRC_DIR)/enclave.lds
