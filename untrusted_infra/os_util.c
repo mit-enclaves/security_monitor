@@ -5,7 +5,7 @@
 uintptr_t last_pointer = 0;
 
 void init_heap(void) {
-  last_pointer = SHARED_MEM_REG + sizeof(queue_t);
+  last_pointer = SHARED_MEM_REG + sizeof(queue_t) + sizeof(queue_t);
 }
 
 void *malloc(size_t size) {

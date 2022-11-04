@@ -28,7 +28,8 @@ static inline void * region_id_to_addr (uint64_t region_id) {
 }
 
 #define SHARED_MEM_REG (0x8a000000)
-#define SHARED_QUEUE ((queue_t *) SHARED_MEM_REG)
+#define SHARED_REQU_QUEUE ((queue_t *) SHARED_MEM_REG)
+#define SHARED_RESP_QUEUE ((queue_t *) (SHARED_MEM_REG + sizeof(queue_t)))
 
 void init_heap();
 void *malloc(size_t size);

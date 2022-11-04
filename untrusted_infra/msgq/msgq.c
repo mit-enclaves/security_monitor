@@ -1,4 +1,5 @@
 #include "msgq.h"
+#include <stddef.h>
 
 void init_q(queue_t *q) {
   q->head = 0;
@@ -35,6 +36,7 @@ int pop(queue_t *q, void **ret) {
   
   if(is_empty(q)) {
     platform_lock_release(&q->lock);
+    *ret = NULL;
     return 1; 
   }
   

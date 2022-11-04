@@ -2,8 +2,7 @@
 #include <csr/csr.h>
 #include <api_untrusted.h>
 #include <crypto_enclave_api.h>
-
-#define NUM_MSG (63)
+#include <msgq.h>
 
 //extern uintptr_t region1;
 extern uintptr_t region2;
@@ -223,6 +222,13 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     verify(s, message, 64, pk);
 
     enclave_exit();
+    
+    msg_t *m;
+    queue_t *qresp = SHARED_RESP_QUEUE;
+    int ret;
+    do {
+      ret = pop(qresp, (void **) &m);
+    } while((ret != 0) || (m->f != F_EXIT));
 
     test_completed();
   }

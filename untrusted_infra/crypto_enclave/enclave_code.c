@@ -4,49 +4,37 @@
 #include <crypto_enclave_util.h>
 
 #define SHARED_MEM_REG (0x8a000000)
+#define SHARED_REQU_QUEUE ((queue_t *) SHARED_MEM_REG)
+#define SHARED_RESP_QUEUE ((queue_t *) (SHARED_MEM_REG + sizeof(queue_t)))
 
 void enclave_entry() {
+  queue_t * qreq = SHARED_REQU_QUEUE;
+  queue_t * qres = SHARED_RESP_QUEUE;
   
-  key_seed_t seed;
-  secret_key_t sk;
-  public_key_t pk;
-  const char message[64] = "Hello World!";
-  signature_t s; 
-
-  create_secret_signing_key(&seed, &sk);
-  compute_public_signing_key(&sk, &pk);
-  sign(message, 64, &pk, &sk, &s);
-  bool retval = verify(&s, message, 64, &pk);
-  
-  queue_t * q = (queue_t *) SHARED_MEM_REG;
   msg_t *m;
   int ret;
 
   while(true) {
-    ret = pop(q, (void **) &m);
+    ret = pop(qreq, (void **) &m);
     if(ret != 0) continue;
     switch((m)->f) {
       case F_ADDITION:
         m->ret = (int) m->args[0] + m->args[1];
-        m->done = true;
         break;
       case F_HASH:
         hash((const void *) m->args[0],
             (size_t) m->args[1],
             (hash_t *) m->args[2]);
-        m->done = true;
         break;
       case F_CREATE_SIGN_SK:
         create_secret_signing_key(
             (key_seed_t *) m->args[0],
             (secret_key_t *) m->args[1]);
-        m->done = true;
         break;
       case F_COMPUTE_SIGN_PK:
         compute_public_signing_key(
             (secret_key_t *) m->args[0],
             (public_key_t *) m->args[1]);
-        m->done = true;
         break;
       case F_SIGN:
         sign(
@@ -55,7 +43,6 @@ void enclave_entry() {
             (const public_key_t *) m->args[2],
             (const secret_key_t *) m->args[3],
             (signature_t *) m->args[4]);
-        m->done = true;
         break;
       case F_VERIFY:
         m->ret = verify(
@@ -63,14 +50,21 @@ void enclave_entry() {
             (const void *) m->args[1],
             (const size_t) m->args[2],
             (const public_key_t *) m->args[3]);
-        m->done = true;
         break;
       case F_KEY_AGREEMENT:
         break;
       case F_EXIT:
+        m->done = true;
+        do {
+          ret = push(qres, m);
+        } while(ret != 0);
         sm_exit_enclave();
       default:
         break;
     } 
+    m->done = true;
+    do {
+      ret = push(qres, m);
+    } while(ret != 0);
   }
 }
