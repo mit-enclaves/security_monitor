@@ -2,7 +2,6 @@
 #include <csr/csr.h>
 #include <api_untrusted.h>
 #include <crypto_enclave_api.h>
-#include <msgq.h>
 
 #define NUM_MSG (63)
 
@@ -59,7 +58,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     enclave_id_t enclave_id = ((uintptr_t) &region3) + (PAGE_SIZE * region_metadata_start);
     uint64_t num_mailboxes = 1;
 
-    print_str("Encalve Create\n");
+    print_str("Enclave Create\n");
 
     result = sm_enclave_create(enclave_id, 0x0, REGION_MASK, num_mailboxes, true);
     if(result != MONITOR_OK) {
@@ -211,21 +210,20 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   }
   else {
     init_heap();
-   
+
     key_seed_t *seed = malloc(sizeof(key_seed_t));
     secret_key_t *sk = malloc(sizeof(secret_key_t));
     public_key_t *pk = malloc(sizeof(public_key_t));
+    const char message[64] = "Hello World!";
+    signature_t *s = malloc(sizeof(signature_t)); 
 
     create_secret_signing_key(seed, sk);
     compute_public_signing_key(sk, pk);
+    sign(message, 64, pk, sk, s);
+    verify(s, message, 64, pk);
 
-    queue_t *q = SHARED_QUEUE;  
-    msg_t *m = (msg_t *) malloc(sizeof(msg_t));
-    m->f = F_EXIT;
-    int ret = 1;
-    while(ret != 0) {
-      ret = push(q, m);
-    }
+    enclave_exit();
+
     test_completed();
   }
 }

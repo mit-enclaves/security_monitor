@@ -3,8 +3,8 @@
 #include <msgq.h>
 
 void hash(const void * in_data,
-  size_t in_data_size,
-  hash_t * out_hash) {
+    size_t in_data_size,
+    hash_t * out_hash) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_HASH;
@@ -17,8 +17,8 @@ void hash(const void * in_data,
 }
 
 void create_secret_signing_key (
-  const key_seed_t * in_seed,
-  secret_key_t * out_secret_key) {
+    const key_seed_t * in_seed,
+    secret_key_t * out_secret_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_CREATE_SIGN_SK;
@@ -31,8 +31,8 @@ void create_secret_signing_key (
 }
 
 void compute_public_signing_key (
-  const secret_key_t * in_secret_key,
-  public_key_t * out_public_key) {
+    const secret_key_t * in_secret_key,
+    public_key_t * out_public_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_COMPUTE_SIGN_PK;
@@ -45,11 +45,11 @@ void compute_public_signing_key (
 }
 
 void sign (
-  const void * in_message,
-  const size_t in_message_size,
-  const public_key_t * in_public_key,
-  const secret_key_t * in_secret_key,
-  signature_t * out_signature) {
+    const void * in_message,
+    const size_t in_message_size,
+    const public_key_t * in_public_key,
+    const secret_key_t * in_secret_key,
+    signature_t * out_signature) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_SIGN;
@@ -65,10 +65,10 @@ void sign (
 }
 
 void verify (
-  const signature_t * in_signature,
-  const void * in_message,
-  const size_t in_message_size,
-  const public_key_t * in_public_key) {
+    const signature_t * in_signature,
+    const void * in_message,
+    const size_t in_message_size,
+    const public_key_t * in_public_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_VERIFY;
@@ -83,9 +83,9 @@ void verify (
 }
 
 void perform_key_agreement (
-  const public_key_t * public_key_A,
-  const secret_key_t * secret_key_B,
-  symmetric_key_t * out_key) {
+    const public_key_t * public_key_A,
+    const secret_key_t * secret_key_B,
+    symmetric_key_t * out_key) {
   queue_t *q = SHARED_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_KEY_AGREEMENT;
@@ -95,5 +95,15 @@ void perform_key_agreement (
   int ret = 1;
   while(ret != 0) {
     ret = push(q, msg);
+  }
+}
+
+void enclave_exit() {
+  queue_t *q = SHARED_QUEUE;  
+  msg_t *m = (msg_t *) malloc(sizeof(msg_t));
+  m->f = F_EXIT;
+  int ret = 1;
+  while(ret != 0) {
+    ret = push(q, m);
   }
 }

@@ -35,4 +35,6 @@ void perform_key_agreement (
   const secret_key_t * secret_key_B,
   symmetric_key_t * out_key);
 
+void enclave_exit(void);
+
 #endif // CRYPTO_ENCLAVE_API_H

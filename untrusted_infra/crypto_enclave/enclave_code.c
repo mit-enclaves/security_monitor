@@ -6,6 +6,18 @@
 #define SHARED_MEM_REG (0x8a000000)
 
 void enclave_entry() {
+  
+  key_seed_t seed;
+  secret_key_t sk;
+  public_key_t pk;
+  const char message[64] = "Hello World!";
+  signature_t s; 
+
+  create_secret_signing_key(&seed, &sk);
+  compute_public_signing_key(&sk, &pk);
+  sign(message, 64, &pk, &sk, &s);
+  bool retval = verify(&s, message, 64, &pk);
+  
   queue_t * q = (queue_t *) SHARED_MEM_REG;
   msg_t *m;
   int ret;
@@ -50,7 +62,7 @@ void enclave_entry() {
             (signature_t *) m->args[0],
             (const void *) m->args[1],
             (const size_t) m->args[2],
-            (const public_key_t *) m->args[4]);
+            (const public_key_t *) m->args[3]);
         m->done = true;
         break;
       case F_KEY_AGREEMENT:
