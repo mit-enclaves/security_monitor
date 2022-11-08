@@ -145,7 +145,11 @@ typedef struct sm_region_t {
   platform_lock_t lock;
 } sm_region_t;
 
+#define BOOT_INIT_NOT_DONE (0)
+#define BOOT_INIT_DONE     (98765)
+
 typedef struct sm_state_t {
+  int boot_process_stage;
   sm_keys_t keys;
   sm_core_t cores[NUM_CORES];
   sm_region_t regions[NUM_REGIONS];

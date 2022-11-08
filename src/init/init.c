@@ -58,13 +58,17 @@ void sm_init(uintptr_t fdt_boot_addr) {
     printm("kernel_init done\n");
 
     // Resume other cores
+  /*
     uintptr_t hart_mask = 0xf;
     send_ipi_many(&hart_mask, IPI_SOFT);
     printm("IPIs sent\n");
+  */
+    sm->boot_process_stage = BOOT_INIT_DONE;
 
   } else {
     // All cores but core 0 sleep until shared state is initialized
-    platform_wait_for_interrupt();
+    //platform_wait_for_interrupt();
+    while(sm->boot_process_stage != BOOT_INIT_DONE){};
   }
 
   // Initialize platform core state

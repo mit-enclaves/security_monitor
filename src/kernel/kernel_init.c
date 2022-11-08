@@ -101,7 +101,7 @@ void kernel_init(uintptr_t ftd_addr) {
   for(int hart = 0; hart < MAX_HARTS; ++hart) {
     hart_plic_init(hart);
   }
-  prci_test();
+  //prci_test();
   memory_init();
 
   // Initialize the device tree
