@@ -13,6 +13,8 @@ extern uint8_t trap_vector_from_untrusted;
 void sm_init(uintptr_t fdt_boot_addr) {
   printm("Enter sm_init\n");
   sm_state_t * sm = get_sm_state_ptr();
+  
+  sm->boot_process_stage = BOOT_INIT_NOT_DONE;
 
   // IMPORTANT: this will be run by *all* cores
   uintptr_t core_id = platform_get_core_id();
@@ -64,6 +66,7 @@ void sm_init(uintptr_t fdt_boot_addr) {
     printm("IPIs sent\n");
   */
     sm->boot_process_stage = BOOT_INIT_DONE;
+    asm volatile("fence");
 
   } else {
     // All cores but core 0 sleep until shared state is initialized
