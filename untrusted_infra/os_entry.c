@@ -207,7 +207,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     print_str("Test SUCCESSFUL\n\n");
     test_completed();
   }
-  else {
+  else if (core_id == 1) {
     init_heap();
 
     key_seed_t *seed = malloc(sizeof(key_seed_t));
@@ -231,5 +231,11 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     } while((ret != 0) || (m->f != F_EXIT));
 
     test_completed();
+  }
+  else {
+    print_str("Core n ");
+    print_int(core_id);
+    print_str("stalls");
+    while(1){};
   }
 }
