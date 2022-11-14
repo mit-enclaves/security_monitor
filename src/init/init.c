@@ -68,6 +68,8 @@ void sm_init(uintptr_t fdt_boot_addr) {
   */
     sm->boot_process_stage = BOOT_INIT_DONE;
     asm volatile("fence");
+    printm("&sm->boot_process_stage = %x\n", &sm->boot_process_stage);
+    printm("sm->boot_process_stage = %d\n", sm->boot_process_stage);
 
   } else {
     // All cores but core 0 sleep until shared state is initialized

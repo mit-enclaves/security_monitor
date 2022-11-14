@@ -85,25 +85,27 @@ void kernel_init(uintptr_t ftd_addr) {
 
   FDT_ADDR = ftd_addr;
 
-  printm("query_mem\n");
-  query_mem(FDT_ADDR);
+  //printm("query_mem\n");
+  //query_mem(FDT_ADDR);
   printm("query_harts\n");
   query_harts(FDT_ADDR);
   printm("query_clint\n");
   query_clint(FDT_ADDR);
-  printm("query_plic\n");
-  query_plic(FDT_ADDR);
-  printm("query_chosen\n");
-  query_chosen(FDT_ADDR);
+  //printm("query_plic\n");
+  //query_plic(FDT_ADDR);
+  //printm("query_chosen\n");
+  //query_chosen(FDT_ADDR);
   printm("query over\n");
 
+  /*
   plic_init();
   for(int hart = 0; hart < MAX_HARTS; ++hart) {
     hart_plic_init(hart);
   }
+  */
   //prci_test();
-  memory_init();
+  //memory_init();
 
   // Initialize the device tree
-  filter_and_copy_device_tree();
+  //filter_and_copy_device_tree();
 }
