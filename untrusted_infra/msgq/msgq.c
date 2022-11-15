@@ -16,7 +16,7 @@ bool is_full(queue_t *q) {
 }
 
 int push(queue_t *q, void *m) {
-  while(!platform_lock_acquire(&q->lock));
+  while(!platform_lock_acquire(&q->lock)) {};
 
   if(is_full(q)) {
     platform_lock_release(&q->lock);
@@ -32,7 +32,7 @@ int push(queue_t *q, void *m) {
 }
 
 int pop(queue_t *q, void **ret) {
-  while(!platform_lock_acquire(&q->lock));
+  while(!platform_lock_acquire(&q->lock)) {};
   
   if(is_empty(q)) {
     platform_lock_release(&q->lock);

@@ -41,7 +41,7 @@ static void __set_tohost(uintptr_t dev, uintptr_t cmd, uintptr_t data)
 
 
 uint64_t htif_getchar() {
-  platform_lock_acquire(&htif_lock);
+  while(!platform_lock_acquire(&htif_lock)) {};
     __check_fromhost();
     int ch = htif_console_buf;
     if (ch >= 0) {
@@ -54,7 +54,7 @@ uint64_t htif_getchar() {
 }
 
 void htif_putchar(uint8_t c) {
-  platform_lock_acquire(&htif_lock);
+  while(!platform_lock_acquire(&htif_lock)) {};
   __set_tohost(1, 1, c);
   platform_lock_release(&htif_lock);
 }
