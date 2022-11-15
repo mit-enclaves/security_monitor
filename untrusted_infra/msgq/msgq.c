@@ -2,8 +2,10 @@
 #include <stddef.h>
 
 void init_q(queue_t *q) {
+  asm volatile("fence");
   q->head = 0;
   q->tail = 0;
+  asm volatile("fence");
   platform_lock_release(&q->lock);
 }
 
@@ -23,8 +25,10 @@ int push(queue_t *q, void *m) {
     return 1; 
   }
   
+  asm volatile("fence");
   q->buf[q->tail] = m;
   q->tail = (q->tail + SIZE_QUEUE - 1) % SIZE_QUEUE;
+  asm volatile("fence");
 
   platform_lock_release(&q->lock);
 
@@ -40,8 +44,10 @@ int pop(queue_t *q, void **ret) {
     return 1; 
   }
   
+  asm volatile("fence");
   *ret =  q->buf[q->head];
   q->head = (q->head + SIZE_QUEUE - 1) % SIZE_QUEUE;
+  asm volatile("fence");
 
   platform_lock_release(&q->lock);
 
