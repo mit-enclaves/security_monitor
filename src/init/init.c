@@ -14,13 +14,8 @@ void sm_init(uintptr_t fdt_boot_addr) {
   printm("Enter sm_init\n");
   sm_state_t * sm = get_sm_state_ptr();
   
-  asm volatile("fence\n\\
-      fence.i\n\\
-      sfence.vma\n");
   sm->boot_process_stage = BOOT_INIT_NOT_DONE;
-  asm volatile("fence\n\\
-      fence.i\n\\
-      sfence.vma\n");
+  asm volatile("fence");
 
   // IMPORTANT: this will be run by *all* cores
   uintptr_t core_id = platform_get_core_id();
@@ -71,13 +66,9 @@ void sm_init(uintptr_t fdt_boot_addr) {
     send_ipi_many(&hart_mask, IPI_SOFT);
     printm("IPIs sent\n");
   */
-    asm volatile("fence\n\\
-        fence.i\n\\
-        sfence.vma\n");
+    asm volatile("fence");
     sm->boot_process_stage = BOOT_INIT_DONE;
-    asm volatile("fence\n\\
-        fence.i\n\\
-        sfence.vma\n");
+    asm volatile("fence");
     printm("&sm->boot_process_stage = %x\n", &sm->boot_process_stage);
     printm("sm->boot_process_stage = %d\n", sm->boot_process_stage);
 
@@ -85,9 +76,7 @@ void sm_init(uintptr_t fdt_boot_addr) {
     // All cores but core 0 sleep until shared state is initialized
     //platform_wait_for_interrupt();
     while(sm->boot_process_stage != BOOT_INIT_DONE) {
-      asm volatile("fence\n\\
-          fence.i\n\\
-          sfence.vma\n");
+      asm volatile("fence");
     }
   }
 
