@@ -5,11 +5,16 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <platform_lock.h>
+
+static volatile platform_lock_t putstring_lock;
 
 void putstring(const char* s)
 {
+  while(!platform_lock_acquire(&putstring_lock)) {};
   while (*s)
     console_putchar(*s++);
+  platform_lock_release(&putstring_lock);
 }
 
 int vsnprintf(char* out, size_t n, const char* s, va_list vl)
