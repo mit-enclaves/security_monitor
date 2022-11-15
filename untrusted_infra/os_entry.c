@@ -208,6 +208,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     int ret;
     do {
       ret = pop(qresp, (void **) &m);
+      if(ret == 0) {
+        printm("RPC with f code %d has returned\n", m->f);
+      }
     } while((ret != 0) || (m->f != F_EXIT));
 
     printm("Received enclave exit confirmation\n");

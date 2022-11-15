@@ -2,7 +2,7 @@
 SM_DIR:=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # Define compiler
-PYTHON=python
+PYTHON=python2
 CC=riscv64-unknown-elf-gcc
 
 OBJCOPY=riscv64-unknown-elf-objcopy
