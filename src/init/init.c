@@ -11,7 +11,6 @@ extern uint8_t trap_vector_from_untrusted;
 #endif
 
 void sm_init(uintptr_t fdt_boot_addr) {
-  printm("Enter sm_init\n");
   volatile sm_state_t * sm = get_sm_state_ptr();
   
   sm->boot_process_stage = BOOT_INIT_NOT_DONE;
@@ -19,6 +18,10 @@ void sm_init(uintptr_t fdt_boot_addr) {
   // IMPORTANT: this will be run by *all* cores
   uintptr_t core_id = platform_get_core_id();
   if (core_id == 0) {
+    
+    console_init();
+
+    printm("Enter sm_init\n");
     // Initialize core metadata
     for ( int i=0; i<NUM_CORES; i++ ) {
       sm->cores[i].owner = OWNER_UNTRUSTED;

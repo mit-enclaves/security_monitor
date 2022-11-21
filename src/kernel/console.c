@@ -2,6 +2,11 @@
 
 static volatile platform_lock_t putstring_lock;
 
+void console_init(){
+  platform_lock_release(&putstring_lock);
+  htif_init();
+}
+
 void putstring(const char* s)
 {
   while(!platform_lock_acquire(&putstring_lock)) {};

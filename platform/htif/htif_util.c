@@ -59,6 +59,9 @@ void htif_putchar(uint8_t c) {
   platform_lock_release(&htif_lock);
 }
 
+void htif_init() {
+  platform_lock_release(&htif_lock);
+}
 
 /*
 void print_api_r(api_result_t res) {
