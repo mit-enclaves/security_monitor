@@ -11,15 +11,17 @@ extern uint8_t trap_vector_from_untrusted;
 #endif
 
 void sm_init(uintptr_t fdt_boot_addr) {
-  printm("Enter sm_init\n");
-  sm_state_t * sm = get_sm_state_ptr();
+  volatile sm_state_t * sm = get_sm_state_ptr();
   
   sm->boot_process_stage = BOOT_INIT_NOT_DONE;
-  asm volatile("fence");
 
   // IMPORTANT: this will be run by *all* cores
   uintptr_t core_id = platform_get_core_id();
   if (core_id == 0) {
+    
+    console_init();
+
+    printm("Enter sm_init\n");
     // Initialize core metadata
     for ( int i=0; i<NUM_CORES; i++ ) {
       sm->cores[i].owner = OWNER_UNTRUSTED;
@@ -42,7 +44,9 @@ void sm_init(uintptr_t fdt_boot_addr) {
     }
 
     // Initialize signing enclave measurement
+    asm volatile("fence");
     const uint8_t signing_enclave_measurement[64] = SIGNING_ENCLAVE_MEASUREMENT;
+    asm volatile("fence");
     memcpy( sm->signing_enclave_measurement.bytes, signing_enclave_measurement, sizeof(signing_enclave_measurement) );
 
     // Initialize untrusted mailboxes : all are empty and unused.
@@ -67,14 +71,13 @@ void sm_init(uintptr_t fdt_boot_addr) {
     printm("IPIs sent\n");
   */
     sm->boot_process_stage = BOOT_INIT_DONE;
-    asm volatile("fence");
+    printm("&sm->boot_process_stage = %x\n", &sm->boot_process_stage);
+    printm("sm->boot_process_stage = %d\n", sm->boot_process_stage);
 
   } else {
     // All cores but core 0 sleep until shared state is initialized
     //platform_wait_for_interrupt();
-    while(sm->boot_process_stage != BOOT_INIT_DONE) {
-      asm volatile("fence");
-    }
+    while(sm->boot_process_stage != BOOT_INIT_DONE) {};
   }
 
   // Initialize platform core state

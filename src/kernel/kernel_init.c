@@ -85,8 +85,8 @@ void kernel_init(uintptr_t ftd_addr) {
 
   FDT_ADDR = ftd_addr;
 
-  printm("query_mem\n");
-  query_mem(FDT_ADDR);
+  //printm("query_mem\n");
+  //query_mem(FDT_ADDR);
   printm("query_harts\n");
   query_harts(FDT_ADDR);
   printm("query_clint\n");
@@ -97,10 +97,12 @@ void kernel_init(uintptr_t ftd_addr) {
   query_chosen(FDT_ADDR);
   printm("query over\n");
 
+  /*
   plic_init();
   for(int hart = 0; hart < MAX_HARTS; ++hart) {
     hart_plic_init(hart);
   }
+  */
   //prci_test();
   memory_init();
 

@@ -16,6 +16,8 @@ extern volatile uint64_t fromhost;
 #define FROMHOST_CMD(fromhost_value) ((uint64_t)(fromhost_value) << 8 >> 56)
 #define FROMHOST_DATA(fromhost_value) ((uint64_t)(fromhost_value) << 16 >> 16)
 
+void htif_init();
+
 void htif_putchar(uint8_t c);
 
 uint64_t htif_getchar(void);

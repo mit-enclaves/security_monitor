@@ -2,7 +2,7 @@
 SM_DIR:=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # Define compiler
-PYTHON=python
+PYTHON=python2
 CC=riscv64-unknown-elf-gcc
 
 OBJCOPY=riscv64-unknown-elf-objcopy
@@ -20,7 +20,7 @@ ifndef SANCTUM_QEMU
 	$(error SANCTUM_QEMU is undefined)
 endif
 
-QEMU_FLAGS= -smp cpus=4 -machine sanctum -m 2G -nographic
+QEMU_FLAGS= -smp cpus=2 -machine sanctum -m 2G -nographic
 DEBUG_QEMU_FLAGS= -S -s
 
 # Define Directories
