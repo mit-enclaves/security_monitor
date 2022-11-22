@@ -193,9 +193,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     printm("Creat PK\n");
     compute_public_signing_key(sk, pk);
     printm("Sign\n");
-    for(int i = 0; i < 10000; i++){
-      sign(message, 64, pk, sk, s);
-    }
+    sign(message, 64, pk, sk, s);
     printm("Verify SK\n");
     verify(s, message, 64, pk);
 
@@ -203,25 +201,25 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     enclave_exit();
     
     printm("Done sending RPC\n");
-    test_completed();
-  }
-  else if (core_id == 2) {
+
     msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
     do {
       ret = pop(qresp, (void **) &m);
-      //if(ret == 0) {
-      //  printm("RPC with f code %d has returned\n", m->f);
-      //}
+      if(ret == 0) {
+        printm("RPC with f code %d has returned\n", m->f);
+      }
     } while((ret != 0) || (m->f != F_EXIT));
 
     printm("Received enclave exit confirmation\n");
 
-    send_exit_cmd(0);  
+    test_completed();
   }
   else {
-    printm("Core n %d stalls\n", core_id);
-    test_completed();
+    print_str("Core n ");
+    print_int(core_id);
+    print_str("stalls");
+    while(1){};
   }
 }
