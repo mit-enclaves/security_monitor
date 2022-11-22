@@ -41,8 +41,8 @@
 
 #define REGION_SHIFT  (25)
 
-#define MAX_HARTS 2
-#define NUM_CORES     (2)
+#define MAX_HARTS 4
+#define NUM_CORES     (4)
 
 // SATP configuration
 #define SATP_MODE_SV39 (8ul)
