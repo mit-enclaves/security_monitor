@@ -91,10 +91,10 @@ void kernel_init(uintptr_t ftd_addr) {
   query_harts(FDT_ADDR);
   printm("query_clint\n");
   query_clint(FDT_ADDR);
-  //printm("query_plic\n");
-  //query_plic(FDT_ADDR);
-  //printm("query_chosen\n");
-  //query_chosen(FDT_ADDR);
+  printm("query_plic\n");
+  query_plic(FDT_ADDR);
+  printm("query_chosen\n");
+  query_chosen(FDT_ADDR);
   printm("query over\n");
 
   /*
@@ -104,8 +104,8 @@ void kernel_init(uintptr_t ftd_addr) {
   }
   */
   //prci_test();
-  //memory_init();
+  memory_init();
 
   // Initialize the device tree
-  //filter_and_copy_device_tree();
+  filter_and_copy_device_tree();
 }
