@@ -11,8 +11,12 @@ extern uintptr_t region3;
 extern uintptr_t enclave_start;
 extern uintptr_t enclave_end;
 
-void test_entry(int core_id, uintptr_t fdt_addr) {
+// INPUTS
+extern int len_a;
+extern int len_elements[];
+extern char *a[];
 
+void test_entry(int core_id, uintptr_t fdt_addr) {
   if(core_id == 0) {
     //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
     uint64_t region2_id = addr_to_region_id((uintptr_t) &region2);
@@ -185,41 +189,56 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     key_seed_t *seed = malloc(sizeof(key_seed_t));
     secret_key_t *sk = malloc(sizeof(secret_key_t));
     public_key_t *pk = malloc(sizeof(public_key_t));
-    const char message[64] = "Hello World!";
     signature_t *s = malloc(sizeof(signature_t)); 
 
     printm("Creat SK\n");
     create_secret_signing_key(seed, sk);
     printm("Creat PK\n");
     compute_public_signing_key(sk, pk);
-    printm("Sign\n");
-    sign(message, 64, pk, sk, s);
-    printm("Verify SK\n");
-    verify(s, message, 64, pk);
-
-    printm("Send Enclave Exit\n");
-    enclave_exit();
     
-    printm("Done sending RPC\n");
+  
+    // *** BEGINING BENCHMARK *** 
 
     msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
+
+    //printm("Sign\n");
+    for(int i = 0; i < 10000; i++) { 
+      if(req_queue_is_full()) { 
+        do {
+          ret = pop(qresp, (void **) &m);
+          //if(ret == 0) {
+          //  printm("RPC with f code %d has returned\n", m->f);
+          //}
+        } while(!resp_queue_is_empty());
+      }
+      sign(a[i%len_a], len_elements[i%len_a], pk, sk, s);
+    }
+
+    //printm("Verify SK\n");
+    //verify(s, a[0], len_elements[0], pk);
+
+    //printm("Send Enclave Exit\n");
+    enclave_exit();
+    
+    //printm("Done sending RPC\n");
+
     do {
       ret = pop(qresp, (void **) &m);
-      if(ret == 0) {
-        printm("RPC with f code %d has returned\n", m->f);
+      if((ret == 0) && (m->f == F_VERIFY)) {
+        printm("Verif result %d\n", m->ret);
       }
     } while((ret != 0) || (m->f != F_EXIT));
 
+    // *** END BENCHMARK *** 
+    
     printm("Received enclave exit confirmation\n");
-
-    test_completed();
+    
+    send_exit_cmd(0);
   }
   else {
-    print_str("Core n ");
-    print_int(core_id);
-    print_str("stalls");
-    while(1){};
+    printm("Core n %d\n\n", core_id);
+    test_completed();
   }
 }

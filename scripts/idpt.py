@@ -32,7 +32,7 @@ NUMBER_MEGA_PAGES = (MEGA_PAGE_END - MEGA_PAGE_START) / MEGA_PAGE_SIZE
 SIZE_PAGE_TABLE = (NUMBER_MEGA_PAGES + NUMBER_GIGA_PAGES) * size_pte
 
 def print_usage():
-    print "Usage: %s <IDPT_BASE_ADDR> <output file path>" % (sys.argv[0])
+    print("Usage: ", sys.argv[0] ," <IDPT_BASE_ADDR> <output file path>")
 
 if (len(sys.argv) != 3):
     print_usage()
@@ -90,7 +90,7 @@ with open(name_output_file, 'wb') as f:
 
 
     # Generate the mega page table (PT_0) for pages starting at 0x80000000
-    for i in range(NUMBER_MEGA_PAGES):
+    for i in range(int(NUMBER_MEGA_PAGES)):
         pte = (((MEGA_PAGE_START+(i * MEGA_PAGE_SIZE)) >> PGSHIFT) << PTE_PPN_SHIFT) | leaf_permissions
         # write pte to f
         bytes_to_write = struct.pack('<Q', pte)

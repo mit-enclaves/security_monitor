@@ -12,6 +12,8 @@ typedef struct queue_t {
   platform_lock_t lock;
 } queue_t;
 
+bool is_empty(queue_t *q);
+bool is_full(queue_t *q);
 int push(queue_t *q, void *m);
 int pop(queue_t *q, void **ret);
 

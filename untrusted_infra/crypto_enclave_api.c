@@ -107,3 +107,13 @@ void enclave_exit() {
     ret = push(q, msg);
   } while(ret != 0);
 }
+
+bool req_queue_is_full() {
+  queue_t *q = SHARED_REQU_QUEUE;  
+  return is_full(q); 
+}
+
+bool resp_queue_is_empty() {
+  queue_t *q = SHARED_RESP_QUEUE;  
+  return is_empty(q); 
+}

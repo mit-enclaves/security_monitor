@@ -37,4 +37,7 @@ void perform_key_agreement (
 
 void enclave_exit(void);
 
+bool req_queue_is_full(void);
+bool resp_queue_is_empty(void);
+
 #endif // CRYPTO_ENCLAVE_API_H

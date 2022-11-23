@@ -9,18 +9,32 @@ void init_q(queue_t *q) {
   platform_lock_release(&q->lock);
 }
 
-bool is_empty(queue_t *q) {
+bool _is_empty(queue_t *q) {
   return q->tail == q->head;
 }
 
-bool is_full(queue_t *q) {
+bool _is_full(queue_t *q) {
   return q->tail == ((q->head + 1) % SIZE_QUEUE);
+}
+
+bool is_empty(queue_t *q) {
+  while(!platform_lock_acquire(&q->lock)) {};
+  bool ret = _is_empty(q);
+  platform_lock_release(&q->lock);
+  return ret;
+}
+
+bool is_full(queue_t *q) {
+  while(!platform_lock_acquire(&q->lock)) {};
+  bool ret = _is_full(q);
+  platform_lock_release(&q->lock);
+  return ret;
 }
 
 int push(queue_t *q, void *m) {
   while(!platform_lock_acquire(&q->lock)) {};
 
-  if(is_full(q)) {
+  if(_is_full(q)) {
     platform_lock_release(&q->lock);
     return 1; 
   }
@@ -38,7 +52,7 @@ int push(queue_t *q, void *m) {
 int pop(queue_t *q, void **ret) {
   while(!platform_lock_acquire(&q->lock)) {};
   
-  if(is_empty(q)) {
+  if(_is_empty(q)) {
     platform_lock_release(&q->lock);
     *ret = NULL;
     return 1; 

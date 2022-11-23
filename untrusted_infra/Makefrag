@@ -51,6 +51,11 @@ $(IDPT_BIN): $(SM_DIR)/scripts/idpt.py
 
 ALL+=$(IDPT_BIN)
 
+## Input for benchmark
+INPUTS:=$(INFRA_DIR)/inputs.c
+$(INPUTS): $(SM_DIR)/scripts/inputs.py
+	$(PYTHON) $(SM_DIR)/scripts/inputs.py $@
+
 ## master_test
 
 # Target
@@ -79,6 +84,7 @@ PAYLOAD_SRC := \
 	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(INFRA_DIR)/sbi/console.c \
+	$(INPUTS) \
 
 # Rules
 $(PAYLOAD_ELF): $(PAYLOAD_SRC) $(INFRA_LD) $(BUILD_DIR) $(SM_BINARY) $(CRYPTO_ENCLAVE_BIN) $(IDPT_BIN)

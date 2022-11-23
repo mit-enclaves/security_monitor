@@ -2,7 +2,7 @@
 SM_DIR:=$(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # Define compiler
-PYTHON=python2
+PYTHON=python3
 CC=riscv64-unknown-elf-gcc
 
 OBJCOPY=riscv64-unknown-elf-objcopy
@@ -50,6 +50,7 @@ all: $(ALL)
 .PHONY: clean
 clean:
 	-rm -rf $(BUILD_DIR)
+	-rm -rf $(INPUTS)
 
 # Print any variable for debug
 print-%: ; @echo $*=$($*)
