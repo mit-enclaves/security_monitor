@@ -196,15 +196,15 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     printm("Creat PK\n");
     compute_public_signing_key(sk, pk);
     
-  
-    // *** BEGINING BENCHMARK *** 
-
     msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
 
+    // *** BEGINING BENCHMARK ***
+    //riscv_perf_cntr_begin();
+
     //printm("Sign\n");
-    for(int i = 0; i < 10000; i++) { 
+    for(int i = 0; i < 1000; i++) { 
       if(req_queue_is_full()) { 
         do {
           ret = pop(qresp, (void **) &m);
@@ -230,7 +230,8 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
         printm("Verif result %d\n", m->ret);
       }
     } while((ret != 0) || (m->f != F_EXIT));
-
+    
+    //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
     
     printm("Received enclave exit confirmation\n");

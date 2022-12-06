@@ -7,6 +7,9 @@
 
 void os_entry(int core_id, uintptr_t fdt_addr) __attribute__((noreturn));
 
+#define riscv_perf_cntr_begin() asm volatile("csrwi 0x801, 1")
+#define riscv_perf_cntr_end() asm volatile("csrwi 0x801, 0")
+
 static inline void test_completed (void) __attribute__((noreturn));
 static inline void test_completed (void) {
   print_str("END TEST\n");

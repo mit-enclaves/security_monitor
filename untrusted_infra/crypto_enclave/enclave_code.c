@@ -7,12 +7,19 @@
 #define SHARED_REQU_QUEUE ((queue_t *) SHARED_MEM_REG)
 #define SHARED_RESP_QUEUE ((queue_t *) (SHARED_MEM_REG + sizeof(queue_t)))
 
+#define riscv_perf_cntr_begin() asm volatile("csrwi 0x801, 1")
+#define riscv_perf_cntr_end() asm volatile("csrwi 0x801, 0")
+
+
 void enclave_entry() {
   queue_t * qreq = SHARED_REQU_QUEUE;
   queue_t * qres = SHARED_RESP_QUEUE;
   
   msg_t *m;
   int ret;
+    
+  // *** BEGINING BENCHMARK ***
+  //riscv_perf_cntr_begin();
 
   while(true) {
     ret = pop(qreq, (void **) &m);
@@ -58,6 +65,8 @@ void enclave_entry() {
         do {
           ret = push(qres, m);
         } while(ret != 0);
+	//riscv_perf_cntr_end();
+	// *** END BENCHMARK *** 
         sm_exit_enclave();
       default:
         break;
