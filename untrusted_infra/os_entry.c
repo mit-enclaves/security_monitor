@@ -11,12 +11,22 @@ extern uintptr_t region3;
 extern uintptr_t enclave_start;
 extern uintptr_t enclave_end;
 
+#define SHARED_MEM_SYNC (0x90000000)
+
+#define STATE_0 1
+#define STATE_1 2
+#define STATE_2 3
+#define STATE_3 4
+
 // INPUTS
 extern int len_a;
 extern int len_elements[];
 extern char *a[];
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
+  
+  int *flag = (int *) SHARED_MEM_SYNC;
+
   if(core_id == 0) {
     //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
     uint64_t region2_id = addr_to_region_id((uintptr_t) &region2);
@@ -176,6 +186,10 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
       test_completed();
     }
 
+    // Let other thread know we are ready
+    while(*flag != STATE_0);
+    *flag = STATE_1;
+
     printm("Enclave Enter\n");
 
     result = sm_enclave_enter(enclave_id, thread_id);
@@ -184,6 +198,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
   else if (core_id == 1) {
+    *flag = STATE_0;
+    while(*flag != STATE_1);
+
     init_heap();
 
     key_seed_t *seed = malloc(sizeof(key_seed_t));
@@ -200,8 +217,12 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
 
+    for(int i = 0; i < 10000; i++) {
+    	int a = 10;
+    };
+
     // *** BEGINING BENCHMARK ***
-    //riscv_perf_cntr_begin();
+    riscv_perf_cntr_begin();
 
     //printm("Sign\n");
     for(int i = 0; i < 1000; i++) { 
@@ -231,7 +252,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
       }
     } while((ret != 0) || (m->f != F_EXIT));
     
-    //riscv_perf_cntr_end();
+    riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
     
     printm("Received enclave exit confirmation\n");
