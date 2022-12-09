@@ -7,9 +7,9 @@
 
 typedef struct queue_t {
   void *buf[SIZE_QUEUE];
-  int head;
-  int tail;
-  platform_lock_t lock;
+  volatile int head;
+  volatile int tail;
+  volatile platform_lock_t lock;
 } queue_t;
 
 bool is_empty(queue_t *q);

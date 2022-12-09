@@ -25,7 +25,7 @@ extern char *a[];
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
   
-  int *flag = (int *) SHARED_MEM_SYNC;
+  volatile int *flag = (int *) SHARED_MEM_SYNC;
 
   if(core_id == 0) {
     //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
@@ -189,6 +189,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     // Let other thread know we are ready
     while(*flag != STATE_0);
     *flag = STATE_1;
+    asm volatile("fence");
 
     printm("Enclave Enter\n");
 
@@ -199,6 +200,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   }
   else if (core_id == 1) {
     *flag = STATE_0;
+    asm volatile("fence");
     while(*flag != STATE_1);
 
     init_heap();
