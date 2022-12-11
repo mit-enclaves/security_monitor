@@ -8,7 +8,6 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
 
 void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint64_t core_id, uintptr_t fdt_addr) {
 
-  printm("Platform jump to unrusted\n");
   // Set the interrupt handler address ()
   write_csr(mtvec, ( ((uint64_t)(&trap_vector_from_untrusted))&(~0x3L) ));
 

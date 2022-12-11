@@ -58,7 +58,6 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/region_check_owned.c \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
-	$(SM_ENCLAVE_DEBBUG_SRC) \
 
 # Headers
 SM_INCLUDES := \

@@ -246,7 +246,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     //printm("Send Enclave Exit\n");
     enclave_exit();
     
-    printm("Done sending RPC\n");
+    //printm("Done sending RPC\n");
 
     do {
       ret = pop(qresp, (void **) &m);
