@@ -203,7 +203,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     while(*flag != STATE_1);
 
     init_enclave_queues();
-    init_heap();
+    
+    // HACKS ON HACKS - Leaves spaces for the two queues
+    init_heap(SHARED_MEM_REG + (2 * sizeof(queue_t)), 500 * PAGE_SIZE);
 
     key_seed_t *seed = malloc(sizeof(key_seed_t));
     secret_key_t *sk = malloc(sizeof(secret_key_t));

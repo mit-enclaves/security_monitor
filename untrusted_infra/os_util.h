@@ -36,5 +36,6 @@ static inline void * region_id_to_addr (uint64_t region_id) {
 
 void init_heap();
 void *malloc(size_t size);
+void free(void *ptr);
 
 #endif // OS_H
