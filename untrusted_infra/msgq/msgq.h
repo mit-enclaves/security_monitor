@@ -12,6 +12,7 @@ typedef struct queue_t {
   volatile platform_lock_t lock;
 } queue_t;
 
+void init_q(queue_t *q);
 bool is_empty(queue_t *q);
 bool is_full(queue_t *q);
 int push(queue_t *q, void *m);

@@ -24,6 +24,8 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
   // Apply state transition
   // ----------------------
 
+  printm("Exit Enclave\n");
+
   sm_state_t * sm = get_sm_state_ptr();
 
   uint64_t core_id = read_csr(mhartid);

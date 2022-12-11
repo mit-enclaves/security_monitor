@@ -108,6 +108,13 @@ void enclave_exit() {
   } while(ret != 0);
 }
 
+void init_enclave_queues() {
+  queue_t *qrequ = SHARED_REQU_QUEUE;  
+  queue_t *qresp = SHARED_RESP_QUEUE;
+  init_q(qrequ);
+  init_q(qresp);
+}
+
 bool req_queue_is_full() {
   queue_t *q = SHARED_REQU_QUEUE;  
   return is_full(q); 

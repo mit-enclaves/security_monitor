@@ -35,6 +35,11 @@ $(SM_ENCLAVE_LD): $(SM_SRC_DIR)/sm.enclave.lds.in $(BUILD_DIR)
 HANDLER_ELF := $(BUILD_DIR)/sm.enclave.elf
 HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 
+SM_ENCLAVE_DEBBUG_SRC := \
+	$(SM_SRC_DIR)/kernel/console.c \
+	$(PLATFORM_DIR)/htif/htif.c \
+	$(PLATFORM_DIR)/htif/htif_util.c \
+
 # Sources
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
@@ -53,6 +58,7 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/region_check_owned.c \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
+	$(SM_ENCLAVE_DEBBUG_SRC) \
 
 # Headers
 SM_INCLUDES := \

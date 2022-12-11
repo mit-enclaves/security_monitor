@@ -32,16 +32,19 @@ void enclave_entry() {
         hash((const void *) m->args[0],
             (size_t) m->args[1],
             (hash_t *) m->args[2]);
+	m->ret = 0;
         break;
       case F_CREATE_SIGN_SK:
         create_secret_signing_key(
             (key_seed_t *) m->args[0],
             (secret_key_t *) m->args[1]);
+	m->ret = 0;
         break;
       case F_COMPUTE_SIGN_PK:
         compute_public_signing_key(
             (secret_key_t *) m->args[0],
             (public_key_t *) m->args[1]);
+	m->ret = 0;
         break;
       case F_SIGN:
         sign(
@@ -50,6 +53,7 @@ void enclave_entry() {
             (const public_key_t *) m->args[2],
             (const secret_key_t *) m->args[3],
             (signature_t *) m->args[4]);
+	m->ret = 0;
         break;
       case F_VERIFY:
         m->ret = verify(
@@ -61,7 +65,8 @@ void enclave_entry() {
       case F_KEY_AGREEMENT:
         break;
       case F_EXIT:
-        m->done = true;
+        m->ret = 0;
+	m->done = true;
         do {
           ret = push(qres, m);
         } while(ret != 0);

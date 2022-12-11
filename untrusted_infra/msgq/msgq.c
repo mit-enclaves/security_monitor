@@ -43,7 +43,7 @@ int push(queue_t *q, void *m) {
   q->buf[q->tail] = m;
   q->tail = (q->tail + SIZE_QUEUE - 1) % SIZE_QUEUE;
   asm volatile("fence");
-
+  
   platform_lock_release(&q->lock);
 
   return 0;

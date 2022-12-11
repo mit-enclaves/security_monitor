@@ -37,6 +37,7 @@ void perform_key_agreement (
 
 void enclave_exit(void);
 
+void init_enclave_queues(void);
 bool req_queue_is_full(void);
 bool resp_queue_is_empty(void);
 
