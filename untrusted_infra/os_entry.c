@@ -24,7 +24,6 @@ extern int len_elements[];
 extern char *a[];
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
-  printm("Reboot\n"); 
   volatile int *flag = (int *) SHARED_MEM_SYNC;
 
   if(core_id == 0) {
@@ -37,7 +36,6 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     printm("\n");
 
     printm("Region block\n");
-    printm("Here core id %d\n", core_id);
 
     result = sm_region_block(region3_id);
     if(result != MONITOR_OK) {
@@ -75,8 +73,6 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     }
 
     printm("Region block\n");
-    printm("Here2\n");
-
 
     result = sm_region_block(region2_id);
     if(result != MONITOR_OK) {
@@ -219,7 +215,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     printm("Creat PK\n");
     compute_public_signing_key(sk, pk);
     
-    volatile msg_t *m;
+    msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
 
@@ -231,7 +227,6 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
       if(req_queue_is_full()) { 
         do {
           ret = pop(qresp, (void **) &m);
-	  asm volatile("fence");
           //if(ret == 0) {
           //  printm("RPC with f code %d has returned\n", m->f);
           //}
@@ -250,7 +245,6 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     do {
       ret = pop(qresp, (void **) &m);
-      asm volatile("fence");
       //if((ret == 0)) { //&& (m->f == F_VERIFY)) {
         //printm("result\n"); // %d\n", m->ret);
       //}

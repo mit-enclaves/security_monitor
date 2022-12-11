@@ -36,16 +36,15 @@ int push(queue_t *q, void *m) {
 
   if(_is_full(q)) {
     platform_lock_release(&q->lock);
+    asm volatile("fence");
     return 1; 
   }
   
-  asm volatile("fence");
   q->buf[q->tail] = m;
   q->tail = (q->tail + SIZE_QUEUE - 1) % SIZE_QUEUE;
-  asm volatile("fence");
   
   platform_lock_release(&q->lock);
-
+  asm volatile("fence");
   return 0;
 }
 
@@ -55,16 +54,15 @@ int pop(queue_t *q, void **ret) {
   if(_is_empty(q)) {
     platform_lock_release(&q->lock);
     *ret = NULL;
+    asm volatile("fence");
     return 1; 
   }
   
-  asm volatile("fence");
   *ret =  q->buf[q->head];
   q->head = (q->head + SIZE_QUEUE - 1) % SIZE_QUEUE;
-  asm volatile("fence");
 
   platform_lock_release(&q->lock);
-
+  asm volatile("fence");
   return 0;
 }
 
