@@ -199,8 +199,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     result = sm_enclave_enter(enclave_id, thread_id);
 
     printm("Test SUCCESSFUL\n\n");
-    while(1){};
-    //test_completed();
+    test_completed();
   }
   else if (core_id == 1) {
     *flag = STATE_0;
@@ -233,9 +232,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
         do {
           ret = pop(qresp, (void **) &m);
 	  asm volatile("fence");
-          if(ret == 0) {
-            printm("RPC with f code %d has returned\n", m->f);
-          }
+          //if(ret == 0) {
+          //  printm("RPC with f code %d has returned\n", m->f);
+          //}
         } while(!resp_queue_is_empty());
       }
       sign(a[i%len_a], len_elements[i%len_a], pk, sk, s);
@@ -252,18 +251,16 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     do {
       ret = pop(qresp, (void **) &m);
       asm volatile("fence");
-      if((ret == 0)) { //&& (m->f == F_VERIFY)) {
-        printm("result\n"); // %d\n", m->ret);
-      }
-    } while(!resp_queue_is_empty()); // || (m->f != F_EXIT));
+      //if((ret == 0)) { //&& (m->f == F_VERIFY)) {
+        //printm("result\n"); // %d\n", m->ret);
+      //}
+    } while((ret != 0) || (m->f != F_EXIT));
    
-    printm("Last function %d\n", m->f); 
+    //printm("Last function %d\n", m->f); 
     //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
-    if(m->f == F_EXIT) {
-      printm("Received enclave exit confirmation\n");
-      send_exit_cmd(0);
-    }
+    printm("Received enclave exit confirmation\n");
+    send_exit_cmd(0);
   }
   else {
     printm("Core n %d\n\n", core_id);
