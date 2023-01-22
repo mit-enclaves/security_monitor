@@ -56,9 +56,10 @@ static inline int emulate_write_csr(int num, uintptr_t value, uintptr_t mstatus)
     case CSR_SATP:
         // Make sure the instruction comes from S mode
         assert((EXTRACT_FIELD(mstatus, MSTATUS_MPP) == PRV_S));
-        // Verify that the mode is SV32
-        assert(((value >> SATP_MODE_OFFSET) == SATP_MODE_SV39));
-        write_csr(satp, value);
+        if((value >> SATP_MODE_OFFSET) == SATP_MODE_SV39) {
+          write_csr(satp, value);
+        }
+        return 0;
     case CSR_CYCLE: write_csr(mcycle, value); return 0;
     case CSR_INSTRET: write_csr(minstret, value); return 0;
     case CSR_MHPMCOUNTER3: write_csr(mhpmcounter3, value); return 0;
@@ -111,7 +112,7 @@ void static emulate_system_opcode(uintptr_t* regs, uintptr_t mcause, uintptr_t m
 void illegal_instruction_trap_handler(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc) {
   uintptr_t mstatus = read_csr(mstatus);
   insn_t insn = read_csr(mtval);
-
+  
   if (insn == 0)
     insn = get_insn(mepc, &mstatus);
 

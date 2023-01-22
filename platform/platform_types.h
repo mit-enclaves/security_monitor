@@ -37,9 +37,9 @@ typedef struct {
   volatile uint64_t* timecmp;
 
   volatile uint32_t* plic_m_thresh;
-  volatile uintptr_t* plic_m_ie;
+  volatile uint32_t* plic_m_ie;
   volatile uint32_t* plic_s_thresh;
-  volatile uintptr_t* plic_s_ie;
+  volatile uint32_t* plic_s_ie;
 } hls_t;
 
 #endif // SM_PLATFORM_TYPES_H

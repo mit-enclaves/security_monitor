@@ -40,6 +40,7 @@
 #define MIP_MTIP            (1 << IRQ_M_TIMER)
 #define MIP_MSIP            (1 << IRQ_M_SOFT)
 #define MIP_SEIP            (1 << IRQ_S_EXT)
+#define MIP_MEIP            (1 << IRQ_M_EXT)
 
 // Validate parameterization
 // -------------------------

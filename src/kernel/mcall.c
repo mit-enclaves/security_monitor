@@ -62,13 +62,6 @@ send_ipi:
   regs[10] = retval;
 }
 
-hls_t* hls_init(uintptr_t id)
-{
-  hls_t* hls = OTHER_HLS(id);
-  memset(hls, 0, sizeof(*hls));
-  return hls;
-}
-
 static uintptr_t mcall_console_putchar(uint8_t ch)
 {
   console_putchar(ch);
@@ -128,4 +121,9 @@ void send_ipi_many(uintptr_t* pmask, int event)
     *HLS()->ipi = incoming_ipi;
     mb();
   }
+}
+
+void bad_trap(uintptr_t mcause, uintptr_t mepc, uintptr_t mtval) {
+  printm("Bad trap %ld at address %lx with mtval %lx\n", (int) mcause, mepc, mtval);
+  platform_panic();
 }

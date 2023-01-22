@@ -8,6 +8,16 @@ size_t plic_ndevs;
 void* kernel_start;
 void* kernel_end;
 
+// Weirdly enough, bigger values seems to create an undefined behaviour.. We chose this one arbitrarily.
+#define T_MAX (0xefffffff)
+
+hls_t* hls_init(uintptr_t hart_id)
+{
+  hls_t* hls = OTHER_HLS(hart_id);
+  memset(hls, 0, sizeof(*hls));
+  return hls;
+}
+
 static void memory_init()
 {
   mem_size = mem_size / PAGE_SIZE * PAGE_SIZE;
@@ -19,12 +29,14 @@ static void plic_init()
     plic_priorities[i] = 1;
 }
 
-static void hart_plic_init(int hart)
+static void hart_plic_init()
 {
   // clear pending interrupts
-  *OTHER_HLS(hart)->ipi = 0;
-  //*OTHER_HLS(hart)->timecmp = -1ULL;
+  hls_t *hls = HLS();
+  *hls->ipi = 0;
+  *hls->timecmp = T_MAX;
   write_csr(mip, 0);
+  assert(!(read_csr(mip) & MIP_MTIP));
 
   if (!plic_ndevs)
     return;
@@ -32,30 +44,31 @@ static void hart_plic_init(int hart)
   size_t ie_words = (plic_ndevs + 8 * sizeof(uintptr_t) - 1) /
     (8 * sizeof(uintptr_t));
   for (size_t i = 0; i < ie_words; i++) {
-    if (OTHER_HLS(hart)->plic_s_ie) {
+    if (HLS()->plic_s_ie) {
       // Supervisor not always present
-      OTHER_HLS(hart)->plic_s_ie[i] = ULONG_MAX;
+      HLS()->plic_s_ie[i] = ULONG_MAX;
     }
   }
-  *OTHER_HLS(hart)->plic_m_thresh = 1;
-  if (OTHER_HLS(hart)->plic_s_thresh) {
+  HLS()->plic_m_thresh = 1;
+  if (HLS()->plic_s_thresh) {
     // Supervisor not always present
-    *OTHER_HLS(hart)->plic_s_thresh = 0;
+    *HLS()->plic_s_thresh = 0;
   }
 }
 
 static void prci_test()
 {
+  hls_t *hls = HLS();
   assert(!(read_csr(mip) & MIP_MSIP));
-  *HLS()->ipi = 1;
+  *hls->ipi = 1;
   assert(read_csr(mip) & MIP_MSIP);
-  *HLS()->ipi = 0;
+  *hls->ipi = 0;
   assert(!(read_csr(mip) & MIP_MSIP));
 
   assert(!(read_csr(mip) & MIP_MTIP));
-  *HLS()->timecmp = 0;
+  *hls->timecmp = 0;
   assert(read_csr(mip) & MIP_MTIP);
-  *HLS()->timecmp = -1ULL;
+  *hls->timecmp = T_MAX;
   assert(!(read_csr(mip) & MIP_MTIP));
 }
 
@@ -63,8 +76,7 @@ static void prci_test()
 static void delegate_traps()
 {
   uintptr_t interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
-
-  /*
+  
      uintptr_t exceptions =
      (1U << CAUSE_MISALIGNED_FETCH) |
      (1U << CAUSE_FETCH_PAGE_FAULT) |
@@ -72,7 +84,6 @@ static void delegate_traps()
      (1U << CAUSE_LOAD_PAGE_FAULT) |
      (1U << CAUSE_STORE_PAGE_FAULT) |
      (1U << CAUSE_USER_ECALL);
-     */
 
   write_csr(mideleg, interrupts);
   //write_csr(medeleg, exceptions);
@@ -81,12 +92,14 @@ static void delegate_traps()
 }
 
 void kernel_init(uintptr_t ftd_addr) {
-  delegate_traps();
+  // Make sure mstatus and mie (software interrupts enabled) are initialized here
+  
+  hls_init(0);
 
   FDT_ADDR = ftd_addr;
 
-  //printm("query_mem\n");
-  //query_mem(FDT_ADDR);
+  printm("query_mem\n");
+  query_mem(FDT_ADDR);
   printm("query_harts\n");
   query_harts(FDT_ADDR);
   printm("query_clint\n");
@@ -97,15 +110,18 @@ void kernel_init(uintptr_t ftd_addr) {
   query_chosen(FDT_ADDR);
   printm("query over\n");
 
-  /*
-  plic_init();
-  for(int hart = 0; hart < MAX_HARTS; ++hart) {
-    hart_plic_init(hart);
-  }
-  */
-  //prci_test();
+  //plic_init();
+  hart_plic_init();
+  prci_test();
   memory_init();
 
   // Initialize the device tree
   filter_and_copy_device_tree();
+}
+
+void kernel_init_other_hart(uintptr_t hartid) {
+  // Make sure mstatus and mie (software interrupts enabled) are initialized here
+  delegate_traps();
+  hart_plic_init();
+  prci_test();
 }

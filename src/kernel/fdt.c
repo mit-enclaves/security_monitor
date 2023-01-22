@@ -18,6 +18,9 @@ void filter_and_copy_device_tree(void) {
   filter_plic(out_fdt_addr);
   //filter_compat(out_fdt_addr, "riscv,clint0");
   //filter_compat(out_fdt_addr, "riscv,debug-013");
+  //fdt_print(src_fdt_addr);
+  //printm("After Filtering");
+  //fdt_print(out_fdt_addr);
 }
 
 static inline uint32_t bswap(uint32_t x)
@@ -712,8 +715,7 @@ void filter_harts(uintptr_t fdt, long *disabled_hart_mask)
 }
 
 //////////////////////////////////////////// PRINT //////////////////////////////////////////////
-/*
-#ifdef PK_PRINT_DEVICE_TREE
+
 #define FDT_PRINT_MAX_DEPTH 32
 
 struct fdt_print_info {
@@ -761,10 +763,10 @@ static void fdt_print_prop(const struct fdt_scan_prop *prop, void *extra)
   } else {
     printm(" = ");
   }
-*/
+
   /* It appears that dtc uses a hueristic to detect strings so I'm using a
    * similar one here. */
-/*
+
   for (int i = 0; i < prop->len; ++i) {
     if (!isstring(char_data[i]))
       asstring = 0;
@@ -823,5 +825,3 @@ void fdt_print(uintptr_t fdt)
     fdt_print_printm(&info, "}\r\n");
   }
 }
-#endif
-*/

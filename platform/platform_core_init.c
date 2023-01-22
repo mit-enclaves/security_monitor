@@ -2,13 +2,22 @@
 
 __attribute__((section(".text.platform_core_init")))
 
-void platform_core_init (void) {
-  // Install identity page page tables with sv39 translation
-  uint64_t satp_csr = (uint64_t)(IDPT_BASE);
-  satp_csr = satp_csr >> PAGE_SHIFT;
-  satp_csr |= (SATP_MODE_SV39<<SATP_MODE); // sv39 translation
-  write_csr(satp, satp_csr); // TODO: do not install IDPT for now
+extern uint8_t trap_vector_from_untrusted;
 
-  // Enable software interrupts
+void platform_core_init (void) {
+  // Set the interrupt handler address
+  write_csr(mtvec, ( ((uint64_t)(&trap_vector_from_untrusted))&(~0x3L) ));
+  
+  // Initialize MSTATUS
+  write_csr(mstatus, 0);
+
+  // Enable user/supervisor use of perf counters
+  write_csr(scounteren, -1);
+  write_csr(mcounteren, -1);
+
+  // Disable virtual memiry for now
+  write_csr(satp, 0);
+
+  // Enable Software Interrupts
   write_csr(mie, MIP_MSIP);
 }

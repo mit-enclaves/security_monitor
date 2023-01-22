@@ -13,9 +13,12 @@ void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
 void illegal_instruction_trap_handler(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc);
 
 void kernel_init(uintptr_t ftd_addr);
+void kernel_init_other_hart(uintptr_t hartid);
 
 hls_t* hls_init(uintptr_t hart_id);
 void send_ipi(uintptr_t recipient, int event);
 void send_ipi_many(uintptr_t* pmask, int event);
+
+void bad_trap(uintptr_t mcause, uintptr_t mepc, uintptr_t mtval);
 
 #endif // KERNEL_API_H

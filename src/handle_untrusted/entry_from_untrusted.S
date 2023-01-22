@@ -41,9 +41,9 @@ interrupt_table:
   .word (.bad_event-.i_tab_root)      //  6: (reserved)
   .word (.handle_mtimer_interrupt-.i_tab_root) //  7: machine timer interrupt
   .word (.delegate_to_s-.i_tab_root)  //  8: user external interrupt
-  .word (.bad_event-.i_tab_root)      //  9: supervisor external interrupt
+  .word (.delegate_to_s-.i_tab_root)  //  9: supervisor external interrupt
   .word (.bad_event-.i_tab_root)      // 10: (reserved)
-  .word (.delegate_to_s-.i_tab_root)  // 11: machine external interrupt
+  .word (.bad_event-.i_tab_root)  // 11: machine external interrupt
 
 // TODO: mcause > 11 would be problematic here, make sure the architecture won't let that happen
 
@@ -113,8 +113,7 @@ trap_vector_from_untrusted:
 # ----------------------
 
 .pmp_trap:
-  csrr a0, mcause
-  j platform_panic
+  j .bad_event
 
 .illegal_insn_trap:
   call .save_regs_and_set_args
@@ -123,23 +122,17 @@ trap_vector_from_untrusted:
   j .perform_mret_ecall
 
 .misaligned_load_trap:
-  csrr a0, mcause
-  j platform_panic
+  j .bad_event
 
 .misaligned_store_trap:
-  csrr a0, mcause
-  j platform_panic
+  j .bad_event
 
-# We clear the M timer interrupt-pending bit
-# We set the S timer interrupt-pending bit
-# W also set the S timer interrupt-enable bit
-# Causing the SM to immediately catch that event,
-# We will then delegated the S timer interrupt to S
+# Clear MTIE and rise STIP
+# STIP are direclty forwarded to S mode
 .handle_mtimer_interrupt:
   li t0, MIP_MTIP
   csrc mie, t0
   li t0, MIP_STIP
-  #csrs mie, t0
   csrs mip, t0
 
   # Go back whence we came.
@@ -243,4 +236,6 @@ trap_vector_from_untrusted:
 
 .bad_event:
   csrr a0, mcause
-  call platform_panic;
+  csrr a1, mepc
+  csrr a2, mtval
+  call bad_trap

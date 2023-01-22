@@ -2,14 +2,10 @@
 
 __attribute__((section(".text.platform_jump_to_untrusted")))
 
-extern uint8_t trap_vector_from_untrusted;
-
 void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint64_t core_id, uintptr_t dt_addr) __attribute__((noreturn));
 
 void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint64_t core_id, uintptr_t fdt_addr) {
-
-  // Set the interrupt handler address ()
-  write_csr(mtvec, ( ((uint64_t)(&trap_vector_from_untrusted))&(~0x3L) ));
+  
 
   // Set up the privilege stack for an S-mode return
   uint64_t mstatus_csr = read_csr(mstatus);

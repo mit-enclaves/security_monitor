@@ -13,9 +13,11 @@ extern uint8_t trap_vector_from_untrusted;
 void sm_init(uintptr_t fdt_boot_addr) {
   volatile sm_state_t * sm = get_sm_state_ptr();
   
-  sm->boot_process_stage = BOOT_INIT_NOT_DONE;
-
   // IMPORTANT: this will be run by *all* cores
+  
+  // Initialize platform core state
+  platform_core_init();
+
   uintptr_t core_id = platform_get_core_id();
   if (core_id == 0) {
     
@@ -65,23 +67,17 @@ void sm_init(uintptr_t fdt_boot_addr) {
     printm("kernel_init done\n");
 
     // Resume other cores
-  /*
-    uintptr_t hart_mask = 0xf;
-    send_ipi_many(&hart_mask, IPI_SOFT);
+    send_ipi_many(NULL, IPI_SOFT);
     printm("IPIs sent\n");
-  */
-    sm->boot_process_stage = BOOT_INIT_DONE;
-    printm("&sm->boot_process_stage = %x\n", &sm->boot_process_stage);
-    printm("sm->boot_process_stage = %d\n", sm->boot_process_stage);
-
+    
   } else {
     // All cores but core 0 sleep until shared state is initialized
-    //platform_wait_for_interrupt();
-    while(sm->boot_process_stage != BOOT_INIT_DONE) {};
+    platform_wait_for_interrupt();
+    printm("Core %d wakes up\n", core_id);
   }
 
-  // Initialize platform core state
-  platform_core_init();
+  // Initialize all harts kernel data structures
+  kernel_init_other_hart(core_id);
 
   // Initialize memory protection
   platform_initialize_memory_protection(sm);
@@ -89,6 +85,6 @@ void sm_init(uintptr_t fdt_boot_addr) {
   // Walk the device tree and get its address
   uintptr_t fdt_os_addr = platform_get_device_tree_addr();
 
-  // payload must set its own stack pointer.
+  // Payload must set its own stack pointer.
   platform_jump_to_untrusted( UNTRUSTED_ENTRY, 0, core_id, fdt_os_addr);
 }

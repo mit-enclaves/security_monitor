@@ -1,8 +1,13 @@
 #include <sm.h>
 
-// TODO : Implement...
-
 void platform_initialize_memory_protection(sm_state_t *sm) {
+  
+  // Install identity page page tables with sv39 translation
+  uint64_t satp_csr = (uint64_t)(IDPT_BASE);
+  satp_csr = satp_csr >> PAGE_SHIFT;
+  satp_csr |= (SATP_MODE_SV39<<SATP_MODE); // sv39 translation
+  write_csr(satp, satp_csr);
+
   write_csr(CSR_MEVBASE, MVBASE_DEFAULT);
   write_csr(CSR_MEVMASK, MVMASK_DEFAULT);
 
