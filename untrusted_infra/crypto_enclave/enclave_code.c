@@ -7,6 +7,11 @@
 #define SHARED_REQU_QUEUE ((queue_t *) SHARED_MEM_REG)
 #define SHARED_RESP_QUEUE ((queue_t *) (SHARED_MEM_REG + sizeof(queue_t)))
 
+#if (DEBUG_ENCLAVE == 1)
+#include "../sbi/console.h"
+#endif
+
+
 #define riscv_perf_cntr_begin() asm volatile("csrwi 0x801, 1")
 #define riscv_perf_cntr_end() asm volatile("csrwi 0x801, 0")
 
