@@ -34,13 +34,17 @@ CRYPTO_ENCLAVE_SRC := \
   $(CRYPTO_ENCLAVE_SRC_DIR)/ed25519/verify.c \
   $(QUEUE_SRC_DIR)/msgq.c \
 
+ifeq ($(DEBUG_ENCLAVE), 1)
+CRYPTO_ENCLAVE_SRC += $(INFRA_DIR)/sbi/console.c
+endif
+
 CRYPTO_ENCLAVE_LD := $(CRYPTO_ENCLAVE_SRC_DIR)/enclave.lds
 
 $(CRYPTO_ENCLAVE_ELF): $(CRYPTO_ENCLAVE_SRC) $(CRYPTO_ENCLAVE_LD) $(BUILD_DIR) $(LIB_SRCS)
 	$(CC) $(CFLAGS) $(addprefix -I , $(CRYPTO_ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(CRYPTO_ENCLAVE_LD) $(CRYPTO_ENCLAVE_SRC) $(LIB_SRCS) -o $@
 
 $(CRYPTO_ENCLAVE_BIN): $(CRYPTO_ENCLAVE_ELF)
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* --only-section=.data --only-section=.sdata --only-section=.bss --only-section=.sbss --set-section-flags .bss=alloc,load,contents --set-section-flags .sbss=alloc,load,contents $< $@
 
 .PHONY: crypto_enclave
 crypto_enclave : $(CRYPTO_ENCLAVE_BIN)

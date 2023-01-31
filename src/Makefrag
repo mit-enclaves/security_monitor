@@ -41,8 +41,6 @@ SM_ENCLAVE_DEBUG_SRC := \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(PLATFORM_DIR)/htif/htif_util.c \
 
-FLAGS_DEBUG_ENCLAVE :=
-
 # Sources
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
@@ -64,8 +62,6 @@ SM_ENCLAVE_SRC := \
 
 ifeq ($(DEBUG_ENCLAVE), 1)
 SM_ENCLAVE_SRC += $(SM_ENCLAVE_DEBUG_SRC)
-FLAGS_DEBUG_ENCLAVE += -D DEBUG_ENCLAVE=1
-SM_CFLAGS += $(FLAGS_DEBUG_ENCLAVE)
 endif
 
 # Headers
@@ -80,7 +76,6 @@ $(HANDLER_ELF): $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
 
 $(HANDLER_BIN): $(HANDLER_ELF)
 	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* --only-section=.data --only-section=.sdata --only-section=.bss --only-section=.sbss $< $@
-
 
 ## SM
 

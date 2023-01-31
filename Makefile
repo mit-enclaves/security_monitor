@@ -16,6 +16,12 @@ DEBUG_FLAGS := -ggdb3
 CFLAGS := -march=rv64g -mcmodel=medany -mabi=lp64 -fno-common -fno-tree-loop-distribute-patterns -std=gnu11 -Wall -O3 $(DEBUG_FLAGS)
 LDFLAGS := -nostartfiles -nostdlib -static
 
+FLAGS_DEBUG_ENCLAVE :=
+ifeq ($(DEBUG_ENCLAVE), 1)
+FLAGS_DEBUG_ENCLAVE += -D DEBUG_ENCLAVE=1
+CFLAGS += $(FLAGS_DEBUG_ENCLAVE)
+endif
+
 # QEMU
 .PHONY: check_env
 check_env:

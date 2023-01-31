@@ -10,7 +10,7 @@ SECTIONS
     *(.text)
   }
 
-  .rodata ALIGN(64) : {
+  .rodata ALIGN(8) : {
     *(.rodata)  /* read-only data */
     *(.rodata.*)
   }
@@ -21,7 +21,7 @@ SECTIONS
     *(.data)  /* initialized data */
   }
 
-  .bss ALIGN(64)  : {
+  .bss ALIGN(8)  : {
     *(.bss)   /* uninitialized data */
     *(.bss.*)
   }
