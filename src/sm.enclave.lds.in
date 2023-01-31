@@ -22,4 +22,18 @@ SECTIONS
     *(.rodata)  /* read-only data */
     *(.rodata.*)
   } > ENCLAVE_HANDLER =0x0
+
+  .data ALIGN(64)  : {
+    *(.data)  /* initialized data */
+    *(.data.*)
+  } > ENCLAVE_HANDLER =0x0
+
+  .bss ALIGN(64)  : {
+    *(.bss)   /* uninitialized data */
+    *(.bss.*)
+  } > ENCLAVE_HANDLER =0x0
+
+  .stack ALIGN(64) : {
+    *(.data.stacks)
+  } > ENCLAVE_HANDLER =0x0
 }

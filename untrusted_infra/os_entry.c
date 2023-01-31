@@ -167,7 +167,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     uint64_t size_enclave_metadata = sm_enclave_metadata_pages(num_mailboxes);
 
     thread_id_t thread_id = enclave_id + (size_enclave_metadata * PAGE_SIZE);
-    uint64_t timer_limit = 10000;
+    uint64_t timer_limit = 0xeffffffffff;
 
     printm("Thread Load\n");
 
@@ -222,7 +222,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     int ret;
 
     // *** BEGINING BENCHMARK ***
-    riscv_perf_cntr_begin();
+    //riscv_perf_cntr_begin();
 
     printm("Sign\n");
     for(int i = 0; i < 1000; i++) {
@@ -253,7 +253,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     } while((ret != 0) || (m->f != F_EXIT));
    
     //printm("Last function %d\n", m->f); 
-    riscv_perf_cntr_end();
+    //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
     printm("Received enclave exit confirmation\n");
     send_exit_cmd(0);

@@ -6,6 +6,9 @@ PYTHON=python3
 CC=riscv64-unknown-elf-gcc
 
 OBJCOPY=riscv64-unknown-elf-objcopy
+OBJDUMP=riscv64-unknown-elf-objdump
+
+DEBUG_ENCLAVE=1
 
 # Flags
 # -mcmodel=medany is *very* important - it ensures the program addressing is PC-relative. Ensure no global variables are used. To quote from the spec, "the program and its statically defined symbols must lie within any single 2 GiB address range. Addressing for global symbols uses lui/addi instruction pairs, which emit the R_RISCV_PCREL_HI20/R_RISCV_PCREL_LO12_I sequences."
@@ -51,6 +54,23 @@ all: $(ALL)
 clean:
 	-rm -rf $(BUILD_DIR)
 	-rm -rf $(INPUTS)
+
+ELFS := $(shell find $(BUILD) -name '*.elf')
+ELFS_PREF := $(addprefix $(BUILD)/, $(ELFS))
+DISASS = $(ELFS:.elf=.disa.out)
+DISASS_SOURCES = $(ELFS:.elf=.src.out)
+
+%.disa.out : %.elf
+	$(OBJDUMP) -D $^ > $@
+
+%.src.out : %.elf
+	$(OBJDUMP) -S $^ > $@
+
+.PHONY: disassemble-all
+disassemble-all:$(DISASS)
+
+.PHONY: source-all
+source-all:$(DISASS_SOURCES)
 
 # Print any variable for debug
 print-%: ; @echo $*=$($*)

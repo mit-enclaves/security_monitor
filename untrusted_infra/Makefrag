@@ -82,7 +82,7 @@ PAYLOAD_SRC := \
 	$(INFRA_DIR)/clib/memcpy.c \
   $(QUEUE_SRC_DIR)/msgq.c \
 	$(PLATFORM_DIR)/idpt.S \
-	$(PLATFORM_DIR)/htif/htif.c \
+	$(PLATFORM_DIR)/htif/htif_for_linking.c \
 	$(INFRA_DIR)/sbi/console.c \
 	$(INPUTS) \
 

@@ -105,6 +105,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   // Update MSTATUS
   uint64_t mstatus_tmp = read_csr(mstatus);
 
+/*
   // Set up MSTATUS to launch enclave in U mode
   // Set TVM to 1, MPP to 0 (U mode), MPIE, SIE to 0 and UIE to 1
   mstatus_tmp |= MSTATUS_TVM_MASK;
@@ -112,8 +113,8 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   mstatus_tmp &= (~MSTATUS_MPIE_MASK);
   mstatus_tmp &= (~MSTATUS_SIE_MASK);
   mstatus_tmp |= MSTATUS_UIE_MASK;
-
-/* 
+*/
+ 
   // Set up MSTATUS to launch enclave in S mode
   // Set TVM to 1, MPP to 1 (S mode), MPIE to 0, SIE to 1 and UIE to 0
   mstatus_tmp |= MSTATUS_TVM_MASK;
@@ -122,7 +123,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   mstatus_tmp &= (~MSTATUS_MPIE_MASK);
   mstatus_tmp |= MSTATUS_SIE_MASK;
   mstatus_tmp &= (~MSTATUS_UIE_MASK);
-*/
+
   write_csr(mstatus, mstatus_tmp);
 
   // Swap the page table root

@@ -135,5 +135,11 @@ trap_vector_from_enclave:
 # ----------------------
 
 .bad_event:
+#if (DEBUG_ENCLAVE == 1)
   csrr a0, mcause
-  call platform_panic;
+  csrr a1, mepc
+  csrr a2, mtval
+  call bad_trap
+#else
+  call platform_panic
+#endif

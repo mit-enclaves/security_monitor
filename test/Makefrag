@@ -31,7 +31,7 @@ ALL_TESTS_SRC := \
 	$(INFRA_DIR)/sm_keys.c \
 	$(INFRA_DIR)/sm_binary.S \
 	$(PLATFORM_DIR)/idpt.S \
-	$(PLATFORM_DIR)/htif/htif.c \
+	$(PLATFORM_DIR)/htif/htif_for_linking.c \
 	$(SM_TEST_DIR)/sbi/console.c \
 
 # Headers

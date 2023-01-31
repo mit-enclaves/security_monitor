@@ -29,16 +29,19 @@ SM_COMMON_SRC := \
 SM_ENCLAVE_LD := $(BUILD_DIR)/sm.enclave.lds
 # Preprocessor fills out linker script constants
 $(SM_ENCLAVE_LD): $(SM_SRC_DIR)/sm.enclave.lds.in $(BUILD_DIR)
-	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $(FLAGS_DEBUG_ENCLAVE) $< | grep -v '^#' > $@
 
 # Targets
 HANDLER_ELF := $(BUILD_DIR)/sm.enclave.elf
 HANDLER_BIN := $(BUILD_DIR)/sm.enclave.bin
 
-SM_ENCLAVE_DEBBUG_SRC := \
+SM_ENCLAVE_DEBUG_SRC := \
 	$(SM_SRC_DIR)/kernel/console.c \
+	$(SM_SRC_DIR)/kernel/mcall_enclave.c \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(PLATFORM_DIR)/htif/htif_util.c \
+
+FLAGS_DEBUG_ENCLAVE :=
 
 # Sources
 SM_ENCLAVE_SRC := \
@@ -59,6 +62,12 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
 
+ifeq ($(DEBUG_ENCLAVE), 1)
+SM_ENCLAVE_SRC += $(SM_ENCLAVE_DEBUG_SRC)
+FLAGS_DEBUG_ENCLAVE += -D DEBUG_ENCLAVE=1
+SM_CFLAGS += $(FLAGS_DEBUG_ENCLAVE)
+endif
+
 # Headers
 SM_INCLUDES := \
 	$(PLATFORM_DIR) \
@@ -70,7 +79,7 @@ $(HANDLER_ELF): $(SM_ENCLAVE_SRC) $(SM_ENCLAVE_LD) $(BUILD_DIR)
 	$(CC) $(SM_CFLAGS) $(addprefix -I , $(SM_INCLUDES)) $(SM_LDFLAGS) -T $(SM_ENCLAVE_LD) $(SM_ENCLAVE_SRC) -o $@
 
 $(HANDLER_BIN): $(HANDLER_ELF)
-	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* --only-section=.data --only-section=.sdata --only-section=.bss --only-section=.sbss $< $@
 
 
 ## SM
@@ -79,7 +88,7 @@ $(HANDLER_BIN): $(HANDLER_ELF)
 SM_LD := $(BUILD_DIR)/sm.lds
 # Preprocessor fills out linker script constants
 $(SM_LD) : $(SM_SRC_DIR)/sm.lds.in $(BUILD_DIR)
-	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $< | grep -v '^#' > $@
+	$(CC) -E -x c $(addprefix -I , $(PLATFORM_DIR)) $(FLAGS_DEBUG_ENCLAVE) $< | grep -v '^#' > $@
 
 # Targets
 SM_ELF:=$(BUILD_DIR)/sm.elf
@@ -147,6 +156,7 @@ $(SM_BIN): $(SM_ELF)
 	--only-section=.rodata \
 	--only-section=.srodata* \
 	--only-section=.data \
+	--only-section=.sdata \
 	--only-section=.bss  \
 	--only-section=.sbss  \
 	--keep-symbol=__htif_base \

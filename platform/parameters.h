@@ -66,7 +66,7 @@
 #define IDPT_BASE (0x8D000000)
 #define IDPT_SIZE (0x4000)
 
-#define LEAF_ACL (0b11111111) // D A G U X W R V
+#define LEAF_ACL (0b11101111) // D A G U X W R V
 #define NODE_ACL (0b00000001) // Node
 
 #define PAGE_SHIFT    (12)

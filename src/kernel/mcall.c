@@ -55,7 +55,11 @@ send_ipi:
 
     default:
       retval = -ENOSYS;
-      platform_panic();
+      printm("Wrong SBI system call code %d\n", code);
+      uintptr_t mcause = read_csr(mcause);
+      uintptr_t mepc = read_csr(mepc);
+      uintptr_t mtval = read_csr(mtval);
+      bad_trap(mcause, mepc, mtval);
       break;
   }
 

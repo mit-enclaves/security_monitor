@@ -9,14 +9,14 @@ static platform_lock_t htif_lock;
 #define TOHOST(base_int)	(uint64_t *)(base_int + TOHOST_OFFSET)
 #define FROMHOST(base_int)	(uint64_t *)(base_int + FROMHOST_OFFSET)
 
-#define TOHOST_OFFSET		((uintptr_t)tohost - (uintptr_t)__htif_base)
-#define FROMHOST_OFFSET		((uintptr_t)fromhost - (uintptr_t)__htif_base)
+#define TOHOST_OFFSET		((uintptr_t)*tohost - (uintptr_t)__htif_base)
+#define FROMHOST_OFFSET		((uintptr_t)*fromhost - (uintptr_t)__htif_base)
 
 static void __check_fromhost() { // Code taken from riscv-pk
-  uint64_t fh = fromhost;
+  uint64_t fh = *fromhost;
   if (!fh)
     return;
-  fromhost = 0;
+  *fromhost = 0;
 
   // this should be from the console
   assert(FROMHOST_DEV(fh) == 1);
@@ -34,9 +34,9 @@ static void __check_fromhost() { // Code taken from riscv-pk
 
 static void __set_tohost(uintptr_t dev, uintptr_t cmd, uintptr_t data)
 {
-  while (tohost)
+  while (*tohost)
     __check_fromhost();
-  tohost = TOHOST_CMD(dev, cmd, data);
+  *tohost = TOHOST_CMD(dev, cmd, data);
 }
 
 

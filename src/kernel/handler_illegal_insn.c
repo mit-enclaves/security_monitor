@@ -2,7 +2,9 @@
 #include <platform.h>
 
 void static truly_illegal_insn(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc, uintptr_t mstatus, insn_t insn) {
-  asm volatile ("j platform_panic");
+  printm("Truly illegal instruction with encoding %lx\n", insn);
+  uintptr_t mtval = read_csr(mtval);
+  bad_trap(mcause, mepc, mtval);
 }
 
 static inline int emulate_read_csr(int num, uintptr_t mstatus, uintptr_t* result) {
