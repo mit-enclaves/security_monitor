@@ -8,8 +8,8 @@ size_t plic_ndevs;
 void* kernel_start;
 void* kernel_end;
 
-// Weirdly enough, bigger values seems to create an undefined behaviour.. We chose this one arbitrarily.
-#define T_MAX (0xefffffff)
+// Weirdly enough, bigger values seems to create an undefined behaviour...
+#define T_MAX (UINT_MAX)
 
 hls_t* hls_init(uintptr_t hart_id)
 {
@@ -23,11 +23,13 @@ static void memory_init()
   mem_size = mem_size / PAGE_SIZE * PAGE_SIZE;
 }
 
+/*
 static void plic_init()
 {
   for (size_t i = 1; i <= plic_ndevs; i++)
     plic_priorities[i] = 1;
 }
+*/
 
 static void hart_plic_init()
 {
@@ -44,15 +46,15 @@ static void hart_plic_init()
   size_t ie_words = (plic_ndevs + 8 * sizeof(uintptr_t) - 1) /
     (8 * sizeof(uintptr_t));
   for (size_t i = 0; i < ie_words; i++) {
-    if (HLS()->plic_s_ie) {
+    if (hls->plic_s_ie) {
       // Supervisor not always present
-      HLS()->plic_s_ie[i] = ULONG_MAX;
+      hls->plic_s_ie[i] = UINT32_MAX;
     }
   }
-  HLS()->plic_m_thresh = 1;
-  if (HLS()->plic_s_thresh) {
+  *hls->plic_m_thresh = 1;
+  if (hls->plic_s_thresh) {
     // Supervisor not always present
-    *HLS()->plic_s_thresh = 0;
+    *hls->plic_s_thresh = 0;
   }
 }
 
@@ -77,6 +79,7 @@ static void delegate_traps()
 {
   uintptr_t interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
   
+  /* TODO : put back but disable for enclaves
      uintptr_t exceptions =
      (1U << CAUSE_MISALIGNED_FETCH) |
      (1U << CAUSE_FETCH_PAGE_FAULT) |
@@ -84,6 +87,7 @@ static void delegate_traps()
      (1U << CAUSE_LOAD_PAGE_FAULT) |
      (1U << CAUSE_STORE_PAGE_FAULT) |
      (1U << CAUSE_USER_ECALL);
+  */
 
   write_csr(mideleg, interrupts);
   //write_csr(medeleg, exceptions);

@@ -17,12 +17,12 @@ void init_heap(uintptr_t base, uintptr_t size) {
 }
 
 void *find_fit(size_t size) {
-  size_t *header = heap_start;
-  while(header < heap_end) {
+  size_t *header = (size_t *) heap_start;
+  while(header < (size_t *) heap_end) {
     if(!(*header & 1) && ((*header & ~1L) >= size)) {
       return header;
     }
-    header = (char *)header + (*header & ~1L);
+    header = (size_t *) ((char *)header + (*header & ~1L));
   }
   return NULL;
 }
@@ -45,6 +45,6 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-  size_t *header = (char*)ptr - SIZE_T_SIZE;
+  size_t *header = (size_t *) ((char*)ptr - SIZE_T_SIZE);
   *header = *header & ~1L; // unmark allocated bit
 }

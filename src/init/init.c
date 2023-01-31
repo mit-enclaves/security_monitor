@@ -11,7 +11,7 @@ extern uint8_t trap_vector_from_untrusted;
 #endif
 
 void sm_init(uintptr_t fdt_boot_addr) {
-  volatile sm_state_t * sm = get_sm_state_ptr();
+  sm_state_t * sm = get_sm_state_ptr();
   
   // IMPORTANT: this will be run by *all* cores
   

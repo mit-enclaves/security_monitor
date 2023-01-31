@@ -455,10 +455,10 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
     if (hart < MAX_HARTS) {
       hls_t *hls = OTHER_HLS(hart);
       if (cpu_int == IRQ_M_EXT) {
-        hls->plic_m_ie     = (uintptr_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
+        hls->plic_m_ie     = (uint32_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
         hls->plic_m_thresh = (uint32_t*) ((uintptr_t)scan->reg + HART_BASE   + HART_SIZE   * index);
       } else if (cpu_int == IRQ_S_EXT) {
-        hls->plic_s_ie     = (uintptr_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
+        hls->plic_s_ie     = (uint32_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
         hls->plic_s_thresh = (uint32_t*) ((uintptr_t)scan->reg + HART_BASE   + HART_SIZE   * index);
       } else {
         printm("PLIC wired hart %d to wrong interrupt %d", hart, cpu_int);
@@ -795,12 +795,12 @@ static void fdt_print_prop(const struct fdt_scan_prop *prop, void *extra)
 
 static void fdt_print_done(const struct fdt_scan_node *node, void *extra)
 {
-  struct fdt_print_info *info = (struct fdt_print_info *)extra;
+  //struct fdt_print_info *info = (struct fdt_print_info *)extra;
 }
 
 static int fdt_print_close(const struct fdt_scan_node *node, void *extra)
 {
-  struct fdt_print_info *info = (struct fdt_print_info *)extra;
+  //struct fdt_print_info *info = (struct fdt_print_info *)extra;
   return 0;
 }
 
