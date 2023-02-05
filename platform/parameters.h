@@ -24,7 +24,7 @@
 #define HTIF_BASE 0x10001000
 #define HTIF_LEN        0x10
 
-// Placemetn of SM in memory
+// Placement of SM in memory
 #define SM_ADDR         0x80000000
 #define HANDLER_LEN         0x4000
 #define SM_LEN             0x20000
