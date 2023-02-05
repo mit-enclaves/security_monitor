@@ -107,18 +107,16 @@ api_result_t sm_enclave_load_page (
 // Returns the number of pages used by an enclave metadata structure.
 uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 
+// Request the SM for to perform the local attestation and output the certificate.
+//
+// `enclave_id` must identify an enclave that has been initialized.
+// `phys_addr_measurement` and `phys_addr_sig` must point into buffers large
+// enough to store the enclave measurement. The buffer must be contained in a
+// single DRAM region that belongs to the caller.
+api_result_t sm_enclave_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_sig);
+
 // APIs: Getters for SM values
 // ---------------------------
-
-// Reads the monitor's private attestation key.
-//
-// This API call will only succeed if the calling enclave is the special
-// enclave designated by the security monitor to be the signing enclave.
-//
-// `phys_addr` must point into a buffer large enough to store the attestation
-// key. The entire buffer must be contained in a single DRAM region that
-// belongs to the enclave.
-api_result_t sm_get_attestation_key (phys_ptr_t phys_addr);
 
 // Reads the monitor's requested public field.
 //
@@ -126,7 +124,7 @@ api_result_t sm_get_attestation_key (phys_ptr_t phys_addr);
 //
 // `phys_addr` must point into a buffer large enough to store the requested
 // field. The buffer must be contained in a single DRAM region that
-// belongs to the enclave.
+// belongs to the caller.
 api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr);
 
 

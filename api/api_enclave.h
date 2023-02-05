@@ -8,10 +8,6 @@ static inline api_result_t sm_exit_enclave(void) {
    return SM_API_CALL(SM_ENCLAVE_EXIT, 0, 0, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_get_attestation_key(uintptr_t phys_addr) {
-   return SM_API_CALL(SM_GET_ATTESTATION_KEY, phys_addr, 0, 0, 0, 0, 0, 0);
-}
-
 static inline api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr) {
    return SM_API_CALL(SM_GET_PUBLIC_FIELD, field, phys_addr, 0, 0, 0, 0, 0);
 }

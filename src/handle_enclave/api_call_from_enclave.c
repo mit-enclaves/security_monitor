@@ -28,10 +28,6 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
         break;
 
         // Fields
-      case SM_GET_ATTESTATION_KEY:
-        retval = sm_internal_get_attestation_key(arg0);
-        break;
-
       case SM_GET_PUBLIC_FIELD:
         retval = sm_internal_get_public_field(arg0, (uintptr_t) arg1);
         break;

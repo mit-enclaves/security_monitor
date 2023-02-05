@@ -6,10 +6,6 @@ extern void * payload_ptr;
 extern uintptr_t stack_ptr;
 extern uint8_t trap_vector_from_untrusted;
 
-#ifndef SIGNING_ENCLAVE_MEASUREMENT
-#define SIGNING_ENCLAVE_MEASUREMENT {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-#endif
-
 void sm_init(uintptr_t fdt_boot_addr) {
   sm_state_t * sm = get_sm_state_ptr();
   
@@ -44,12 +40,6 @@ void sm_init(uintptr_t fdt_boot_addr) {
       sm->regions[i].state = REGION_STATE_OWNED;
       unlock_region(i); // Ensure cores aren't locked. the SM must be initialized in a vaccum, with only one thread running, so this is not dangerous.
     }
-
-    // Initialize signing enclave measurement
-    asm volatile("fence");
-    const uint8_t signing_enclave_measurement[64] = SIGNING_ENCLAVE_MEASUREMENT;
-    asm volatile("fence");
-    memcpy( sm->signing_enclave_measurement.bytes, signing_enclave_measurement, sizeof(signing_enclave_measurement) );
 
     // Initialize untrusted mailboxes : all are empty and unused.
     for ( int i=0; i<NUM_UNTRUSTED_MAILBOXES; i++ ) {

@@ -19,10 +19,10 @@
 void enclave_entry() {
   queue_t * qreq = SHARED_REQU_QUEUE;
   queue_t * qres = SHARED_RESP_QUEUE;
-  
+
   msg_t *m;
   int ret;
-    
+
   // *** BEGINING BENCHMARK ***
   //riscv_perf_cntr_begin();
 
@@ -37,19 +37,19 @@ void enclave_entry() {
         hash((const void *) m->args[0],
             (size_t) m->args[1],
             (hash_t *) m->args[2]);
-	m->ret = 0;
+        m->ret = 0;
         break;
       case F_CREATE_SIGN_SK:
         create_secret_signing_key(
             (key_seed_t *) m->args[0],
             (secret_key_t *) m->args[1]);
-	m->ret = 0;
+        m->ret = 0;
         break;
       case F_COMPUTE_SIGN_PK:
         compute_public_signing_key(
             (secret_key_t *) m->args[0],
             (public_key_t *) m->args[1]);
-	m->ret = 0;
+        m->ret = 0;
         break;
       case F_SIGN:
         sign(
@@ -58,7 +58,7 @@ void enclave_entry() {
             (const public_key_t *) m->args[2],
             (const secret_key_t *) m->args[3],
             (signature_t *) m->args[4]);
-	m->ret = 0;
+        m->ret = 0;
         break;
       case F_VERIFY:
         m->ret = verify(
@@ -71,12 +71,12 @@ void enclave_entry() {
         break;
       case F_EXIT:
         m->ret = 0;
-	m->done = true;
+        m->done = true;
         do {
           ret = push(qres, m);
         } while(ret != 0);
-	//riscv_perf_cntr_end();
-	// *** END BENCHMARK *** 
+        //riscv_perf_cntr_end();
+        // *** END BENCHMARK *** 
         sm_exit_enclave();
       default:
         break;

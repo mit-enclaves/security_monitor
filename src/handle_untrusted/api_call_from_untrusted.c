@@ -56,6 +56,10 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         retval = sm_internal_enclave_metadata_pages( (int64_t) arg0 );
         break;
 
+      case SM_ENCLAVE_ATTEST:
+        retval = sm_internal_enclave_attest( (int64_t) arg0, arg1, arg2 );
+        break;
+      
       // Fields
       case SM_GET_PUBLIC_FIELD:
         retval = sm_internal_get_public_field( arg0, (uintptr_t) arg1 );

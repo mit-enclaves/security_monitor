@@ -149,11 +149,9 @@ typedef struct sm_region_t {
 #define BOOT_INIT_DONE     (98765)
 
 typedef struct sm_state_t {
-  int boot_process_stage;
   sm_keys_t keys;
   sm_core_t cores[NUM_CORES];
   sm_region_t regions[NUM_REGIONS];
-  hash_t signing_enclave_measurement;
   region_map_t untrusted_regions;
   mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
   platform_lock_t untrusted_state_lock;

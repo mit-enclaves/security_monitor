@@ -80,7 +80,6 @@ typedef enum {
   PUBLIC_FIELD_H_SM = 3,
   PUBLIC_FIELD_SIG_M = 4,
   PUBLIC_FIELD_SIG_D = 5,
-  PUBLIC_FIELD_H_AE = 6,
 } public_field_t;
 
 typedef enum {
@@ -108,9 +107,9 @@ typedef enum {
 #define SM_ENCLAVE_LOAD_PAGE_TABLE          (1006)
 #define SM_ENCLAVE_LOAD_PAGE                (1007)
 #define SM_ENCLAVE_METADATA_PAGES           (1008)
+#define SM_ENCLAVE_ATTEST                   (1009)
 
-#define SM_GET_ATTESTATION_KEY              (1010)
-#define SM_GET_PUBLIC_FIELD                 (1011)
+#define SM_GET_PUBLIC_FIELD                 (1010)
 
 #define SM_MAIL_ACCEPT                      (1020)
 #define SM_MAIL_RECEIVE                     (1021)

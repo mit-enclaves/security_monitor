@@ -51,11 +51,6 @@ api_result_t sm_internal_get_public_field (public_field_t field, phys_ptr_t out_
       buffer_src = keys->software_signature.bytes;
       break;
 
-    case PUBLIC_FIELD_H_AE:
-      buffer_size = sizeof(sm->signing_enclave_measurement);
-      buffer_src = sm->signing_enclave_measurement.bytes;
-      break;
-
     default:
       return MONITOR_INVALID_VALUE;
   }

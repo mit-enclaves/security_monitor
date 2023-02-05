@@ -53,7 +53,6 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/handle_enclave/handlers/timer_interrupt_handler.c \
 	$(SM_SRC_DIR)/handle_enclave/handlers/external_interrupt_handler.c \
 	$(SM_SRC_DIR)/handle_enclave/handlers/software_interrupt_handler.c \
-	$(SM_SRC_DIR)/api/get_attestation_key.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/region_block.c \
 	$(SM_SRC_DIR)/api/region_check_owned.c \
@@ -125,6 +124,7 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/enclave_load_page_table.c \
 	$(SM_SRC_DIR)/api/enclave_load_page.c \
 	$(SM_SRC_DIR)/api/enclave_metadata_pages.c \
+	$(SM_SRC_DIR)/api/enclave_attest.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/region_assign.c \
 	$(SM_SRC_DIR)/api/region_block.c \
