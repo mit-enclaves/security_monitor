@@ -52,7 +52,7 @@ static inline void hash_finalize(
 #define LENGTH_PK 32
 #define LENGTH_SK 64
 
-typedef struct private_key_seed_t {
+typedef struct secret_key_seed_t {
   uint8_t bytes[LENGTH_SEED];
 } key_seed_t;
 
