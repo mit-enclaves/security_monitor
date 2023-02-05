@@ -22,13 +22,17 @@ ENCLAVE_COMMON_SRC := \
   $(ENCLAVE_SRC_DIR)/enclave_code.c \
   $(ENCLAVE_SRC_DIR)/enclave_stack.S \
 
+ifeq ($(DEBUG_ENCLAVE), 1)
+ENCLAVE_COMMON_SRC += $(INFRA_DIR)/sbi/console.c
+endif
+
 ENCLAVE_LD := $(ENCLAVE_SRC_DIR)/enclave.lds
 
 $(ENCLAVE_ELF): $(ENCLAVE_COMMON_SRC) $(ENCLAVE_LD) $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(addprefix -I , $(ENCLAVE_INCLUDES)) $(LDFLAGS) -T $(ENCLAVE_LD) $< $(ENCLAVE_COMMON_SRC) -o $@
 
 $(ENCLAVE_BIN): $(ENCLAVE_ELF)
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) -O binary --only-section=.text --only-section=.rodata --only-section=.srodata* --only-section=.data --only-section=.sdata --only-section=.bss --only-section=.sbss --set-section-flags .bss=alloc,load,contents --set-section-flags .sbss=alloc,load,contents $< $@
 
 .PHONY: enclave
 enclave : $(ENCLAVE_BIN)
