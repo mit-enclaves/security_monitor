@@ -1,3 +1,0 @@
-[submodule "src/crypto/ed25519"]
-	path = src/crypto/ed25519
-	url = git@github.com:mit-enclaves/ed25519.git
