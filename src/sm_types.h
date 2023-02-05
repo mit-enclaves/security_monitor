@@ -64,8 +64,11 @@ typedef struct enclave_metadata_t {
   int64_t num_mailboxes;
   bool debug;
 
-  // Measurement
+  // Measurement, Keys and Attestation
   hash_t measurement;
+  public_key_t public_key;
+  secret_key_t secret_key;
+  signature_t attestation;
  
   // SM pc and sp base
   uintptr_t fault_pc;

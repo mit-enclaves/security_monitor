@@ -58,6 +58,7 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/api/region_check_owned.c \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/enclave_exit.c \
+	$(SM_SRC_DIR)/api/enclave_get_keys.c \
 
 ifeq ($(DEBUG_ENCLAVE), 1)
 SM_ENCLAVE_SRC += $(SM_ENCLAVE_DEBUG_SRC)
@@ -104,7 +105,13 @@ SM_SRC := \
 	$(SM_SRC_DIR)/clib/strcmp.c \
 	$(SM_SRC_DIR)/clib/strlen.c \
 	$(SM_SRC_DIR)/clib/strcpy.c \
+	$(SM_SRC_DIR)/crypto/ed25519/add_scalar.c \
+	$(SM_SRC_DIR)/crypto/ed25519/fe.c \
+	$(SM_SRC_DIR)/crypto/ed25519/ge.c \
+	$(SM_SRC_DIR)/crypto/ed25519/sc.c \
 	$(SM_SRC_DIR)/crypto/ed25519/sha512.c \
+	$(SM_SRC_DIR)/crypto/ed25519/sign.c \
+	$(SM_SRC_DIR)/crypto/ed25519/keypair.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_free_metadata_pages.c \
 	$(SM_SRC_DIR)/common/sm_state.c \
 	$(SM_SRC_DIR)/common/enclave_handler.S \
@@ -124,7 +131,7 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/enclave_load_page_table.c \
 	$(SM_SRC_DIR)/api/enclave_load_page.c \
 	$(SM_SRC_DIR)/api/enclave_metadata_pages.c \
-	$(SM_SRC_DIR)/api/enclave_attest.c \
+	$(SM_SRC_DIR)/api/enclave_get_attest.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/region_assign.c \
 	$(SM_SRC_DIR)/api/region_block.c \

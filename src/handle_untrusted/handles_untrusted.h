@@ -20,7 +20,7 @@ api_result_t sm_internal_enclave_load_page (enclave_id_t enclave_id, uintptr_t p
 
 uint64_t sm_internal_enclave_metadata_pages (uint64_t num_mailboxes);
 
-api_result_t sm_internal_enclave_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_m, phys_ptr_t phys_addr_s);
+api_result_t sm_internal_enclave_get_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_m, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_s);
 
 api_result_t sm_internal_get_public_field (public_field_t field, phys_ptr_t phys_addr);
 

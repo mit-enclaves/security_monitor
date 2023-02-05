@@ -107,13 +107,22 @@ api_result_t sm_enclave_load_page (
 // Returns the number of pages used by an enclave metadata structure.
 uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 
-// Request the SM for to perform the local attestation and output the certificate.
+// Request the SM for the enclave's local attestation.
 //
 // `enclave_id` must identify an enclave that has been initialized.
-// `phys_addr_measurement` and `phys_addr_sig` must point into buffers large
-// enough to store the enclave measurement. The buffer must be contained in a
+// `phys_addr_measurement`, `phys_addr_pk` and `phys_addr_sig` must point into buffers large
+// enough to store outputs. The buffer must be contained in a
 // single DRAM region that belongs to the caller.
-api_result_t sm_enclave_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_sig);
+api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_attest);
+
+// Request the SM for the enclave's keys.
+//
+// The enclave is identified as the caller.
+// `phys_addr_pk` and `phys_addr_sk` must point into buffers large
+// `phys_addr_measurement`, `phys_addr_pk`, `phys_addr_sk` and `phys_addr_sig` must point into buffers large
+// enough to store the enclave keys. The buffer must be contained in a
+// single DRAM region that belongs to the enclave.
+api_result_t sm_enclave_get_attest (phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_pk, phys_addr_sk, phys_ptr_t phys_addr_attest);
 
 // APIs: Getters for SM values
 // ---------------------------

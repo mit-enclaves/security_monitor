@@ -6,7 +6,7 @@
 // Handles for SM API
 api_result_t sm_internal_enclave_exit ();
 
-api_result_t sm_internal_get_attestation_key (phys_ptr_t phys_addr);
+api_result_t sm_internal_enclave_get_keys (phys_ptr_t phys_addr_m, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_sk, phys_ptr_t phys_addr_a);
 
 api_result_t sm_internal_get_public_field (public_field_t field, phys_ptr_t phys_addr);
 

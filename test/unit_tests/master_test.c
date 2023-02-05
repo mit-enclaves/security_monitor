@@ -201,6 +201,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
   result = sm_enclave_enter(enclave_id, thread_id);
 
+  
   print_str("Test SUCCESSFUL\n\n");
   test_completed();
 }

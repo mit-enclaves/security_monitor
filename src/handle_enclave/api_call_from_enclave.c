@@ -18,6 +18,7 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
     uint64_t arg0 = regs[10];
     uint64_t arg1 = regs[11];
     uint64_t arg2 = regs[12];
+    uint64_t arg3 = regs[13];
 
     uint64_t retval;
 
@@ -27,6 +28,10 @@ void ecall_from_enclave_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) 
         retval = sm_internal_enclave_exit(regs);
         break;
 
+      case SM_ENCLAVE_GET_KEYS:
+        retval = sm_internal_enclave_get_keys( arg0, arg1, arg2, arg3 );
+        break;
+      
         // Fields
       case SM_GET_PUBLIC_FIELD:
         retval = sm_internal_get_public_field(arg0, (uintptr_t) arg1);
