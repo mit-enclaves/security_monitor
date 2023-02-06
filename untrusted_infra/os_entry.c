@@ -225,7 +225,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     riscv_perf_cntr_begin();
 
     //printm("Sign\n");
-    for(int i = 0; i < 256 * 12 * 10; i++) {
+    for(int i = 0; i < 256 * 12; i++) {
       if(req_queue_is_full()) { 
         do {
           ret = pop(qresp, (void **) &m);
