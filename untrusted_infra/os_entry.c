@@ -13,6 +13,8 @@ extern uintptr_t enclave_end;
 
 #define SHARED_MEM_SYNC (0x90000000)
 
+#define EVBASE 0x20000000
+
 #define STATE_0 1
 #define STATE_1 2
 #define STATE_2 3
@@ -66,7 +68,8 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     printm("Enclave Create\n");
 
-    result = sm_enclave_create(enclave_id, 0x0, REGION_MASK, num_mailboxes, true);
+
+    result = sm_enclave_create(enclave_id, EVBASE, REGION_MASK, num_mailboxes, true);
     if(result != MONITOR_OK) {
       printm("sm_enclave_create FAILED with error code %d\n\n", result);
       test_completed();
@@ -111,7 +114,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     printm("Enclave Load Page Table\n");
 
-    result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 3, NODE_ACL);
+    result = sm_enclave_load_page_table(enclave_id, page_table_address, EVBASE, 3, NODE_ACL);
     if(result != MONITOR_OK) {
       printm("sm_enclave_load_page_table FAILED with error code %d\n\n", result);
       test_completed();
@@ -121,7 +124,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     printm("Enclave Load Page Table\n");
 
-    result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 2, NODE_ACL);
+    result = sm_enclave_load_page_table(enclave_id, page_table_address, EVBASE, 2, NODE_ACL);
     if(result != MONITOR_OK) {
       printm("sm_enclave_load_page_table FAILED with error code %d\n\n", result);
       test_completed();
@@ -131,7 +134,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     printm("Enclave Load Page Table\n");
 
-    result = sm_enclave_load_page_table(enclave_id, page_table_address, 0, 1, NODE_ACL);
+    result = sm_enclave_load_page_table(enclave_id, page_table_address, EVBASE, 1, NODE_ACL);
     if(result != MONITOR_OK) {
       printm("sm_enclave_load_page_table FAILED with error code %d\n\n", result);
       test_completed();
@@ -139,7 +142,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     uintptr_t phys_addr = page_table_address + PAGE_SIZE;
     uintptr_t os_addr = (uintptr_t) &enclave_start;
-    uintptr_t virtual_addr = 0;
+    uintptr_t virtual_addr = EVBASE;
 
     uint64_t size = ((uint64_t) &enclave_end) - ((uint64_t) &enclave_start);
     int num_pages_enclave = size / PAGE_SIZE;
@@ -162,7 +165,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     }
 
-    uintptr_t enclave_sp = virtual_addr;
+    //uintptr_t enclave_sp = virtual_addr;
 
     uint64_t size_enclave_metadata = sm_enclave_metadata_pages(num_mailboxes);
 
@@ -171,7 +174,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     printm("Thread Load\n");
 
-    result = sm_thread_load(enclave_id, thread_id, 0x0, enclave_sp, timer_limit);
+    result = sm_thread_load(enclave_id, thread_id, EVBASE, 0x0, timer_limit); // SP is set by the enclave itself
     if(result != MONITOR_OK) {
       printm("sm_thread_load FAILED with error code %d\n\n", result);
       test_completed();

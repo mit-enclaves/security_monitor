@@ -3,6 +3,7 @@ ENTRY( enclave_entry )
 
 SECTIONS
 {
+  . = 0x20000000;
   .text : {
     PROVIDE( enclave_entry = . );
     KEEP( *(.text.entry) )
@@ -17,6 +18,7 @@ SECTIONS
 
   .data ALIGN(64)  : {
     KEEP(*(.data.stack))
+    PROVIDE( stack_top = . );
     *(.data.*)
     *(.data)  /* initialized data */
   }

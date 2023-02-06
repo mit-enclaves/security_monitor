@@ -54,8 +54,8 @@ void sign (
   msg->f = F_SIGN;
   msg->args[0] = (uintptr_t) in_message;
   msg->args[1] = (uintptr_t) in_message_size;
-  msg->args[3] = (uintptr_t) in_key_id;
-  msg->args[4] = (uintptr_t) out_signature;
+  msg->args[2] = (uintptr_t) in_key_id;
+  msg->args[3] = (uintptr_t) out_signature;
   int ret;
   do {
     ret = push(q, msg);
