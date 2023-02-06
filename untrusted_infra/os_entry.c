@@ -207,19 +207,26 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     // HACKS ON HACKS - Leaves spaces for the two queues
     init_heap(SHARED_MEM_REG + (2 * sizeof(queue_t)), 500 * PAGE_SIZE);
 
-    key_seed_t *seed = malloc(sizeof(key_seed_t));
-    secret_key_t *sk = malloc(sizeof(secret_key_t));
+    // key_seed_t *seed = malloc(sizeof(key_seed_t));
+    uint64_t key_id;
     public_key_t *pk = malloc(sizeof(public_key_t));
     signature_t *s = malloc(sizeof(signature_t)); 
 
     printm("Creat SK\n");
-    create_secret_signing_key(seed, sk);
+    create_signing_key_pair(NULL, &key_id);
     printm("Creat PK\n");
-    compute_public_signing_key(sk, pk);
+    get_public_signing_key(key_id, pk);
     
     msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
+    
+    do {
+      ret = pop(qresp, (void **) &m);
+      //if((ret == 0)) { //&& (m->f == F_VERIFY)) {
+        //printm("result\n"); // %d\n", m->ret);
+      //}
+    } while((ret != 0) || (m->f != F_GET_SIGN_PK));
 
     // *** BEGINING BENCHMARK ***
     //riscv_perf_cntr_begin();
@@ -234,7 +241,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
           //}
         } while(!resp_queue_is_empty());
       }
-      sign(a[i%len_a], len_elements[i%len_a], pk, sk, s);
+      sign(a[i%len_a], len_elements[i%len_a], key_id, s);
     }
 
     //printm("Verify SK\n");

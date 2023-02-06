@@ -16,27 +16,27 @@ void hash(const void * in_data,
   } while(ret != 0);
 }
 
-void create_secret_signing_key (
+void create_signing_key_pair (
     const key_seed_t * in_seed,
-    secret_key_t * out_secret_key) {
+    uint64_t * out_key_id) {
   queue_t *q = SHARED_REQU_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_CREATE_SIGN_SK;
+  msg->f = F_CREATE_SIGN_K;
   msg->args[0] = (uintptr_t) in_seed;
-  msg->args[1] = (uintptr_t) out_secret_key;
+  msg->args[1] = (uintptr_t) out_key_id;
   int ret;
   do {
     ret = push(q, msg);
   } while(ret != 0);
 }
 
-void compute_public_signing_key (
-    const secret_key_t * in_secret_key,
+void get_public_signing_key (
+    const uint64_t in_key_id,
     public_key_t * out_public_key) {
   queue_t *q = SHARED_REQU_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
-  msg->f = F_COMPUTE_SIGN_PK;
-  msg->args[0] = (uintptr_t) in_secret_key;
+  msg->f = F_GET_SIGN_PK;
+  msg->args[0] = (uintptr_t) in_key_id;
   msg->args[1] = (uintptr_t) out_public_key;
   int ret;
   do {
@@ -47,16 +47,14 @@ void compute_public_signing_key (
 void sign (
     const void * in_message,
     const size_t in_message_size,
-    const public_key_t * in_public_key,
-    const secret_key_t * in_secret_key,
+    const uint64_t in_key_id,
     signature_t * out_signature) {
   queue_t *q = SHARED_REQU_QUEUE;  
   msg_t *msg = malloc(sizeof(msg_t));
   msg->f = F_SIGN;
   msg->args[0] = (uintptr_t) in_message;
   msg->args[1] = (uintptr_t) in_message_size;
-  msg->args[2] = (uintptr_t) in_public_key;
-  msg->args[3] = (uintptr_t) in_secret_key;
+  msg->args[3] = (uintptr_t) in_key_id;
   msg->args[4] = (uintptr_t) out_signature;
   int ret;
   do {

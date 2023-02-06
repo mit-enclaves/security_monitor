@@ -20,6 +20,7 @@ CRYPTO_ENCLAVE_INCLUDES := \
 	$(QUEUE_SRC_DIR) \
 
 CRYPTO_ENCLAVE_SRC := \
+  $(CRYPTO_ENCLAVE_SRC_DIR)/memcpy.c \
   $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_entry.S \
   $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_code.c \
   $(CRYPTO_ENCLAVE_SRC_DIR)/enclave_stack.S \

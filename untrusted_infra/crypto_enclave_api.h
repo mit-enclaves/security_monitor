@@ -9,19 +9,18 @@ void hash(const void * in_data,
   size_t in_data_size,
   hash_t * out_hash);
 
-void create_secret_signing_key (
+void create_signing_key_pair (
   const key_seed_t * in_seed,
-  secret_key_t * out_secret_key);
+  uint64_t * out_key_id);
 
-void compute_public_signing_key (
-  const secret_key_t * in_secret_key,
+void get_public_signing_key (
+  const uint64_t in_key_id,
   public_key_t * out_public_key);
 
 void sign (
   const void * in_message,
   const size_t in_message_size,
-  const public_key_t * in_public_key,
-  const secret_key_t * in_secret_key,
+  const uint64_t in_key_id,
   signature_t * out_signature);
 
 void verify (

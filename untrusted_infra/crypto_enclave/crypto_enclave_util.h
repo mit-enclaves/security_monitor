@@ -5,8 +5,8 @@
 
 #define F_ADDITION             0
 #define F_HASH                 1
-#define F_CREATE_SIGN_SK       2
-#define F_COMPUTE_SIGN_PK      3
+#define F_CREATE_SIGN_K        2
+#define F_GET_SIGN_PK          3
 #define F_SIGN                 4
 #define F_VERIFY               5
 #define F_KEY_AGREEMENT        6
@@ -46,5 +46,11 @@ typedef struct msg_t {
   int ret;
   bool done;
 } msg_t;
+
+typedef struct key_entry_t {
+  bool init;
+  public_key_t pk;
+  secret_key_t sk;
+} key_entry_t;
 
 #endif // CRYPTO_ENCLAVE_UTIL_H
