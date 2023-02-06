@@ -222,7 +222,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     int ret;
 
     // *** BEGINING BENCHMARK ***
-    riscv_perf_cntr_begin();
+    //riscv_perf_cntr_begin();
 
     //printm("Sign\n");
     for(int i = 0; i < 256 * 12; i++) {
@@ -253,7 +253,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     } while((ret != 0) || (m->f != F_EXIT));
    
     //printm("Last function %d\n", m->f); 
-    riscv_perf_cntr_end();
+    //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
     printm("Received enclave exit confirmation\n");
     send_exit_cmd(0);
