@@ -9,7 +9,7 @@ static inline api_result_t sm_exit_enclave(void) {
 }
 
 static inline api_result_t sm_enclave_get_keys (phys_ptr_t phys_addr_m, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_sk, phys_ptr_t phys_addr_a) {
-  return SM_API_CALL(SM_ENCLAVE_GET_ATTEST, phys_addr_m, phys_addr_pk, phys_addr_sk, phys_addr_a, 0, 0, 0);
+  return SM_API_CALL(SM_ENCLAVE_GET_KEYS, phys_addr_m, phys_addr_pk, phys_addr_sk, phys_addr_a, 0, 0, 0);
 }
 
 static inline api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr) {
