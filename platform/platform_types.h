@@ -28,6 +28,8 @@ typedef struct {
   uintptr_t eptbr;
 
   uintptr_t mie;
+  uintptr_t mideleg;
+  uintptr_t medeleg;
 } thread_platform_csr_t;
 
 typedef struct {
