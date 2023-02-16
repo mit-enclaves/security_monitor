@@ -199,11 +199,81 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
-  print_str("Enclave Enter\n");
+  print_str("Enclave Enter\n\n");
 
   result = sm_enclave_enter(enclave_id, thread_id);
 
+  print_str("\nTest MailBoxes\n");
+
+  char* msg = "Hello Enclave!";
+  result = sm_mail_send(enclave_id, 0, msg);
+  if(result != MONITOR_OK) {
+    print_str("sm_mail_send FAILED with error code ");
+    print_int(result);
+    print_str("\n\n");
+    test_completed();
+  }
   
-  print_str("Test SUCCESSFUL\n\n");
+  result = sm_mail_accept(0, enclave_id);
+  if(result != MONITOR_OK) {
+    print_str("sm_mail_accept FAILED with error code ");
+    print_int(result);
+    print_str("\n\n");
+    test_completed();
+  }
+  
+  print_str("Enclave Enter a Second Time\n\n");
+
+  result = sm_enclave_enter(enclave_id, thread_id);
+  
+  char msg_in[MAILBOX_SIZE];
+  hash_t exp_sndr;
+  result = sm_mail_receive(0, &msg_in, &exp_sndr);
+  if(result != MONITOR_OK) {
+    print_str("sm_mail_accept FAILED with error code ");
+    print_int(result);
+    print_str("\n\n");
+    test_completed();
+  }
+  
+  printm("\nSender enclave measurement : [");
+  for(int i = 0; i < sizeof(hash_t); i++) {
+    printm("%x, ", exp_sndr.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("The enclave has sent: \n\"%s\"\n", msg_in);
+
+  printm("\nGet enclave's certificate\n");
+  hash_t e_m;
+  public_key_t e_pk;
+  signature_t e_sig;
+  result = sm_enclave_get_attest(enclave_id, &e_m, &e_pk, &e_sig);
+  if(result != MONITOR_OK) {
+    print_str("sm_mail_accept FAILED with error code ");
+    print_int(result);
+    print_str("\n\n");
+    test_completed();
+  }
+  
+  printm("Enclave measurement : [");
+  for(int i = 0; i < sizeof(hash_t); i++) {
+    printm("%x, ", e_m.bytes[i]);
+  }
+  printm("]\n");
+
+  printm("Enclave PK : [");
+  for(int i = 0; i < sizeof(public_key_t); i++) {
+    printm("%x, ", e_pk.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("Enclave Certificate : [");
+  for(int i = 0; i < sizeof(signature_t); i++) {
+    printm("%x, ", e_sig.bytes[i]);
+  }
+  printm("]\n");
+  
+  print_str("\nTest SUCCESSFUL\n\n");
   test_completed();
 }

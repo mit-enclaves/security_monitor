@@ -1,14 +1,11 @@
 #ifndef CRYPTOGRAPHY_H
 #define CRYPTOGRAPHY_H
+#include <api_crypto_types.h>
 
 // Hash
 #include "ed25519/sha512.h"
 #include <stdint.h>
 #include <stdbool.h>
-
-typedef struct hash_t {
-  uint8_t bytes[64];
-} hash_t;
 
 typedef sha512_context hash_context_t;
 
@@ -49,29 +46,14 @@ static inline void hash_finalize(
 #include "ed25519/ed25519.h"
 
 #define LENGTH_SEED 32
-#define LENGTH_PK 32
-#define LENGTH_SK 64
 
 typedef struct secret_key_seed_t {
   uint8_t bytes[LENGTH_SEED];
 } key_seed_t;
 
-typedef struct public_key_t {
-  uint8_t bytes[LENGTH_PK];
-} public_key_t;
-
-typedef struct secret_key_t {
-  uint8_t bytes[LENGTH_SK];
-} secret_key_t;
-
 typedef struct symmetric_key_t {
   uint8_t bytes[64];
 } symmetric_key_t; 
-
-typedef struct signature_t {
-  uint8_t bytes[64];
-} signature_t;
-
 
 static inline void create_secret_signing_key (
   const key_seed_t * in_seed,

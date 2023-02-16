@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <api_crypto_types.h>
 
 // SM API Types
 // --------------------
