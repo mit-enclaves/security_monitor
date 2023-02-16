@@ -36,12 +36,12 @@ static inline uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes) {
   return SM_API_CALL(SM_ENCLAVE_METADATA_PAGES, num_mailboxes, 0, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_sig) {
-  return SM_API_CALL(SM_ENCLAVE_GET_ATTEST, enclave_id, phys_addr_measurement, phys_addr_pk, phys_addr_sig, 0, 0, 0);
+static inline api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, uintptr_t addr_measurement, uintptr_t addr_pk, uintptr_t addr_sig) {
+  return SM_API_CALL(SM_ENCLAVE_GET_ATTEST, enclave_id, addr_measurement, addr_pk, addr_sig, 0, 0, 0);
 }
 
-static inline api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr) {
-  return SM_API_CALL(SM_GET_PUBLIC_FIELD, field, phys_addr, 0, 0, 0, 0, 0);
+static inline api_result_t sm_get_public_field (public_field_t field, uintptr_t addr) {
+   return SM_API_CALL(SM_GET_PUBLIC_FIELD, field, addr, 0, 0, 0, 0, 0);
 }
 
 static inline api_result_t sm_mail_accept (mailbox_id_t mailbox_id, enclave_id_t expected_sender) {

@@ -110,19 +110,14 @@ uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 // Request the SM for the enclave's local attestation.
 //
 // `enclave_id` must identify an enclave that has been initialized.
-// `phys_addr_measurement`, `phys_addr_pk` and `phys_addr_sig` must point into buffers large
-// enough to store outputs. The buffer must be contained in a
-// single DRAM region that belongs to the caller.
-api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_pk, phys_ptr_t phys_addr_attest);
+// `addr_*` are virtual addresses and will go through the hardware memory checks
+api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, uintptr_t addr_measurement, uintptr_t addr_pk, uintptr_t addr_attest);
 
 // Request the SM for the enclave's keys.
 //
 // The enclave is identified as the caller.
-// `phys_addr_pk` and `phys_addr_sk` must point into buffers large
-// `phys_addr_measurement`, `phys_addr_pk`, `phys_addr_sk` and `phys_addr_sig` must point into buffers large
-// enough to store the enclave keys. The buffer must be contained in a
-// single DRAM region that belongs to the enclave.
-api_result_t sm_enclave_get_attest (phys_ptr_t phys_addr_measurement, phys_ptr_t phys_addr_pk, phys_addr_sk, phys_ptr_t phys_addr_attest);
+// `addr_*` are virtual addresses and will go through the hardware memory checks
+api_result_t sm_enclave_get_attest (uintptr_t addr_measurement, uintptr_t addr_pk, uintptr_t addr_sk, uintptr_t addr_attest);
 
 // APIs: Getters for SM values
 // ---------------------------
@@ -131,10 +126,8 @@ api_result_t sm_enclave_get_attest (phys_ptr_t phys_addr_measurement, phys_ptr_t
 //
 // No special permissions are required
 //
-// `phys_addr` must point into a buffer large enough to store the requested
-// field. The buffer must be contained in a single DRAM region that
-// belongs to the caller.
-api_result_t sm_get_public_field (public_field_t field, phys_ptr_t phys_addr);
+// `addr` is a virtual addresse and will go through the hardware memory checks
+api_result_t sm_get_public_field (public_field_t field, uintptr_t addr);
 
 
 // APIs: SM Mail-related calls

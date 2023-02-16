@@ -27,7 +27,6 @@ typedef struct signature_t {
   uint8_t bytes[LENGTH_S];
 } signature_t;
 
-
 void enclave_entry() {
 #if (DEBUG_ENCLAVE == 1)
   printm("Hi from inside!\n");
@@ -37,7 +36,16 @@ void enclave_entry() {
   secret_key_t sk;
   signature_t s;
   
+  public_key_t pk_d;
+  public_key_t pk_sm;
+  hash_t h_sm;
+  signature_t s_sm;
+  
   sm_enclave_get_keys(&m, &pk, &sk, &s);
+  sm_get_public_field(PUBLIC_FIELD_PK_D, &pk_d);
+  sm_get_public_field(PUBLIC_FIELD_PK_SM, &pk_sm);
+  sm_get_public_field(PUBLIC_FIELD_H_SM, &h_sm);
+  sm_get_public_field(PUBLIC_FIELD_SIG_SM, &s_sm);
 
 #if (DEBUG_ENCLAVE == 1)
   printm("Enclave_measurement : [");
@@ -61,6 +69,30 @@ void enclave_entry() {
   printm("S: [");
   for(int i = 0; i < sizeof(signature_t); i++) {
     printm("%x, ", s.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("PK_D: [");
+  for(int i = 0; i < sizeof(public_key_t); i++) {
+    printm("%x, ", pk_d.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("PK_SM: [");
+  for(int i = 0; i < sizeof(public_key_t); i++) {
+    printm("%x, ", pk_sm.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("H_SM: [");
+  for(int i = 0; i < sizeof(hash_t); i++) {
+    printm("%x, ", h_sm.bytes[i]);
+  }
+  printm("]\n");
+  
+  printm("S_SM: [");
+  for(int i = 0; i < sizeof(signature_t); i++) {
+    printm("%x, ", s_sm.bytes[i]);
   }
   printm("]\n");
 #endif

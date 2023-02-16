@@ -78,8 +78,8 @@ typedef enum {
   PUBLIC_FIELD_PK_D = 1,
   PUBLIC_FIELD_PK_SM = 2,
   PUBLIC_FIELD_H_SM = 3,
-  PUBLIC_FIELD_SIG_M = 4,
-  PUBLIC_FIELD_SIG_D = 5,
+  PUBLIC_FIELD_SIG_D = 4,
+  PUBLIC_FIELD_SIG_SM = 5,
 } public_field_t;
 
 typedef enum {
