@@ -143,26 +143,18 @@ api_result_t sm_mail_accept (
 // Attempts to read a message received in a mailbox.
 //
 // If the read succeeds, the mailbox will transition into the free state.
-//
-// `phys_addr` must point into a buffer large enough to store a
-// mailbox_identity_t structure. The entire buffer must be contained in a
-// single DRAM region that belongs to the enclave.
-api_result_t sm_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement);
+api_result_t sm_mail_receive (mailbox_id_t mailbox_id, void * out_message, void * out_sender_measurement);
 
 // Sends a message to another enclave's mailbox.
 //
 // `enclave_id` and `mailbox_id` identify the destination mailbox.
-//
-// `phys_addr` must point into a buffer large enough to store a
-// mailbox_identity_t structure. The entire buffer must be contained in a
-// single DRAM region that belongs to the enclave.
 //
 // The structure contains the destination enclave's expected identity. The
 // monitor will refuse to deliver the message
 api_result_t sm_mail_send (
   enclave_id_t enclave_id,
   mailbox_id_t mailbox_id,
-  phys_ptr_t phys_addr);
+  void * addr);
 
 
 // APIs: SM Region-related calls

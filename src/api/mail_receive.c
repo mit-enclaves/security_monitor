@@ -2,7 +2,7 @@
 
 // Need to lock ALL of the caller's metadata region, the message buffer and sender_measurement regions (if different)
 
-api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_message, phys_ptr_t out_sender_measurement) {
+api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, uintptr_t out_message, uintptr_t out_sender_measurement) {
 
   /* Caller is authenticated and authorized by the trap routing logic :
    the trap handler and MCAUSE unambiguously identify the caller,
@@ -15,8 +15,6 @@ api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_m
   /*
     - mailbox_id must be valid
     - the recipient mailbox must be full
-    - the message buffer must fit entirely in one region
-    - the message buffer region must belong to the caller
   */
 
   region_map_t locked_regions = (const region_map_t){ 0 };
@@ -71,58 +69,16 @@ api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, phys_ptr_t out_m
     return MONITOR_INVALID_STATE;
   }
 
-  // the message buffer must fit entirely in one region
-  // the message buffer region must belong to the caller
-
-  if ((addr_to_region_id(out_message) != addr_to_region_id(out_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
-    (region_owner(addr_to_region_id(out_message)) != caller)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
-  // the measurement buffer must fit entirely in one region
-  // the measurement buffer region must belong to the caller
-
-  if ((addr_to_region_id(out_sender_measurement) != addr_to_region_id(out_sender_measurement + sizeof(hash_t))) ||
-    (region_owner(addr_to_region_id(out_sender_measurement)) != caller)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-    return MONITOR_INVALID_STATE;
-  }
-
-  // Lock the message buffer region
-  if(!add_lock_region(addr_to_region_id(out_message), &locked_regions)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-    return MONITOR_CONCURRENT_CALL;
-  }
-
-  // Lock the measurement buffer region
-  if(!add_lock_region(addr_to_region_id(out_sender_measurement), &locked_regions)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-    return MONITOR_CONCURRENT_CALL;
-  }
-
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
   // ----------------------
 
   // Copy the sender's Measurement
-  memcpy((void *) out_sender_measurement, &mailbox->sender_measurement, sizeof(hash_t));
+  memcpy_m2u((void *) out_sender_measurement, &mailbox->sender_measurement, sizeof(hash_t));
 
   // Copy the message
-  memcpy((void *) out_message, &mailbox->message, sizeof(uint8_t) * MAILBOX_SIZE);
+  memcpy_m2u((void *) out_message, &mailbox->message, sizeof(uint8_t) * MAILBOX_SIZE);
 
   // Update the mailbox's state
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;

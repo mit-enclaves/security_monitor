@@ -23,3 +23,24 @@ void* memcpy_m2u(void* u_dest, const void* m_src, size_t len)
 
   return u_dest;
 }
+
+void* memcpy_u2m(void* m_dest, const void* u_src, size_t len)
+{
+  const char* s = u_src;
+  char *d = m_dest;
+
+  if ((((uintptr_t)m_dest | (uintptr_t)u_src) & (sizeof(uintptr_t)-1)) == 0) {
+    while ((void*)d < (m_dest + len - (sizeof(uintptr_t)-1))) {
+      *(uintptr_t*)d = load_uintptr_t((const uintptr_t*)s, 0x0);
+      d += sizeof(uintptr_t);
+      s += sizeof(uintptr_t);
+    }
+  }
+
+  while (d < (char*)(m_dest + len)) {
+    *d++ = load_uint8_t((uint8_t *) s, 0x0);
+    s++;
+  }
+
+  return m_dest;
+}

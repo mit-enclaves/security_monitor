@@ -1,8 +1,8 @@
 #include <sm.h>
 
-// Need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different), and the buffer region
+// Need to lock ALL of the sender enclave's metadata region, the recipient enclave's metadata region (if different)
 
-api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox_id, phys_ptr_t in_message) {
+api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox_id, uintptr_t in_message) {
 
   // Caller is authenticated and authorized by the trap routing logic : the trap handler and MCAUSE unambiguously identify the caller, and the trap handler does not route unauthorized API calls.
 
@@ -15,8 +15,6 @@ api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox
     - mailbox_id must be valid
     - the recipient mailbox must be expecting this sender
     - the recipient mailbox must be empty
-    - the message buffer must fit entirely in one region
-    - the message buffer region must belong to the caller
   */
 
   sm_state_t * sm = get_sm_state_ptr();
@@ -102,28 +100,6 @@ api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox
     return MONITOR_INVALID_STATE;
   }
 
-  // the message buffer must fit entirely in one region
-  // the message buffer region must belong to the caller
-
-  if ((addr_to_region_id(in_message) != addr_to_region_id(in_message + sizeof(uint8_t) * MAILBOX_SIZE)) ||
-    (region_owner(addr_to_region_id(in_message)) != caller)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-
-    return MONITOR_INVALID_STATE;
-  }
-
-  // Lock the buffer region
-  if(!add_lock_region(addr_to_region_id(in_message), &locked_regions)) {
-    if (untrusted_locked) {
-      unlock_untrusted_state();
-    }
-    unlock_regions(&locked_regions);
-    return MONITOR_CONCURRENT_CALL;
-  }
-
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
@@ -140,7 +116,7 @@ api_result_t sm_internal_mail_send (enclave_id_t recipient, mailbox_id_t mailbox
   }
 
   // Copy the message
-  memcpy(&mailbox->message, (void *) in_message, sizeof(uint8_t) * MAILBOX_SIZE);
+  memcpy_u2m(&mailbox->message, (void *) in_message, sizeof(uint8_t) * MAILBOX_SIZE);
 
   // Update the mailbox's state
   mailbox->state = ENCLAVE_MAILBOX_STATE_FULL;

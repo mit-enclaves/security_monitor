@@ -14,7 +14,7 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_receive.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
 	$(SM_SRC_DIR)/clib/memcpy.c \
-	$(SM_SRC_DIR)/clib/memcpy_m2u.c \
+	$(SM_SRC_DIR)/clib/memcpy_virt.c \
 	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(PLATFORM_DIR)/platform_panic.S \
