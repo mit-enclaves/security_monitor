@@ -111,13 +111,13 @@ uint64_t sm_enclave_metadata_pages (uint64_t num_mailboxes);
 //
 // `enclave_id` must identify an enclave that has been initialized.
 // `addr_*` are virtual addresses and will go through the hardware memory checks
-api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, uintptr_t addr_measurement, uintptr_t addr_pk, uintptr_t addr_attest);
+api_result_t sm_enclave_get_attest (enclave_id_t enclave_id, void *addr_measurement, void *addr_pk, void *addr_attest);
 
 // Request the SM for the enclave's keys.
 //
 // The enclave is identified as the caller.
 // `addr_*` are virtual addresses and will go through the hardware memory checks
-api_result_t sm_enclave_get_attest (uintptr_t addr_measurement, uintptr_t addr_pk, uintptr_t addr_sk, uintptr_t addr_attest);
+api_result_t sm_enclave_get_keys (void *addr_measurement, void *addr_pk, void *addr_sk, void *addr_attest);
 
 // APIs: Getters for SM values
 // ---------------------------
@@ -127,7 +127,7 @@ api_result_t sm_enclave_get_attest (uintptr_t addr_measurement, uintptr_t addr_p
 // No special permissions are required
 //
 // `addr` is a virtual addresse and will go through the hardware memory checks
-api_result_t sm_get_public_field (public_field_t field, uintptr_t addr);
+api_result_t sm_get_public_field (public_field_t field, void *addr);
 
 
 // APIs: SM Mail-related calls

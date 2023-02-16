@@ -8,11 +8,11 @@ static inline api_result_t sm_exit_enclave(void) {
    return SM_API_CALL(SM_ENCLAVE_EXIT, 0, 0, 0, 0, 0, 0, 0);
 }
 
-static inline api_result_t sm_enclave_get_keys (uintptr_t addr_m, uintptr_t addr_pk, uintptr_t addr_sk, uintptr_t addr_a) {
+static inline api_result_t sm_enclave_get_keys (void *addr_m, void *addr_pk, void *addr_sk, void *addr_a) {
   return SM_API_CALL(SM_ENCLAVE_GET_KEYS, addr_m, addr_pk, addr_sk, addr_a, 0, 0, 0);
 }
 
-static inline api_result_t sm_get_public_field (public_field_t field, uintptr_t addr) {
+static inline api_result_t sm_get_public_field (public_field_t field, void *addr) {
    return SM_API_CALL(SM_GET_PUBLIC_FIELD, field, addr, 0, 0, 0, 0, 0);
 }
 
