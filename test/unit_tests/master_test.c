@@ -13,6 +13,10 @@ extern uintptr_t enclave_end;
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
 
+  if(core_id != 0) {
+    while(true) {};
+  }
+
   //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
   uint64_t region2_id = addr_to_region_id((uintptr_t) &region2);
   uint64_t region3_id = addr_to_region_id((uintptr_t) &region3);
