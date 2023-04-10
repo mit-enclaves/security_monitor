@@ -12,7 +12,7 @@ call platform_purge_core
 
 # Set up argument for future sm_init call
 mv a0, x2
-li x2, 0 # Clean x2
+mv x2, zero # Clean x2
 
 # set stack pointer
 la sp, stack_ptr
@@ -33,6 +33,9 @@ beq t0, t1, 2f
 addi t0, t0, REGBYTES
 bne t0, t1, 1b
 2:
+
+mv t0, zero
+mv t1, zero
 
 # Run SM's high-level initialization routine; safe for all cores to run
 # call into sm_init(uintptr_t fdt_addr)
