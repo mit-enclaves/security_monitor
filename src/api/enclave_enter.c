@@ -4,7 +4,6 @@ extern uintptr_t trap_vector_from_untrusted;
 extern uintptr_t stack_ptr;
 
 api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
-
   // Validate inputs
   // ---------------
 

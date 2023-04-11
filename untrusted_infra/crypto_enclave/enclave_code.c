@@ -30,6 +30,10 @@ void enclave_entry() {
   msg_t *m;
   int ret;
 
+#if (DEBUG_ENCLAVE == 1)
+  printm("Made it here\n");
+#endif
+
   // *** BEGINING BENCHMARK ***
   //riscv_perf_cntr_begin();
 
@@ -71,6 +75,7 @@ void enclave_entry() {
             &key_directory[key_id].sk,
             &key_directory[key_id].pk);
         key_directory[key_id].init = true;
+        *((int *) m->args[1]) = key_id;
         m->ret = 0;
         break;
       
@@ -85,6 +90,9 @@ void enclave_entry() {
         break;
       
       case F_SIGN:
+#if (DEBUG_ENCLAVE == 1)
+        //printm("Signing ");
+#endif
         key_id =  m->args[2];
         if(!key_directory[key_id].init) {
           m->ret = 1;

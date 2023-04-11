@@ -20,10 +20,17 @@ extern uintptr_t enclave_end;
 #define STATE_2 3
 #define STATE_3 4
 
+#define NUM_SIGN 256 * 12
+
+// Verify Signatures
+#define VERIFY 0
+
 // INPUTS
 extern int len_a;
 extern int len_elements[];
 extern char *a[];
+
+signature_t sigs[NUM_SIGN];
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
   volatile int *flag = (int *) SHARED_MEM_SYNC;
@@ -213,16 +220,20 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     // key_seed_t *seed = malloc(sizeof(key_seed_t));
     uint64_t key_id;
     public_key_t *pk = malloc(sizeof(public_key_t));
-    signature_t *s = malloc(sizeof(signature_t)); 
 
-    printm("Creat SK\n");
-    create_signing_key_pair(NULL, &key_id);
-    printm("Creat PK\n");
-    get_public_signing_key(key_id, pk);
-    
     msg_t *m;
     queue_t *qresp = SHARED_RESP_QUEUE;
     int ret;
+    
+    printm("Creat SK\n");
+    create_signing_key_pair(NULL, &key_id);
+    
+    do {
+      ret = pop(qresp, (void **) &m);
+    } while((ret != 0) || (m->f != F_CREATE_SIGN_K));
+    
+    printm("Get PK %d\n", key_id);
+    get_public_signing_key(key_id, pk);
     
     do {
       ret = pop(qresp, (void **) &m);
@@ -235,16 +246,22 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     //riscv_perf_cntr_begin();
 
     //printm("Sign\n");
-    for(int i = 0; i < 256 * 12; i++) {
+    for(int i = 0; i < NUM_SIGN; i++) {
       if(req_queue_is_full()) { 
         do {
           ret = pop(qresp, (void **) &m);
-          //if(ret == 0) {
-          //  printm("RPC with f code %d has returned\n", m->f);
-          //}
+#if (VERIFY == 1)
+          if((ret == 0) && (m->f == F_VERIFY)) {
+            printm("Verif %d ", m->ret);
+          }
+#endif
         } while(!resp_queue_is_empty());
       }
-      sign(a[i%len_a], len_elements[i%len_a], key_id, s);
+      sign(a[i%len_a], len_elements[i%len_a], key_id, &sigs[i]);
+#if (VERIFY == 1)
+      printm("sigs[%x] %d\n", i, sigs[i].bytes[0]);
+      verify(&sigs[i], a[i%len_a], len_elements[i%len_a], pk);
+#endif
     }
 
     //printm("Verify SK\n");
@@ -257,11 +274,19 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     do {
       ret = pop(qresp, (void **) &m);
-      //if((ret == 0)) { //&& (m->f == F_VERIFY)) {
-        //printm("result\n"); // %d\n", m->ret);
-      //}
+#if (VERIFY == 1)
+      if((ret == 0) && (m->f == F_VERIFY)) {
+        printm("Verif %d\n", m->ret);
+      }
+#endif
     } while((ret != 0) || (m->f != F_EXIT));
-   
+  
+#if (VERIFY == 1)
+    for(int i = 0; i < NUM_SIGN; i++) {
+      printm("sigs[%x] %d\n", i, sigs[i].bytes[0]);
+    }
+#endif
+
     //printm("Last function %d\n", m->f); 
     //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 

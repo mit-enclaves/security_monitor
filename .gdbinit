@@ -7,6 +7,9 @@ set logging on
 target remote localhost:1234
 symbol-file build/sm.elf
 #add-symbol-file build/sm.elf 0x80000000
-add-symbol-file build/master_test.elf 0x82000000
-add-symbol-file build/sm.enclave.elf  0x86002000
-add-symbol-file build/enclave.elf     0x0
+#add-symbol-file build/master_test.elf 0x82000000
+#add-symbol-file build/sm.enclave.elf  0x86002000
+#add-symbol-file build/enclave.elf     0x0
+add-symbol-file build/sm.enclave.elf 0x86002000
+add-symbol-file build/crypto_enclave.elf 0x20000000
+add-symbol-file build/payload.elf 0x82000000
