@@ -13,16 +13,6 @@
 #define F_KEY_AGREEMENT        6
 #define F_EXIT                 20
 
-#define LENGTH_SEED 32
-
-typedef struct secret_key_seed_t {
-  uint8_t bytes[LENGTH_SEED];
-} key_seed_t;
-
-typedef struct symmetric_key_t {
-  uint8_t bytes[64];
-} symmetric_key_t; 
-
 typedef struct msg_t {
   int f;
   uintptr_t args[5];

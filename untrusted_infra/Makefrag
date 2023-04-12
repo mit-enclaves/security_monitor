@@ -80,6 +80,11 @@ PAYLOAD_SRC := \
 	$(INFRA_DIR)/crypto_enclave_api.c \
 	$(INFRA_DIR)/clib/memset.c \
 	$(INFRA_DIR)/clib/memcpy.c \
+	$(INFRA_DIR)/ed25519/verify.c \
+	$(INFRA_DIR)/ed25519/sha512.c \
+	$(INFRA_DIR)/ed25519/sc.c \
+	$(INFRA_DIR)/ed25519/ge.c \
+	$(INFRA_DIR)/ed25519/fe.c \
   $(QUEUE_SRC_DIR)/msgq.c \
 	$(PLATFORM_DIR)/idpt.S \
 	$(PLATFORM_DIR)/htif/htif_for_linking.c \

@@ -3,6 +3,7 @@
 #include <api_untrusted.h>
 #include <crypto_enclave_api.h>
 #include <msgq.h>
+#include <local_cryptography.h>
 
 //extern uintptr_t region1;
 extern uintptr_t region2;
@@ -21,9 +22,6 @@ extern uintptr_t enclave_end;
 #define STATE_3 4
 
 #define NUM_SIGN 256 * 12
-
-// Verify Signatures
-#define VERIFY 0
 
 // INPUTS
 extern int len_a;
@@ -203,8 +201,6 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     printm("Enclave Enter\n");
 
     result = sm_enclave_enter(enclave_id, thread_id);
-
-    printm("Test SUCCESSFUL\n\n");
     test_completed();
   }
   else if (core_id == 1) {
@@ -250,22 +246,10 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
       if(req_queue_is_full()) { 
         do {
           ret = pop(qresp, (void **) &m);
-#if (VERIFY == 1)
-          if((ret == 0) && (m->f == F_VERIFY)) {
-            printm("Verif %d ", m->ret);
-          }
-#endif
         } while(!resp_queue_is_empty());
       }
       sign(a[i%len_a], len_elements[i%len_a], key_id, &sigs[i]);
-#if (VERIFY == 1)
-      printm("sigs[%x] %d\n", i, sigs[i].bytes[0]);
-      verify(&sigs[i], a[i%len_a], len_elements[i%len_a], pk);
-#endif
     }
-
-    //printm("Verify SK\n");
-    //verify(s, a[0], len_elements[0], pk);
 
     //printm("Send Enclave Exit\n");
     enclave_exit();
@@ -274,24 +258,26 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
 
     do {
       ret = pop(qresp, (void **) &m);
-#if (VERIFY == 1)
-      if((ret == 0) && (m->f == F_VERIFY)) {
-        printm("Verif %d\n", m->ret);
-      }
-#endif
     } while((ret != 0) || (m->f != F_EXIT));
-  
-#if (VERIFY == 1)
-    for(int i = 0; i < NUM_SIGN; i++) {
-      printm("sigs[%x] %d\n", i, sigs[i].bytes[0]);
-    }
-#endif
-
+    
     //printm("Last function %d\n", m->f); 
     //riscv_perf_cntr_end();
     // *** END BENCHMARK *** 
+ 
     printm("Received enclave exit confirmation\n");
-    send_exit_cmd(0);
+    printm("End benchmark starts verification\n");
+
+    bool res = true;
+    for(int i = 0; i < NUM_SIGN; i++) {
+      //printm("sigs[%x] %d\n", i, sigs[i].bytes[0]);
+      res &= local_verify(&sigs[i], a[i%len_a], len_elements[i%len_a], pk);
+    }
+    printm("Verification %s\n", (res ? "is successful": "has failed"));
+
+    printm("End experiment\n");
+    int cmd = (res == true) ? 0: 1;
+    send_exit_cmd(cmd);
+    test_completed();
   }
   else {
     printm("Core n %d\n\n", core_id);

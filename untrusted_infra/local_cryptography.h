@@ -9,7 +9,7 @@
 
 typedef sha512_context hash_context_t;
 
-static inline void hash(const void * in_data,
+static inline void local_hash(const void * in_data,
   size_t in_data_size,
   hash_t * out_hash) {
 
@@ -18,13 +18,13 @@ static inline void hash(const void * in_data,
   sha512(in_data, in_data_size, out_hash->bytes);
 }
 
-static inline void hash_init(
+static inline void local_hash_init(
   hash_context_t * hash_context) {
 
   sha512_init(hash_context);    // mdlen = hash output in bytes
 }
 
-static inline void hash_extend(
+static inline void local_hash_extend(
   hash_context_t * hash_context,
   const void * in_data,
   size_t in_data_size) {
@@ -32,7 +32,7 @@ static inline void hash_extend(
   sha512_update(hash_context, in_data, in_data_size);
 }
 
-static inline void hash_finalize(
+static inline void local_hash_finalize(
   hash_context_t * hash_context,
   hash_t * out_hash) {
 
@@ -45,21 +45,21 @@ static inline void hash_finalize(
 #define ED25519_NO_SEED 1
 #include "ed25519/ed25519.h"
 
-static inline void create_secret_signing_key (
+static inline void local_create_secret_signing_key (
   const key_seed_t * in_seed,
   secret_key_t * out_secret_key) {
 
   ed25519_create_privkey( out_secret_key->bytes, (uint8_t *)in_seed->bytes );
 }
 
-static inline void compute_public_signing_key (
+static inline void local_compute_public_signing_key (
   const secret_key_t * in_secret_key,
   public_key_t * out_public_key) {
 
   ed25519_compute_pubkey( out_public_key->bytes, (uint8_t *)in_secret_key->bytes );
 }
 
-static inline void sign (
+static inline void local_sign (
   const void * in_message,
   const size_t in_message_size,
   const public_key_t * in_public_key,
@@ -73,7 +73,7 @@ static inline void sign (
     (uint8_t *)in_secret_key->bytes );
 }
 
-static inline bool verify (
+static inline bool local_verify (
   const signature_t * in_signature,
   const void * in_message,
   const size_t in_message_size,
@@ -86,7 +86,7 @@ static inline bool verify (
 }
 
 // Key agreement
-static inline void perform_key_agreement (
+static inline void local_perform_key_agreement (
   const public_key_t * public_key_A,
   const secret_key_t * secret_key_B,
   symmetric_key_t * out_key) {
