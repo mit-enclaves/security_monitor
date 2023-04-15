@@ -56,7 +56,6 @@ all: $(ALL)
 .PHONY: clean
 clean:
 	-rm -rf $(BUILD_DIR)
-	-rm -rf $(INPUTS)
 
 ELFS := $(shell find $(BUILD) -name '*.elf')
 ELFS_PREF := $(addprefix $(BUILD)/, $(ELFS))
