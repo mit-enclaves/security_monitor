@@ -3,6 +3,10 @@
 .option norvc
 .section .text.entry
 
+# Deactivate speculation
+li t0, MSPEC_NONE
+csrw CSR_MSPEC, MSPEC_NONMEM
+
 # Scrub the core to pristine state
 csrw mscratch, zero
 li x1, 0

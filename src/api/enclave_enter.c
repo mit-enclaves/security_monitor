@@ -158,6 +158,8 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   call platform_clean_core; \n \
   call platform_purge_core; \n \
   li ra, 0; \n \
+  # Enable Speculation CSR_MSPEC; \n \
+  csrw 0x7ca, zero \n \
   mret"  : : "r" (t0));
 
   return MONITOR_OK; // Not reachable

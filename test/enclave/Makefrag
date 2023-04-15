@@ -23,7 +23,7 @@ ENCLAVE_COMMON_SRC := \
   $(ENCLAVE_SRC_DIR)/enclave_stack.S \
 
 ifeq ($(DEBUG_ENCLAVE), 1)
-ENCLAVE_COMMON_SRC += $(INFRA_DIR)/sbi/console.c
+ENCLAVE_COMMON_SRC += $(SM_TEST_DIR)/sbi/console.c
 endif
 
 ENCLAVE_LD := $(ENCLAVE_SRC_DIR)/enclave.lds

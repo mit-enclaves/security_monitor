@@ -53,6 +53,10 @@ enclave_interrupt_table:
 .section .text.entry
 .globl trap_vector_from_enclave
 trap_vector_from_enclave:
+  # 0. Flush Microarchitecture and Deactivate Speculation
+  csrw CSR_MFLUSH, zero
+  li t0, MSPEC_NONE
+  csrw CSR_MSPEC, MSPEC_NONMEM
 
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)

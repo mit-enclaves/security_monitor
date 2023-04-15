@@ -98,4 +98,6 @@
   ld ra, 1*REGBYTES(sp)
   ld t0, 5*REGBYTES(sp)
   csrrw sp, mscratch, sp
+  csrw CSR_MFLUSH, zero
+  csrw CSR_MSPEC, zero
   mret

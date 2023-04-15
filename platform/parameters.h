@@ -1,6 +1,7 @@
 #ifndef SM_PARAMETERS_H
 #define SM_PARAMETERS_H
 
+#include <csr/csr.h>
 
 // SM Parameters:
 // --------------
@@ -43,6 +44,11 @@
 
 #define MAX_HARTS 2
 #define NUM_CORES     (2)
+
+// MSPEC configuration
+#define MSPEC_ALL    (0)
+#define MSPEC_NONMEM (1)
+#define MSPEC_NONE   (2)
 
 // SATP configuration
 #define SATP_MODE_SV39 (8ul)

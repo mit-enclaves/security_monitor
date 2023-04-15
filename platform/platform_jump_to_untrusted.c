@@ -41,6 +41,8 @@ void platform_jump_to_untrusted (uint64_t virtual_pc, uint64_t virtual_sp, uint6
     csrrw sp, mscratch, sp; \n \
     li ra, 0; \n \
     \
+    # Enable Speculation CSR_MSPEC; \n \
+    csrw 0x7ca, zero; \n \
     mret " : : "r" (t0), "r" (a0), "r" (a1), "r" (a2), "r" (a3));
 
   __builtin_unreachable();

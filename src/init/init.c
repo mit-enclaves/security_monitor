@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <csr/csr.h>
 #include <sm.h>
 
 extern void * payload_ptr;

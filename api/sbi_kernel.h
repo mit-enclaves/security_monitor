@@ -12,7 +12,6 @@
 #define SBI_REMOTE_SFENCE_VMA 6
 #define SBI_REMOTE_SFENCE_VMA_ASID 7
 #define SBI_SHUTDOWN 8
-#define SBI_SHUTDOWN 8
 #define SBI_EXIT 9
 
 static inline uintptr_t console_putchar(uint8_t c) {

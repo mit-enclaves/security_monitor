@@ -6,11 +6,8 @@
 #include "fdt.h"
 #include "mcall.h"
 #include "unprivileged_memory.h"
-#include <csr/csr.h>
 #include <clib/clib.h>
 #include <platform.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <limits.h>
 
 extern long disabled_hart_mask;
