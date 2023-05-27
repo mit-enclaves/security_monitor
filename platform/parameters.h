@@ -36,14 +36,17 @@
 #define UNTRUSTED_ENTRY  0x82000000
 #define PAYLOAD_MAXLEN    0xC000000
 
-// Machine configuration
+//// Machine configuration
+
+// Number of Cores
+#define NUM_CORES (2)
+#define MAX_HARTS NUM_CORES
+
+// Memory
 #define RAM_BASE        0x80000000
 #define RAM_SIZE        0x80000000
 
 #define REGION_SHIFT  (25)
-
-#define MAX_HARTS 2
-#define NUM_CORES     (2)
 
 // MSPEC configuration
 #define MSPEC_ALL    (0)
