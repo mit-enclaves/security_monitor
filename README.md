@@ -29,7 +29,7 @@ For easier debugging, add `GDB_TARGET_FLAGS_EXTRA := --enable-tui` to the `Makef
 ### QEMU
 
 To debug the SM, tou might want to install QEMU with the special target that emulates the Riscy-OO processor. 
-Instructions to build can be found on the [git repository](https://github.com/mit-enclaves/qemu-sanctum/tree/riscy-ooo).
+Building intructions can be found on the [git repository](https://github.com/mit-enclaves/qemu-sanctum/tree/riscy-ooo).
 
 ## Building the Security Monitor
 
@@ -37,20 +37,21 @@ Building the SM should be a simple matter of performing `make sm`.
 This performs a series of steps:
 
 1. Uses the specific parameters to customize linker scripts
-2. Builds the SM enclave handler binary (the SM code included within each enclave's domain, implementing the SM API).
+2. Builds the enclave mini-SM (the SM code included within each enclave's domain).
 3. Builds a set of identity page tables for the SM. These are used to virtualize an OS's access to physical memory.
 4. Builds the SM.
 
 ### Other Targets
 
 `make null_boot_loader` builds a simple bootloader that will directly enter the SM.
-`make master_test` builds the simple bootloader, the SM, sets up a simple enclave and test various functionality of the API including shared memory and secure mailboxes.
+`make master_test` builds the simple bootloader, the SM, sets up a simple enclave and test various functionality of the API including enclave creation, enclave entry, enclave exit, enclave deletion but also shared memory and secure mailboxes.
 
 All elfs and binary files can be found in the `build/` folder. The `make disassemble-all` and `make source-all` targets will disassemble and intermix the source code for every elfs files present in the `build/` folder.
 
 ## Running the Security Monitor
 
-To run the SM, you will need QEMU and to set up the global variable `SANCTUM_QEMU` to the custom `qemu-system-riscv64` executable.
+To run the SM, you will need QEMU (see instructions above).
+Set up the global variable `SANCTUM_QEMU` to path leading to the `qemu-system-riscv64` executable.
 You can then run `make run_master_test` to run the test.
 
 ## Debugging SM code
@@ -60,22 +61,34 @@ This should launch GDB in TUI mode, connect to QEMU, load the required symbols a
 All GDB instructions to set up the right symbols are can be found in [.gdbinit](.gdbinit).
 Follow GDB instruction provided in the error message if the use of `.gdbinit` by GDB requires special authorization.
 
-Interesting breakpoints might be `test_entry`, `enclave_entry` but also `sm_init`, `trap_vector_from_untrusted` and `trap_vector_from_enclave` to break on SM entries. 
-`
+Interesting breakpoints to set up might be `test_entry`, `enclave_entry` but also `sm_init`, `trap_vector_from_untrusted` and `trap_vector_from_enclave` to break on SM entries.
 
-### Integrating the SM into your software stack
+## Integrating the SM into your software stack
 
-### QEMU
+To write your own untrusted application or enclave that interracts with the SM, refer to the encalve API and make sure to link the API headers located in the [API folder](api/). Example of enclaves and untrusted application interating together including skeleton-code to write your own can be foud on our [organition github](https://github.com/orgs/mit-enclaves/repositories).
 
 
 ## Organization of the Repository
-#### Placement of the SM in memory:
 
-| Parameter       | Default      | Description  |
-| --------------- | ------------:|:------------ |
-| `SM_STATE_ADDR` | `0x80001000` | Address in physical memory where the SM state structure resides. |
-| `SM_STATE_LEN`  | `0x3000`     | Number of bytes reserved for the SM state. This will vary depending on the number of untrusted mailboxes specified in the SM's parameters. |
-| `SM_ADDR`       | `0x80003000` | The base address of the SM in physical memory. This is also the SM's entry address at boot. |
-| `HANDLER_LEN`   | `0x4000`     | Number of bytes reserved for the SM enclave handler. TODO: this need not be a parameter. |
-| `SM_LEN`        | `0x10000`     | Number of bytes reserved for the SM. The SM uses this this to set up the machine's protection primitives to guard itself from other software. |
-| `UNTRUSTED_ENTRY` | `0x82000000` | The entry point for untrusted software (the OS). |
+#### [API](api/)
+
+The `api/` folder contains the [SM API](api/api.h), includig the [part exposed to untrusted code](api/api_untrusted.h) and the [part exposed to enclaves](api/api_enclave.h).
+
+#### [Platform](platform/)
+
+The `platform/` folder should contains most of the code specific to our hardware platform (in our case RISC-V and more specifically our fork of [Riscy-OO](https://github.com/csail-csg/riscy-OOO)).
+First it countains the [`parameters.h`](platform/parameters.h) file that details many static constants constants used to build the SM including size of structures and placement in memory.
+This is where you will also find code related to [memory protection](platform/platform_memory_protection.c) but also [core initialization](platform/platform_core_init.c) and code used to [clean](platform/platform_clean_core.S) and [purge](platform/platform_purge_core.S) microarchitecture structures. Note that other parts of the SM still needs to be implemented in assembly and as a result are platform dependent.
+
+#### [Scripts](scripts/)
+
+The `scripts/` folder contains all python scripts used when building the SM.
+This includes the script to generate identity page tables.
+
+#### [Src](src/)
+
+The `src/` folder contains the SM source code. In particular [the initialization code](src/init/) run when booting the machine but also [the api implementation](src/api/), [the code satisfying micro-kernel-like functionnalities](src/kernel/) (console interractions and illegal instructions handling for instance) ad the handlers for [the enclave](src/handle_enclave/) and [untrusted code](src/handle_untrusted/) interractions.
+
+#### [Test](test/)
+
+The `test/` folder contains code used to test the SM functionnalities including simple untrusted application and enclave code.
