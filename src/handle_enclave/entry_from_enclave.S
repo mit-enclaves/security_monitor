@@ -53,7 +53,6 @@ enclave_interrupt_table:
 .section .text.entry
 .globl trap_vector_from_enclave
 trap_vector_from_enclave:
-
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
   beqz sp, .recursive_trap_from_enclave
@@ -65,8 +64,14 @@ trap_vector_from_enclave:
   csrr t0, mscratch
   sd t0, 2*REGBYTES(sp) # separately handled
   csrw mscratch, zero # indicate we are inside a trap handler
-  csrr t0, mcause
 
+  # Deactivate Speculation and Flush Microarchitecture
+  li t0, MSPEC_NONE
+  csrw CSR_MSPEC, MSPEC_NONMEM
+  csrw CSR_MFLUSH, zero
+
+  # Copy mcause to t0
+  csrr t0, mcause
   # -- Is this event an interrupt?
   bgez t0, .route_trap
   # -- -- Yes! Interrupt

@@ -4,7 +4,6 @@ extern uintptr_t trap_vector_from_untrusted;
 extern uintptr_t stack_ptr;
 
 api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs) {
-
   // Validate inputs
   // ---------------
 
@@ -13,6 +12,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
     - the enclave must be in state ENCLAVE_STATE_INITIALIZED
     - thread_id must be valid
     - the thread must not be scheduled
+    - the thread must belong to the enclave
   */
 
   // Lock the enclave and thread's metadata region (if different)
@@ -56,6 +56,12 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
 
   // the tread must not be scheduled
   if(thread_metadata->is_scheduled) {
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE;
+  }
+
+  // the thread must belong to the enclave
+  if(thread_metadata->owner != enclave_id) {
     unlock_regions(&locked_regions);
     return MONITOR_INVALID_STATE;
   }
@@ -159,6 +165,8 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   call platform_clean_core; \n \
   call platform_purge_core; \n \
   li ra, 0; \n \
+  # Enable Speculation CSR_MSPEC; \n \
+  csrw 0x7ca, zero \n \
   mret"  : : "r" (t0));
 
   return MONITOR_OK; // Not reachable

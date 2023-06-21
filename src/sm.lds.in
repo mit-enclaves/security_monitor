@@ -37,10 +37,15 @@ SECTIONS
     *(.data)  /* initialized data */
     *(.data.*)
     *(.data.stacks)
+    *(.sdata)
+    *(.sdata.*)
   } > SM =0x0
 
+  _bss_start = .;
   .bss ALIGN(64)  : {
     *(.bss)   /* uninitialized data */
     *(.bss.*)
+    *(.sbss*)
   } > SM =0x0
+  _bss_end = .;
 }

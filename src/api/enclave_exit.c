@@ -31,7 +31,6 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
 
   region_map_t locked_regions = (const region_map_t){ 0 };
 
-  // <TRANSACTION>
   // Get the curent core's lock
   if(!lock_core(core_id)) {
     return MONITOR_CONCURRENT_CALL;
@@ -41,21 +40,17 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
   uint64_t region_id_thread = addr_to_region_id(thread_id);
   thread_metadata_t *thread_metadata = (thread_metadata_t *) thread_id;
 
-
-  // Clean the core's metadata
-  core_metadata->owner = OWNER_UNTRUSTED;
-  core_metadata->thread = 0;
-
-  unlock_core(core_id);
-  // <\TRANSACTION>
-
-
-  // <TRANSACTION>
   // Lock the thread's metadata region
   if(!add_lock_region(region_id_thread, &locked_regions)) {
     unlock_regions(&locked_regions);
+    unlock_core(core_id);
     return MONITOR_CONCURRENT_CALL;
   }
+
+  // <TRANSACTION>
+  // Clean the core's metadata
+  core_metadata->owner = OWNER_UNTRUSTED;
+  core_metadata->thread = 0;
   
   // Signal AEX happend
   thread_metadata->aex_present = aex_present;
@@ -98,11 +93,12 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
 
   // Release locks
   unlock_regions(&locked_regions);
+  unlock_core(core_id);
   // </TRANSACTION>
 
   // Restore registers and perform mret
   register uintptr_t t0 asm ("t0") = SM_sp;
-  // Procede to mret \\ TODO : purge the core?
+  // Procede to mret
   asm volatile (" \
   mv sp, t0; \n \
   call platform_clean_core; \n \

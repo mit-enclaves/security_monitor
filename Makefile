@@ -39,8 +39,6 @@ API_DIR := $(SM_DIR)/api
 SM_SRC_DIR := $(SM_DIR)/src
 SM_TEST_DIR := $(SM_DIR)/test
 ENCLAVE_SRC_DIR := $(SM_DIR)/test/enclave
-INFRA_DIR := $(SM_DIR)/untrusted_infra
-CRYPTO_ENCLAVE_SRC_DIR := $(SM_DIR)/untrusted_infra/crypto_enclave
 QUEUE_SRC_DIR := $(SM_DIR)/untrusted_infra/msgq
 
 # Targets
@@ -50,7 +48,6 @@ $(BUILD_DIR):
 ALL:=
 
 include $(SM_SRC_DIR)/Makefrag
-include $(INFRA_DIR)/Makefrag
 include $(SM_TEST_DIR)/Makefrag
 
 .PHONY: all
@@ -59,7 +56,6 @@ all: $(ALL)
 .PHONY: clean
 clean:
 	-rm -rf $(BUILD_DIR)
-	-rm -rf $(INPUTS)
 
 ELFS := $(shell find $(BUILD) -name '*.elf')
 ELFS_PREF := $(addprefix $(BUILD)/, $(ELFS))

@@ -4,7 +4,7 @@
 #include "platform_types.h"
 #include "platform_assert.h"
 #include <parameters.h>
-#include <csr/csr.h>
+#include <csr/csr_util.h>
 #include <sm_types.h>
 #include <platform_lock.h>
 

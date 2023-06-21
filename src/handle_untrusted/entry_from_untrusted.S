@@ -53,7 +53,6 @@ interrupt_table:
 .section .text.trap_from_untrusted
 .globl trap_vector_from_untrusted
 trap_vector_from_untrusted:
-
   # 1. Prepare to route the event: set up an M-mode stack, make a0, a1 usable.
   csrrw sp, mscratch, sp # sp <--> mscratch (save SP, restore M-mode SP)
   beqz sp, .recursive_trap_from_untrusted
@@ -65,8 +64,14 @@ trap_vector_from_untrusted:
   csrr t0, mscratch
   sd t0, 2*REGBYTES(sp) # separately handled
   csrw mscratch, zero # indicate we are inside a trap handler
-  csrr t0, mcause
+  
+  # Deactivate Speculation and Flush Microarchitecture
+  li t0, MSPEC_NONE
+  csrw CSR_MSPEC, MSPEC_NONMEM
+  csrw CSR_MFLUSH, zero
 
+  # Copy mcause to t0
+  csrr t0, mcause
   # -- Is this event an interrupt?
   bgez t0, .route_trap
   # -- -- Yes! Interrupt
@@ -134,15 +139,7 @@ trap_vector_from_untrusted:
   csrc mie, t0
   li t0, MIP_STIP
   csrs mip, t0
-
-  # Go back whence we came.
-  ld t0, 2*REGBYTES(sp)
-  csrw mscratch, t0
-
-  ld t0, 5*REGBYTES(sp)
-  ld ra, 1*REGBYTES(sp)
-  csrrw sp, mscratch, sp
-  mret
+  j .perform_mret
 
 .handle_m_soft_interrupt:
   sd t1, 6*REGBYTES(sp) # Save t1 on the stack
@@ -173,15 +170,8 @@ trap_vector_from_untrusted:
   wfi
   j 1b
   1:
-  # Go back whence we came.
-  ld t0, 2*REGBYTES(sp)
-  csrw mscratch, t0
-
-  ld t0, 5*REGBYTES(sp)
   ld t1, 6*REGBYTES(sp)
-  ld ra, 1*REGBYTES(sp)
-  csrrw sp, mscratch, sp
-  mret
+  j .perform_mret
 
 .delegate_to_s:
   # delegate trap/interrupt to S mode
@@ -225,14 +215,7 @@ trap_vector_from_untrusted:
   # Restore dirty registers, return address register and stack pointer
   ld t1, 6*REGBYTES(sp)
   ld t2, 7*REGBYTES(sp)
-
-  ld t0, 2*REGBYTES(sp)
-  csrw mscratch, t0
-
-  ld ra, 1*REGBYTES(sp)
-  ld t0, 5*REGBYTES(sp)
-  csrrw sp, mscratch, sp
-  mret
+  j .perform_mret
 
 .bad_event:
   csrr a0, mcause

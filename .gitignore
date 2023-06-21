@@ -18,3 +18,5 @@ core
 # Tmp
 *.tmp
 *.bak
+*.txt
+*.log

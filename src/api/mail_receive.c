@@ -38,6 +38,7 @@ api_result_t sm_internal_mail_receive (mailbox_id_t mailbox_id, uintptr_t out_me
     if (!lock_untrusted_state()) {
       return MONITOR_CONCURRENT_CALL;
     }
+    untrusted_locked = true;
 
     mailbox = &sm->untrusted_mailboxes[mailbox_id];
 
