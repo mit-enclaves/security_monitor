@@ -8,7 +8,7 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   /*
    - enclave_id must be valid
    - enclave must be ENCLAVE_STATE_CREATED
-   - phys_addr must be page alligned
+   - phys_addr must be "size of the handler" alligned
    - phys_addr must be greater than the last physical address loaded (that should be zero)
    - phys_addr must point to a region owned by the enclave
    - the handler and the fault stacks should fit in one region
@@ -31,7 +31,7 @@ api_result_t sm_internal_enclave_load_handler (enclave_id_t enclave_id, uintptr_
   }
 
   // phys_addr must be page alligned
-  if(phys_addr % PAGE_SIZE) {
+  if(phys_addr % HANDLER_LEN) {
    unlock_regions(&locked_regions);
    return MONITOR_INVALID_VALUE;
   }

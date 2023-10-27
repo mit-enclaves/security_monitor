@@ -22,7 +22,8 @@ void platform_initialize_memory_protection(sm_state_t *sm) {
 
 void platform_protect_enclave_sm_handler(enclave_metadata_t *enclave_metadata, uintptr_t phys_addr) {
   enclave_metadata->platform_csr.meparbase = phys_addr;
-  enclave_metadata->platform_csr.meparmask = 0x3FFF; // ~((1ul << (intlog2(size_handler) + 1)) - 1); // TODO how to not hardcode this?
+  enclave_metadata->platform_csr.meparmask = ~((~HANDLER_LEN) % HANDLER_LEN); 
+  // ~((1ul << (intlog2(size_handler) + 1)) - 1);
   return;
 }
 

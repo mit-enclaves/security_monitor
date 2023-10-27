@@ -26,9 +26,9 @@
 #define HTIF_LEN        0x10
 
 // Placement of SM in memory
-#define SM_ADDR         0x80000000 //Should be region aligned
-#define HANDLER_LEN         0x5000
-#define SM_LEN             0x2b000
+#define SM_ADDR         0x80000000 // Should be region aligned
+#define HANDLER_LEN         0x4000 // Should be a power of 2
+#define SM_LEN             0x20000
 
 #define SM_STATE_ADDR   0x80030000
 #define SM_STATE_LEN        0x3000
