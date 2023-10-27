@@ -14,7 +14,7 @@ void platform_initialize_memory_protection(sm_state_t *sm) {
   uint64_t mmrbm = regions_to_bitmap(&(sm->untrusted_regions));
   write_csr(CSR_MMRBM, mmrbm);
 
-  uint64_t mparbase = SM_STATE_ADDR;
+  uint64_t mparbase = SM_ADDR;
   uint64_t mparmask = REGION_MASK;
   write_csr(CSR_MPARBASE, mparbase);
   write_csr(CSR_MPARMASK, mparmask);
