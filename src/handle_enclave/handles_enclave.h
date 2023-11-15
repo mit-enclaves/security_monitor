@@ -14,7 +14,7 @@ api_result_t sm_internal_region_check_owned (region_id_t id);
 
 api_result_t sm_internal_region_block (region_id_t id);
 
-api_result_t sm_internal_region_flush ();
+api_result_t sm_internal_region_update ();
 
 api_result_t sm_internal_mail_accept (mailbox_id_t mailbox_id, enclave_id_t expected_sender);
 

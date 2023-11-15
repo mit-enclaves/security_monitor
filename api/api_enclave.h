@@ -16,6 +16,10 @@ static inline api_result_t sm_get_public_field (public_field_t field, void *addr
    return SM_API_CALL(SM_GET_PUBLIC_FIELD, field, addr, 0, 0, 0, 0, 0);
 }
 
+static inline api_result_t sm_region_update () {
+  return SM_API_CALL(SM_REGION_UPDATE, 0, 0, 0, 0, 0, 0, 0);
+}
+
 static inline api_result_t sm_region_block(region_id_t id) {
    return SM_API_CALL(SM_REGION_BLOCK, id, 0, 0, 0, 0, 0, 0);
 }

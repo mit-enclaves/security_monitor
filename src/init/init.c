@@ -27,15 +27,15 @@ void sm_init(uintptr_t fdt_boot_addr) {
       unlock_core(i); // Ensure cores aren't locked
     }
 
-    // Initialize region metadata : untrusted SW owns all regions that do not include SM code.
+    // Initialize region metadata : untrusted SW owns all regions that do not include SM code or data.
     // Initialize untrusted metadata : untrusted SW is allowed access to all regions that do not include SM code.
     for ( int i=0; i<NUM_REGIONS; i++ ) {
-      bool region_doesnt_include_sm = (uint64_t)region_id_to_addr(i) > (SM_ADDR+SM_LEN);
+      bool region_doesnt_include_sm = (uint64_t)region_id_to_addr(i) > (SM_LAST_ADDRESS);
       if(region_doesnt_include_sm) {
         sm->untrusted_regions.flags[i] = true;
       }
       sm->regions[i].owner = region_doesnt_include_sm ? OWNER_UNTRUSTED : OWNER_SM;
-      sm->regions[i].type = REGION_TYPE_UNTRUSTED;
+      sm->regions[i].type = region_doesnt_include_sm ? REGION_TYPE_UNTRUSTED : REGION_TYPE_SM;
       sm->regions[i].state = REGION_STATE_OWNED;
       unlock_region(i); // Ensure cores aren't locked. the SM must be initialized in a vaccum, with only one thread running, so this is not dangerous.
     }
@@ -66,10 +66,14 @@ void sm_init(uintptr_t fdt_boot_addr) {
   }
 
   // Initialize all harts kernel data structures
-  kernel_init_other_hart(core_id);
+  kernel_init_other_core(core_id);
 
+  while(!lock_untrusted_state()) {};
+  while(!lock_core(core_id)) {};
   // Initialize memory protection
-  platform_initialize_memory_protection(sm);
+  platform_initialize_memory_protection(sm, core_id);
+  unlock_untrusted_state();
+  unlock_core(core_id);
 
   // Walk the device tree and get its address
   uintptr_t fdt_os_addr = platform_get_device_tree_addr();

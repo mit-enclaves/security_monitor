@@ -35,11 +35,8 @@ api_result_t sm_internal_region_metadata_create (region_id_t region_id) {
   // ----------------------
   metadata_region_t * metadata_region = region_id_to_addr(region_id);
 
-  // Erase the region if it is not already erased
-  if (CLEAN_REGIONS_MEMSET) {
-    // Erase the metadata region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
-    memset( metadata_region, 0x00, REGION_SIZE );
-  }
+  // Erase the metadata region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
+  memset( metadata_region, 0x00, REGION_SIZE );
 
   // Initialize the page_info structure
   int s = get_metadata_start_page();

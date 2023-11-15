@@ -10,9 +10,11 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   /*
     - region_id must be valid
     - the region must be in BLOCKED state
+    - the region should not be accessible by any core
     - the owner must be either OWNER_UNTRUSTED or a valid enclave
       - if OWNER_UNTRUSTED, the untrusted region map must be lockable
       - if enclave, the enclave metadata region must be lockable
+    - we need to lock the untrusted state and the core state
   */
 
   region_map_t locked_regions = (const region_map_t){ 0 };
@@ -34,58 +36,35 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
     return MONITOR_INVALID_STATE;
   }
 
-  // NOTE: regions of type SM could not have been blocked. Such regions cannot be ever freed.
-  if ( region_metadata->owner == OWNER_UNTRUSTED ) {
-    if (!lock_untrusted_state()) {
+  // Check that the region is not accessible by any core
+  for ( int i=0; i<NUM_CORES; i++ ) {
+    if(!lock_core(i)) {
       unlock_regions(&locked_regions);
       return MONITOR_CONCURRENT_CALL;
     }
-
-  } else {
-    // The owner is a valid enclave
-    if (!add_lock_region(addr_to_region_id(region_metadata->owner), &locked_regions)) {
+    if(region_is_accessible(sm->cores[i].mmrbm, region_id) 
+        | region_is_accessible(sm->cores[i].memrbm, region_id)) {
+      unlock_core(i);
       unlock_regions(&locked_regions);
-      return MONITOR_CONCURRENT_CALL;
+      return MONITOR_INVALID_STATE;
     }
-
+    unlock_core(i);
   }
+
+  // TODO: Check that the region is not accessible by any core and get core locks.
 
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
   // ----------------------
-
-  // Transfer ownership of the region
-  enclave_id_t former_owner = region_metadata->owner;
-  region_metadata->owner = OWNER_SM;
-
-  // Remove the region from owner's region map
-  if ((former_owner != OWNER_UNTRUSTED) && (former_owner != OWNER_SM)){
-    enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(former_owner);
-    platform_update_enclave_regions(enclave_metadata, region_id, false);
-  }
-  else if (former_owner == OWNER_UNTRUSTED) {
-    platform_update_untrusted_regions(sm, region_id, false);
-  }
-
-  if (CLEAN_REGIONS_MEMSET) {
-    // NOTE: In Sanctum, freeing the region does *not* erase its contents - this is the enclave's responsibility, except when deleted. This implementation, however, does.
-    memset( region_id_to_addr(region_id), 0x00, REGION_SIZE );
-
-    // Else the enclave's regions are erased when they are blocked at enclave deletion, and the enclave is responsible for cleaning any regions it itself blocks.
-  }
+  
+  // Clean the region on free.
+  memset( region_id_to_addr(region_id), 0x00, REGION_SIZE);
 
   // Mark the selected region as free
   region_metadata->state = REGION_STATE_FREE;
 
   // Release locks
-  // (NOTE: owner field is conveniently not cleared until the region is re-assigned)
-  if ( former_owner == OWNER_UNTRUSTED ) {
-    unlock_untrusted_state();
-  } else { // a valid enclave
-    unlock_regions(&locked_regions);
-  }
-
   unlock_regions(&locked_regions);
   // </TRANSACTION>
 

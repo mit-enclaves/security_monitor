@@ -86,11 +86,12 @@ typedef enum {
 typedef enum {
   REGION_STATE_INVALID = 0,
   REGION_STATE_FREE = 1,
-  REGION_STATE_BLOCKED = 2,
-  REGION_STATE_OWNED = 3,
+  REGION_STATE_OWNED = 2,
+  REGION_STATE_BLOCKED = 3,
 } region_state_t;
 
 typedef enum {
+  REGION_TYPE_SM = 0,
   REGION_TYPE_UNTRUSTED = 0,
   REGION_TYPE_ENCLAVE = 1,
   REGION_TYPE_METADATA = 2,
@@ -98,7 +99,6 @@ typedef enum {
 
 // SM API Syscall codes
 // --------------------
-// TODO: change this to an enum type?
 #define SM_ENCLAVE_CREATE                   (1000)
 #define SM_ENCLAVE_DELETE                   (1001)
 #define SM_ENCLAVE_ENTER                    (1002)
@@ -120,7 +120,7 @@ typedef enum {
 #define SM_REGION_ASSIGN                    (1030)
 #define SM_REGION_BLOCK                     (1031)
 #define SM_REGION_CHECK_OWNED               (1032)
-#define SM_REGION_FLUSH                     (1033)
+#define SM_REGION_UPDATE                    (1033)
 #define SM_REGION_FREE                      (1034)
 #define SM_REGION_METADATA_CREATE           (1035)
 #define SM_REGION_METADATA_PAGES            (1036)

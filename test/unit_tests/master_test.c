@@ -9,13 +9,30 @@ extern uintptr_t region3;
 extern uintptr_t enclave_start;
 extern uintptr_t enclave_end;
 
+#define SHARED_MEM_SYNC (0x90000000)
+
+#define STATE_0 1
+#define STATE_1 2
+#define STATE_2 3
+#define STATE_3 4
+
 #define EVBASE 0x0
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
+  volatile int *flag = (int *) SHARED_MEM_SYNC;
 
   if(core_id != 0) {
-    while(true) {};
+    while(true) {
+      if(*flag == STATE_1) {
+       api_result_t res = sm_region_update();
+       if(res == MONITOR_OK) {
+        *flag = STATE_2;
+       }
+      }
+    };
   }
+
+  *flag = STATE_0;
 
   //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
   uint64_t region2_id = addr_to_region_id((uintptr_t) &region2);
@@ -33,9 +50,12 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  *flag = STATE_1;
+
   printm("Region free\n");
 
-  result = sm_region_free(region3_id);
+  do { result = sm_region_free(region3_id); } 
+  while(result == MONITOR_INVALID_STATE);
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();

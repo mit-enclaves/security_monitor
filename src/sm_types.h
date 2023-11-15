@@ -136,6 +136,10 @@ typedef struct sm_core_t {
   enclave_id_t owner;
   thread_id_t thread;
   uintptr_t hls_ptr;
+  
+  // Memory regions bit maps
+  uint64_t mmrbm;
+  uint64_t memrbm;
 
   platform_lock_t lock;
 } sm_core_t;

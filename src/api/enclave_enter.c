@@ -85,7 +85,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   // Save untrusted state, initialize enclave state
   for(int i = 0; i < NUM_REGISTERS; i++) {
     thread_metadata->untrusted_state[i] = regs[i];
-    regs[i] = aex ? thread_metadata->aex_state[i] : 0; // TODO: Init registers?
+    regs[i] = aex ? thread_metadata->aex_state[i] : 0;
   }
 
   // Save untrusted pc
@@ -136,7 +136,7 @@ api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thr
   platform_set_enclave_page_table(enclave_metadata, thread_metadata);
 
   // Setup the platform's memory protection mechanisms
-  platform_memory_protection_enter_enclave(enclave_metadata, thread_metadata);
+  platform_memory_protection_enter_enclave(core_metadata, enclave_metadata, thread_metadata);
 
   // Setup enclave interrupts
   platform_interrupts_enter_enclave(thread_metadata);

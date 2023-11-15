@@ -8,7 +8,7 @@ api_result_t sm_internal_enclave_create (enclave_id_t enclave_id, uintptr_t ev_b
 
 api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id);
 
-api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs); // TODO rename the handles etc...
+api_result_t sm_internal_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs);
 
 api_result_t sm_internal_enclave_init (enclave_id_t enclave_id);
 
@@ -34,7 +34,7 @@ api_result_t sm_internal_region_assign (region_id_t id, enclave_id_t new_owner);
 
 api_result_t sm_internal_region_block (region_id_t id);
 
-api_result_t sm_internal_region_flush ();
+api_result_t sm_internal_region_update ();
 
 api_result_t sm_internal_region_free (region_id_t id);
 

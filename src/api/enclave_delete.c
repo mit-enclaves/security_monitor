@@ -11,6 +11,7 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
     - enclave_id must point to a valid enclave such that:
       - the enclave has no threads
       - all of the enclave's regions can be locked.
+    - we need to lock the untrusted state and the core state
   */
 
   region_map_t locked_regions = (const region_map_t){ 0 };
@@ -46,23 +47,31 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
     }
   }
 
+  if(!lock_untrusted_state()) {
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE; 
+  }
+
+  int core_id = platform_get_core_id();
+
+  if(!lock_core(core_id)) {
+    unlock_untrusted_state();
+    unlock_regions(&locked_regions);
+    return MONITOR_INVALID_STATE; 
+  }
+
+
   // NOTE: Inputs are now deemed valid.
 
   // Apply state transition
   // ----------------------
 
-  // Block and erase all regions belonging to the enclave (these are already locked above)
+  // Block all regions belonging to the enclave.
   for ( int i=0; i<NUM_REGIONS; i++ ) {
     if ( enclave_metadata->regions.flags[i] == true ) {
-      // Free the region
-      sm->regions[i].state = REGION_STATE_FREE;
-      sm->regions[i].owner = OWNER_UNTRUSTED;
-      platform_update_untrusted_regions(sm, region_id, false);
-
-      if (!CLEAN_REGIONS_MEMSET) {
-        // Erase the region - we may erase regions during free() instead, which departs a bit from the Sanctum paper
-        memset( region_id_to_addr(i), 0x00, REGION_SIZE );
-      }
+      // Block the region
+      sm->regions[i].state = REGION_STATE_BLOCKED;
+      sm->regions[i].owner = OWNER_SM;
     }
   }
 
@@ -76,6 +85,8 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
   memset(enclave_metadata, 0x0, enclave_pages*PAGE_SIZE);
 
   // Release locks
+  unlock_core(core_id);
+  unlock_untrusted_state();
   unlock_regions(&locked_regions);
   // </TRANSACTION>
 

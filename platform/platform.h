@@ -50,17 +50,19 @@ void platform_wait_for_interrupt (void);
 void platform_delegate_to_untrusted ( uint64_t virtual_pc, uint64_t  ) __attribute__((noreturn));
 void platform_jump_to_untrusted ( uint64_t virtual_pc, uint64_t virtual_sp, uint64_t core_id, uintptr_t dt_addr) __attribute__((noreturn));
 
-void platform_initialize_memory_protection(sm_state_t *sm);
+void platform_initialize_memory_protection(sm_state_t *sm, int core_id);
 
 void platform_set_enclave_page_table(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
 void platform_restore_untrusted_page_table(thread_metadata_t *thread_metadata);
 
 void platform_protect_enclave_sm_handler(enclave_metadata_t *enclave_metadata, uintptr_t phys_addr);
 
-void platform_update_untrusted_regions(sm_state_t* sm, uint64_t index_id, bool flag);
-void platform_update_enclave_regions(enclave_metadata_t *enclave_metadata, uint64_t index_id, bool flag);
+void platform_update_untrusted_regions(sm_state_t* sm, int core_id, uint64_t index_id, bool flag);
+void platform_update_enclave_regions(sm_state_t* sm, int core_id, enclave_metadata_t *enclave_metadata, uint64_t index_id, bool flag);
 
-void platform_memory_protection_enter_enclave(enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
+void platform_update_memory_protection();
+
+void platform_memory_protection_enter_enclave(sm_core_t *core, enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
 void platform_memory_protection_exit_enclave(thread_metadata_t *thread_metadata);
 
 void platform_interrupts_enter_enclave(thread_metadata_t *thread_metadata);
@@ -71,5 +73,11 @@ void platform_panic(void) __attribute__((noreturn));
 // Platform helpers
 
 uint64_t regions_to_bitmap(region_map_t *regions);
+region_map_t bitmap_to_regions(uint64_t bitmap);
+
+static inline bool region_is_accessible(uint64_t mrbm, uint64_t region_id) {
+  uint64_t mask = 1ul << region_id;
+  return (mrbm && mask != 0);
+}
 
 #endif // SM_PLATFORM_H

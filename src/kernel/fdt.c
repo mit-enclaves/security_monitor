@@ -13,7 +13,7 @@ void filter_and_copy_device_tree(void) {
 
   memcpy((void*)out_fdt_addr, (void*)src_fdt_addr, size);
 
-  // TODO : here filter the device tree
+  // Filter the device tree
   filter_harts(out_fdt_addr, &disabled_hart_mask);
   filter_plic(out_fdt_addr);
   //filter_compat(out_fdt_addr, "riscv,clint0");

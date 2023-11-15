@@ -12,6 +12,7 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/api/mail_accept.c \
 	$(SM_SRC_DIR)/api/mail_send.c \
 	$(SM_SRC_DIR)/api/mail_receive.c \
+	$(SM_SRC_DIR)/api/region_update.c \
 	$(SM_SRC_DIR)/common/lock_region_iff_valid_metadata.c \
 	$(SM_SRC_DIR)/clib/memcpy.c \
 	$(SM_SRC_DIR)/clib/memcpy_virt.c \
@@ -22,6 +23,7 @@ SM_COMMON_SRC := \
 	$(PLATFORM_DIR)/platform_purge_core.S \
 	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(PLATFORM_DIR)/platform_interrupts.c \
+	$(PLATFORM_DIR)/platform_memory_protection_common.c \
 
 
 ## SM Enclave Handler
@@ -46,7 +48,7 @@ SM_ENCLAVE_DEBUG_SRC := \
 SM_ENCLAVE_SRC := \
 	$(SM_COMMON_SRC) \
 	$(PLATFORM_DIR)/platform_helper.c \
-	$(PLATFORM_DIR)/platform_memory_protection_enclave_exit.c \
+	$(PLATFORM_DIR)/platform_memory_protection_enclave.c \
 	$(SM_SRC_DIR)/clib/memncmp.c \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
@@ -99,7 +101,7 @@ SM_SRC := \
 	$(PLATFORM_DIR)/platform_wait_for_interrupt.c \
 	$(PLATFORM_DIR)/platform_core_init.c \
 	$(PLATFORM_DIR)/platform_jump_to_untrusted.c \
-	$(PLATFORM_DIR)/platform_memory_protection.c \
+	$(PLATFORM_DIR)/platform_memory_protection_untrusted.c \
 	$(PLATFORM_DIR)/platform_helper.c \
 	$(PLATFORM_DIR)/htif/htif.c \
 	$(PLATFORM_DIR)/htif/htif_util.c \

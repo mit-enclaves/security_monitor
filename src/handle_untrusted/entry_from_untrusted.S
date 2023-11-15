@@ -26,8 +26,6 @@ trap_table:
   .word (.bad_event-.t_tab_root)          // 14: (reserved)
   .word (.delegate_to_s-.t_tab_root)      // 15: store/AMO page fault
 
-// TODO: mcause > 15 would be problematic here, make sure the architecture won't let that happen
-
 .align 6 # Align to a cache line (64B) boundary
 interrupt_table:
 .i_tab_root:
@@ -44,8 +42,6 @@ interrupt_table:
   .word (.delegate_to_s-.i_tab_root)  //  9: supervisor external interrupt
   .word (.bad_event-.i_tab_root)      // 10: (reserved)
   .word (.bad_event-.i_tab_root)  // 11: machine external interrupt
-
-// TODO: mcause > 11 would be problematic here, make sure the architecture won't let that happen
 
 # Handler for events originating in untrusted software
 # ====================================================

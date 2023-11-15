@@ -121,7 +121,7 @@ void kernel_init(uintptr_t ftd_addr) {
   filter_and_copy_device_tree();
 }
 
-void kernel_init_other_hart(uintptr_t hartid) {
+void kernel_init_other_core(uintptr_t core_id) {
   // Make sure mstatus and mie (software interrupts enabled) are initialized here
   delegate_traps();
   hart_plic_init();
