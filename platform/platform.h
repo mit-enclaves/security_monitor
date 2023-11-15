@@ -63,7 +63,7 @@ void platform_update_enclave_regions(sm_state_t* sm, int core_id, enclave_metada
 void platform_update_memory_protection();
 
 void platform_memory_protection_enter_enclave(sm_core_t *core, enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
-void platform_memory_protection_exit_enclave(thread_metadata_t *thread_metadata);
+void platform_memory_protection_exit_enclave(int core_id, thread_metadata_t *thread_metadata);
 
 void platform_interrupts_enter_enclave(thread_metadata_t *thread_metadata);
 void platform_interrupts_exit_enclave(thread_metadata_t *thread_metadata);
