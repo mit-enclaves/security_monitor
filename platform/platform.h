@@ -63,7 +63,7 @@ void platform_update_enclave_regions(sm_state_t* sm, int core_id, enclave_metada
 void platform_update_memory_protection();
 
 void platform_memory_protection_enter_enclave(sm_core_t *core, enclave_metadata_t *enclave_metadata, thread_metadata_t *thread_metadata);
-void platform_memory_protection_exit_enclave(int core_id, thread_metadata_t *thread_metadata);
+void platform_memory_protection_exit_enclave(sm_core_t *core, thread_metadata_t *thread_metadata);
 
 void platform_interrupts_enter_enclave(thread_metadata_t *thread_metadata);
 void platform_interrupts_exit_enclave(thread_metadata_t *thread_metadata);
@@ -77,7 +77,7 @@ region_map_t bitmap_to_regions(uint64_t bitmap);
 
 static inline bool region_is_accessible(uint64_t mrbm, uint64_t region_id) {
   uint64_t mask = 1ul << region_id;
-  return (mrbm && mask != 0);
+  return ((mrbm & mask) != 0);
 }
 
 #endif // SM_PLATFORM_H

@@ -26,10 +26,10 @@
 
 // Placement of SM in memory
 #define SM_ADDR         0x80000000 // Should be region aligned
-#define HANDLER_LEN         0x4000 // Should be a power of 2
-#define SM_LEN             0x20000
+#define HANDLER_LEN         0x8000 // Should be a power of 2
+#define SM_LEN             0x30000
 
-#define SM_STATE_ADDR   0x80030000
+#define SM_STATE_ADDR   0x80040000
 #define SM_STATE_LEN        0x3000
 
 #define SM_LAST_ADDRESS (SM_STATE_ADDR + SM_STATE_LEN)

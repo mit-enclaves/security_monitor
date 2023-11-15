@@ -69,7 +69,7 @@ api_result_t sm_internal_perform_enclave_exit(bool aex_present) {  // TODO: nore
   write_csr(mstatus, mstatus_tmp);
 
   // Restore memory protection
-  platform_memory_protection_exit_enclave(core_id, thread_metadata);
+  platform_memory_protection_exit_enclave(core_metadata, thread_metadata);
 
   // Restore enclave page table root
   platform_restore_untrusted_page_table(thread_metadata);

@@ -43,7 +43,7 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
       return MONITOR_CONCURRENT_CALL;
     }
     if(region_is_accessible(sm->cores[i].mmrbm, region_id) 
-        | region_is_accessible(sm->cores[i].memrbm, region_id)) {
+        || region_is_accessible(sm->cores[i].memrbm, region_id)) {
       unlock_core(i);
       unlock_regions(&locked_regions);
       return MONITOR_INVALID_STATE;

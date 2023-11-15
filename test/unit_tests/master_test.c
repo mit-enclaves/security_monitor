@@ -90,9 +90,12 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  *flag = STATE_1;
+
   printm("Region free\n");
 
-  result = sm_region_free(region2_id);
+  do { result = sm_region_free(region2_id); } 
+  while(result == MONITOR_INVALID_STATE);
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();
@@ -262,21 +265,29 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   }
   printm("]\n");
 
-  printm("delete thread\n");
+  printm("Delete thread\n");
   result = sm_thread_delete(thread_id);
   if(result != MONITOR_OK) {
     printm("sm_thread_delete FAILED with error code %d\n", result);
     test_completed();
   }
 
-  printm("delete enclave\n");
+  printm("Delete enclave\n");
   result = sm_enclave_delete(enclave_id);
   if(result != MONITOR_OK) {
     printm("sm_enclave_delete FAILED with error code %d\n", result);
     test_completed();
   }
+  
+  printm("Region free\n");
 
-  printm("assign region 2\n");
+  result = sm_region_free(region2_id);
+  if(result != MONITOR_OK) {
+    printm("sm_region_free FAILED with error code %d \n\n", result);
+    test_completed();
+  }
+
+  printm("Assign region 2\n");
   result = sm_region_assign(region2_id, OWNER_UNTRUSTED);
   if(result != MONITOR_OK) {
     printm("sm_region_assign FAILED with error code %d\n", result);
