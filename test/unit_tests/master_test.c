@@ -55,7 +55,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   printm("Region free\n");
 
   do { result = sm_region_free(region3_id); } 
-  while(result == MONITOR_INVALID_STATE);
+  while((result == MONITOR_INVALID_STATE) || (result == MONITOR_CONCURRENT_CALL));
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();
@@ -95,7 +95,7 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   printm("Region free\n");
 
   do { result = sm_region_free(region2_id); } 
-  while(result == MONITOR_INVALID_STATE);
+  while((result == MONITOR_INVALID_STATE) || (result == MONITOR_CONCURRENT_CALL));
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();
