@@ -70,6 +70,13 @@ void platform_interrupts_exit_enclave(thread_metadata_t *thread_metadata);
 
 void platform_panic(void) __attribute__((noreturn));
 
+void platform_disable_speculation();
+void platform_enable_speculation();
+void platform_disable_predictors();
+void platform_enable_predictors();
+void platform_disable_L1();
+void platform_enable_L1();
+
 // Platform helpers
 
 uint64_t regions_to_bitmap(region_map_t *regions);

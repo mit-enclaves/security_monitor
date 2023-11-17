@@ -24,6 +24,7 @@ SM_COMMON_SRC := \
 	$(PLATFORM_DIR)/platform_set_enclave_page_table.c \
 	$(PLATFORM_DIR)/platform_interrupts.c \
 	$(PLATFORM_DIR)/platform_memory_protection_common.c \
+	$(PLATFORM_DIR)/platform_control_spec.c \
 
 
 ## SM Enclave Handler

@@ -50,9 +50,12 @@
 #define REGION_SHIFT  (25)
 
 // MSPEC configuration
-#define MSPEC_ALL    (0)
-#define MSPEC_NONMEM (1)
-#define MSPEC_NONE   (2)
+#define MSPEC_ALL    (0UL)
+#define MSPEC_NONMEM (1UL)
+#define MSPEC_NONE   (3UL)
+#define MSPEC_NOTRAINPRED (4UL)
+#define MSPEC_NOUSEPRED (8UL)
+#define MSPEC_NOUSEL1 (16UL)
 
 // SATP configuration
 #define SATP_MODE_SV39 (8ul)
