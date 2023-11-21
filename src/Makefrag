@@ -18,6 +18,7 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/clib/memcpy_virt.c \
 	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
+	$(SM_SRC_DIR)/common/handle_llc_changes.c \
 	$(PLATFORM_DIR)/platform_panic.S \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
@@ -54,9 +55,9 @@ SM_ENCLAVE_SRC := \
 	$(SM_SRC_DIR)/handle_enclave/entry_from_enclave.S \
 	$(SM_SRC_DIR)/handle_enclave/api_call_from_enclave.c \
 	$(SM_SRC_DIR)/handle_enclave/enclave_aex.c \
-	$(SM_SRC_DIR)/handle_enclave/handlers/timer_interrupt_handler.c \
-	$(SM_SRC_DIR)/handle_enclave/handlers/external_interrupt_handler.c \
-	$(SM_SRC_DIR)/handle_enclave/handlers/software_interrupt_handler.c \
+	$(SM_SRC_DIR)/handle_enclave/handlers/enclave_timer_interrupt_handler.c \
+	$(SM_SRC_DIR)/handle_enclave/handlers/enclave_external_interrupt_handler.c \
+	$(SM_SRC_DIR)/handle_enclave/handlers/enclave_software_interrupt_handler.c \
 	$(SM_SRC_DIR)/api/get_public_field.c \
 	$(SM_SRC_DIR)/api/region_block.c \
 	$(SM_SRC_DIR)/api/region_check_owned.c \
@@ -146,11 +147,13 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/region_metadata_start.c \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/region_state.c \
+	$(SM_SRC_DIR)/api/region_cache_partitionning.c \
 	$(SM_SRC_DIR)/api/thread_delete.c \
 	$(SM_SRC_DIR)/api/thread_load.c \
 	$(SM_SRC_DIR)/api/thread_metadata_pages.c \
 	$(SM_SRC_DIR)/handle_untrusted/entry_from_untrusted.S \
 	$(SM_SRC_DIR)/handle_untrusted/api_call_from_untrusted.c \
+	$(SM_SRC_DIR)/handle_untrusted/handlers/untrusted_software_interrupt_handler.c \
 
 # Rules
 $(SM_ELF): $(SM_SRC) $(SM_LD) $(BUILD_DIR) $(HANDLER_BIN)

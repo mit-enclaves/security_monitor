@@ -20,7 +20,7 @@ SECTIONS
     *(.bss.*)
   }
   
-  .data ALIGN(64)  : {
+  .data ALIGN(256)  : {
     KEEP(*(.data.stack))
     *(.data.*)
     *(.data)  /* initialized data */

@@ -48,6 +48,8 @@ enclave_id_t sm_internal_region_owner (region_id_t id);
 
 region_state_t sm_internal_region_state (region_id_t id);
 
+api_result_t sm_internal_region_cache_partitioning (cache_partition_t *part);
+
 api_result_t sm_internal_thread_delete (thread_id_t thread_id);
 
 api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t entry_pc, uintptr_t entry_stack, uint64_t timer_limit);
@@ -55,4 +57,4 @@ api_result_t sm_internal_thread_load (enclave_id_t enclave_id, thread_id_t threa
 uint64_t sm_internal_thread_metadata_pages();
 
 
-#endif // API_TYPES_H
+#endif // SM_HANDLES_H

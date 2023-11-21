@@ -116,7 +116,7 @@ trap_vector_from_enclave:
 .globl .sw_int_handler
 .sw_int_handler:
   call .save_regs_and_set_args
-  call software_interrupt_handler
+  call enclave_software_interrupt_handler
   call .restore_regs
   j .perform_mret
 

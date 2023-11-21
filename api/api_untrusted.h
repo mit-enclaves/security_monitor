@@ -92,6 +92,10 @@ static inline region_state_t sm_region_state (region_id_t id) {
   return SM_API_CALL(SM_REGION_STATE, id, 0, 0, 0, 0, 0, 0);
 }
 
+static inline api_result_t sm_region_cache_partitioning ( cache_partition_t *part ) {
+  return SM_API_CALL(SM_REGION_CACHE_PART, part, 0, 0, 0, 0, 0, 0);
+}
+
 static inline api_result_t sm_thread_delete (thread_id_t thread_id) {
   return SM_API_CALL(SM_THREAD_DELETE, thread_id, 0, 0, 0, 0, 0, 0);
 }

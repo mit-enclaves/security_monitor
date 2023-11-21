@@ -294,6 +294,26 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  cache_partition_t new_partition;
+
+  for(int i = 0; i < 64; i++) {
+    if(i == 3) {
+      new_partition.lgsizes[i] = 9;
+    } else if( i == 5 ) {
+      new_partition.lgsizes[i] = 7;
+    } else if( i <  5 ) {
+      new_partition.lgsizes[i] = 4; 
+    } else {
+      new_partition.lgsizes[i] = 0; 
+    }
+  }
+  printm("Change LLC partitioning\n");
+  result = sm_region_cache_partitioning(&new_partition);
+  if(result != MONITOR_OK) {
+    printm("sm_region_cache_partitioning FAILED with error code %d\n", result);
+    test_completed();
+  }
+
   printm("\nTest SUCCESSFUL\n\n");
   test_completed();
 }

@@ -138,8 +138,6 @@ trap_vector_from_untrusted:
   j .perform_mret
 
 .handle_m_soft_interrupt:
-  sd t1, 6*REGBYTES(sp) # Save t1 on the stack
-
   # First, clear the MIPI bit.
   ld t0, MENTRY_IPI_OFFSET(sp)
   sw x0, (t0)
@@ -148,6 +146,10 @@ trap_vector_from_untrusted:
   # Now, decode the cause(s).
   addi t0, sp, MENTRY_IPI_PENDING_OFFSET
   amoswap.w t0, x0, (t0)
+  call .save_regs_and_set_args
+  mv a0, t0
+  call untrusted_software_interrupt_handler
+  call .restore_regs
 
   and t1, t0, IPI_SOFT
   beqz t1, 1f

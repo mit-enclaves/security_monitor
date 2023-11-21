@@ -222,7 +222,7 @@ void query_mem(uintptr_t fdt)
 
 ///////////////////////////////////////////// HART SCAN //////////////////////////////////////////
 
-static uint32_t hart_phandles[MAX_HARTS];
+static uint32_t hart_phandles[NUM_CORES];
 uint64_t hart_mask;
 
 struct hart_scan {
@@ -277,7 +277,7 @@ static void hart_done(const struct fdt_scan_node *node, void *extra)
     assert (scan->phandle > 0);
     assert (scan->cells == 1);
 
-    if (scan->hart < MAX_HARTS) {
+    if (scan->hart < NUM_CORES) {
       hart_phandles[scan->hart] = scan->phandle;
       hart_mask |= 1 << scan->hart;
       hls_init(scan->hart);
@@ -361,10 +361,10 @@ static void clint_done(const struct fdt_scan_node *node, void *extra)
   for (int index = 0; end - value > 0; ++index) {
     uint32_t phandle = bswap(value[0]);
     int hart;
-    for (hart = 0; hart < MAX_HARTS; ++hart)
+    for (hart = 0; hart < NUM_CORES; ++hart)
       if (hart_phandles[hart] == phandle)
         break;
-    if (hart < MAX_HARTS) {
+    if (hart < NUM_CORES) {
       hls_t *hls = OTHER_HLS(hart);
       hls->ipi = (void*)((uintptr_t)scan->reg + index * 4);
       hls->timecmp = (void*)((uintptr_t)scan->reg + 0x4000 + (index * 8));
@@ -449,10 +449,10 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
     uint32_t phandle = bswap(value[0]);
     uint32_t cpu_int = bswap(value[1]);
     int hart;
-    for (hart = 0; hart < MAX_HARTS; ++hart)
+    for (hart = 0; hart < NUM_CORES; ++hart)
       if (hart_phandles[hart] == phandle)
         break;
-    if (hart < MAX_HARTS) {
+    if (hart < NUM_CORES) {
       hls_t *hls = OTHER_HLS(hart);
       if (cpu_int == IRQ_M_EXT) {
         hls->plic_m_ie     = (uint32_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
@@ -468,7 +468,7 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
   }
 #if 1
   printm("PLIC: prio %x devs %d\r\n", (uint32_t)(uintptr_t)plic_priorities, plic_ndevs);
-  for (int i = 0; i < MAX_HARTS; ++i) {
+  for (int i = 0; i < NUM_CORES; ++i) {
     hls_t *hls = OTHER_HLS(i);
     printm("CPU %d: %x %x %x %x\r\n", i,
       (uint32_t)(uintptr_t)hls->plic_m_ie,

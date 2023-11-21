@@ -97,6 +97,10 @@ typedef enum {
   REGION_TYPE_METADATA = 2,
 } region_type_t;
 
+typedef struct {
+  uint8_t lgsizes[64]; // TODO: fix hardcoding here...
+} cache_partition_t;
+
 // SM API Syscall codes
 // --------------------
 #define SM_ENCLAVE_CREATE                   (1000)
@@ -127,9 +131,10 @@ typedef enum {
 #define SM_REGION_METADATA_START            (1037)
 #define SM_REGION_OWNER                     (1038)
 #define SM_REGION_STATE                     (1039)
+#define SM_REGION_CACHE_PART                (1040)
 
-#define SM_THREAD_DELETE                    (1040)
-#define SM_THREAD_LOAD                      (1041)
-#define SM_THREAD_METADATA_PAGES            (1042)
+#define SM_THREAD_DELETE                    (1050)
+#define SM_THREAD_LOAD                      (1051)
+#define SM_THREAD_METADATA_PAGES            (1052)
 
 #endif // API_TYPE_H

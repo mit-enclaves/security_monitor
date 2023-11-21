@@ -153,6 +153,13 @@ typedef struct sm_region_t {
   platform_lock_t lock;
 } sm_region_t;
 
+typedef struct llc_sync_t {
+  bool has_started;
+  uint64_t waiting;
+  bool done;
+  platform_lock_t lock;
+} llc_sync_t;
+
 #define BOOT_INIT_NOT_DONE (12345)
 #define BOOT_INIT_DONE     (98765)
 
@@ -162,6 +169,8 @@ typedef struct sm_state_t {
   sm_region_t regions[NUM_REGIONS];
   region_map_t untrusted_regions;
   mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
+  cache_partition_t llc_partitions;
+  llc_sync_t llc_sync;
   platform_lock_t untrusted_state_lock;
 } sm_state_t;
 

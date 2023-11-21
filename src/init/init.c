@@ -45,6 +45,17 @@ void sm_init(uintptr_t fdt_boot_addr) {
       sm->untrusted_mailboxes[i].state = ENCLAVE_MAILBOX_STATE_UNUSED;
     }
 
+    // Initialize LLC partitionning datastructures
+    uint64_t *llcCtrl = (uint64_t *) LLC_CTRL_ADDR;
+    uint64_t base = 0;
+    for(int rid = 0; rid < NUM_REGIONS; rid++) {
+      uint64_t size = 0x4;
+      printm("Setting up LLC slice %d with base %x and size %x\n", rid, base, size);
+      *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (LLC_CTRL_BASE_OFFSET << 4) + LLC_CTRL_SIZE_OFFSET;
+      sm->llc_partitions.lgsizes[rid] = size;
+      base += (1 << size);
+    }
+
     // Unlock the SM untrusted state
     unlock_untrusted_state();
 

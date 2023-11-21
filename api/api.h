@@ -234,6 +234,15 @@ enclave_id_t sm_region_owner (region_id_t id);
 // another API call.
 region_state_t sm_region_state (region_id_t id);
 
+// Updates the LLC partitioning.
+//
+// A new partitioning is considered correct if no region is set to zero,
+// the SM regions are not touched and the sum off all the LLC slice sizes
+// ammount to the size of the LLC.
+// No enclave shoudl be runnign and all other cores will be interrupted 
+// waiting for the change of partition before returning.
+api_result_t sm_region_cache_partitioning ( cache_partition_t *part );
+
 
 // APIs: SM Thread-related calls
 // -----------------------------

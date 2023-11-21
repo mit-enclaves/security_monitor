@@ -126,7 +126,6 @@ static inline uint64_t enclave_metadata_pages ( uint64_t num_mailboxes ) {
   return ( enclave_size+(PAGE_SIZE-1) ) / PAGE_SIZE;
 }
 
-
 api_result_t add_lock_region_iff_free_metadata_pages (uintptr_t ptr, uint64_t num_pages, region_map_t * locked_regions);
 
 api_result_t add_lock_region_iff_valid_metadata(uintptr_t ptr, metadata_page_t metadata_type, region_map_t * locked_regions);
@@ -147,5 +146,9 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id,
   uint64_t level,
   uintptr_t acl,
   region_map_t *locked_regions);
+
+// LLC partitioning helper
+
+int handle_llc_changes(void);
 
 #endif // SECURITY_MONITOR_H

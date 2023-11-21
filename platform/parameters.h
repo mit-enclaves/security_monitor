@@ -41,11 +41,16 @@
 
 // Number of Cores
 #define NUM_CORES (2)
-#define MAX_HARTS NUM_CORES
 
 // Memory
 #define RAM_BASE        0x80000000
 #define RAM_SIZE        0x80000000
+
+// LLC partition controller
+#define LLC_CTRL_ADDR        0x200000000
+#define LLC_CTRL_ID_OFFSET   14
+#define LLC_CTRL_BASE_OFFSET 4
+#define LLC_CTRL_SIZE_OFFSET 0
 
 #define REGION_SHIFT  (25)
 
