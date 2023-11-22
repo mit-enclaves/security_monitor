@@ -35,9 +35,10 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
       return MONITOR_INVALID_VALUE;
     }
     if(!found_first_mod) {
-      idx_first_mod++;
       if(copy.lgsizes[i] != sm->llc_partitions.lgsizes[i]) {
         found_first_mod = true;
+      } else {
+        idx_first_mod++;
       }
     }
     uint64_t size = 1 << copy.lgsizes[i];
