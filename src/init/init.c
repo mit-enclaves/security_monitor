@@ -46,11 +46,27 @@ void sm_init(uintptr_t fdt_boot_addr) {
     }
 
     // Initialize LLC partitionning datastructures
-    //uint64_t *llcCtrl = (uint64_t *) LLC_CTRL_ADDR;
+
+    // TEMPORARY set LLC before anything
+    cache_partition_t new_partition;
+    for(int i = 0; i < 64; i++) {
+      if(i == 3) {
+        new_partition.lgsizes[i] = 9;
+      } else if( i == 5 ) {
+        new_partition.lgsizes[i] = 7;
+      } else if( i <  5 ) {
+        new_partition.lgsizes[i] = 4; 
+      } else {
+        new_partition.lgsizes[i] = 0; 
+      }
+    }
+
+    uint64_t *llcCtrl = (uint64_t *) LLC_CTRL_ADDR;
     uint64_t base = 0;
     for(int rid = 0; rid < NUM_REGIONS; rid++) {
-      uint64_t size = 0x4;
-      //*llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (LLC_CTRL_BASE_OFFSET << 4) + LLC_CTRL_SIZE_OFFSET;
+      uint64_t size = new_partition.lgsizes[rid];
+      printm("Setting up LLC slice %d with base %x and size %x\n", rid, base, size);
+      *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (base << LLC_CTRL_BASE_OFFSET) + (size << LLC_CTRL_SIZE_OFFSET);
       sm->llc_partitions.lgsizes[rid] = size;
       base += (1 << size);
     }
