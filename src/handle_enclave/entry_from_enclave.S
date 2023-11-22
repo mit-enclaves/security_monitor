@@ -66,9 +66,15 @@ trap_vector_from_enclave:
   csrw mscratch, zero # indicate we are inside a trap handler
 
   # Deactivate Speculation and Flush Microarchitecture
-  li t0, MSPEC_NONE
-  csrw CSR_MSPEC, MSPEC_NONMEM
+  li t0, MSPEC_NONE   # Load MSPEC_NONE as a mask 
+  not t0, t0          # Inverse the mask
+  csrr ra, CSR_MSPEC  # Take the current value of MSPEC
+  and ra, ra, t0      # Zero the last 3 bits
+  li t0, MSPEC_NONMEM # Write one of the last bits 
+  or ra, ra, t0       # To deactivate specualtion 
+  csrw CSR_MSPEC, ra # Write the value
   csrw CSR_MFLUSH, zero
+  li ra, 0
 
   # Copy mcause to t0
   csrr t0, mcause

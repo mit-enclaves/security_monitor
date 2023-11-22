@@ -95,9 +95,15 @@
   ld t0, 2*REGBYTES(sp)
   csrw mscratch, t0
 
+  li t0, MSPEC_NONE  # Load MSPEC_NONE as a mask 
+  not t0, t0         # Inverse the mask
+  csrr ra, CSR_MSPEC # Take the current value of MSPEC
+  and ra, ra, t0     # Zero the last 3 bits
+  csrw CSR_MSPEC, ra # Write the value
+
   ld ra, 1*REGBYTES(sp)
   ld t0, 5*REGBYTES(sp)
   csrrw sp, mscratch, sp
   csrw CSR_MFLUSH, zero
-  csrw CSR_MSPEC, zero
+  
   mret
