@@ -1,7 +1,7 @@
 #include <sm.h>
 
 int handle_llc_changes() {
-    volatile sm_state_t *sm = get_sm_state_ptr();
+    sm_state_t *sm = get_sm_state_ptr();
     
     // Wait wqand get the lock
     while(!platform_lock_acquire(&sm->llc_sync.lock));

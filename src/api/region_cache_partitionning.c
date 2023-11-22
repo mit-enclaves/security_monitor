@@ -113,6 +113,7 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
   sm->llc_sync.has_started = false;
   sm->llc_sync.waiting = 0;
   sm->llc_sync.done = true;
+  asm volatile ("fence.i");
   platform_lock_release(&sm->llc_sync.lock);
 
   unlock_untrusted_state();
