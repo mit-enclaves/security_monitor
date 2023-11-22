@@ -101,12 +101,15 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
       uint64_t base = bases[rid];
       uint64_t size = copy.lgsizes[rid];
       printm("Setting up LLC slice %d with base %x and size %x\n", rid, base, size);
-      *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (LLC_CTRL_BASE_OFFSET << 4) + LLC_CTRL_SIZE_OFFSET;
+      *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (base << LLC_CTRL_BASE_OFFSET) + (size << LLC_CTRL_SIZE_OFFSET);
       sm->llc_partitions.lgsizes[rid] = size;
     }
 
     // Flush the LLC regions
-    // TODO : FLUSH THE LLC 
+     
+    for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
+      // TODO : FLUSH THE LLC
+    };
   }
 
   // Clean up the LLC Sync datastructure
