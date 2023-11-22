@@ -72,6 +72,9 @@ api_result_t sm_internal_enclave_delete (enclave_id_t enclave_id) {
       // Block the region
       sm->regions[i].state = REGION_STATE_BLOCKED;
       sm->regions[i].owner = OWNER_SM;
+      
+      // Clean the regions.
+      memset( region_id_to_addr(region_id), 0x00, REGION_SIZE);
     }
   }
 

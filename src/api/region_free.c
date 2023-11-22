@@ -58,8 +58,7 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   // Apply state transition
   // ----------------------
   
-  // Clean the region on free.
-  memset( region_id_to_addr(region_id), 0x00, REGION_SIZE);
+
 
   // Mark the selected region as free
   region_metadata->state = REGION_STATE_FREE;
