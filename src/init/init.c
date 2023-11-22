@@ -54,7 +54,11 @@ void sm_init(uintptr_t fdt_boot_addr) {
       sm->llc_partitions.lgsizes[rid] = size;
       base += (1 << size);
     }
-
+    sm->llc_sync.done = false;
+    sm->llc_sync.waiting = 0;
+    sm->llc_sync.has_started = false;
+    platform_lock_release(&sm->llc_sync.lock);
+    
     // Unlock the SM untrusted state
     unlock_untrusted_state();
 
