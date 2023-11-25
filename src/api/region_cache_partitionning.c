@@ -106,9 +106,8 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
     }
 
     // Flush the LLC regions
-     
     for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
-      // TODO : FLUSH THE LLC
+      flush_llc_region(rid);
     };
   }
 

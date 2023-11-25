@@ -58,7 +58,8 @@ api_result_t sm_internal_region_free ( region_id_t region_id ) {
   // Apply state transition
   // ----------------------
   
-
+  // Flush the LLC region
+  flush_llc_region(region_id);
 
   // Mark the selected region as free
   region_metadata->state = REGION_STATE_FREE;

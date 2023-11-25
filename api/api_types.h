@@ -132,6 +132,7 @@ typedef struct {
 #define SM_REGION_OWNER                     (1038)
 #define SM_REGION_STATE                     (1039)
 #define SM_REGION_CACHE_PART                (1040)
+#define SM_REGION_FLUSH                     (1041)
 
 #define SM_THREAD_DELETE                    (1050)
 #define SM_THREAD_LOAD                      (1051)

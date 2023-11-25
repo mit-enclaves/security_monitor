@@ -19,6 +19,7 @@ SM_COMMON_SRC := \
 	$(SM_SRC_DIR)/clib/memset.c \
 	$(SM_SRC_DIR)/common/syscall_helpers.S \
 	$(SM_SRC_DIR)/common/handle_llc_changes.c \
+	$(SM_SRC_DIR)/common/flush_llc_region.c \
 	$(PLATFORM_DIR)/platform_panic.S \
 	$(PLATFORM_DIR)/platform_clean_core.S \
 	$(PLATFORM_DIR)/platform_purge_core.S \
@@ -148,6 +149,7 @@ SM_SRC := \
 	$(SM_SRC_DIR)/api/region_owner.c \
 	$(SM_SRC_DIR)/api/region_state.c \
 	$(SM_SRC_DIR)/api/region_cache_partitionning.c \
+	$(SM_SRC_DIR)/api/region_flush.c \
 	$(SM_SRC_DIR)/api/thread_delete.c \
 	$(SM_SRC_DIR)/api/thread_load.c \
 	$(SM_SRC_DIR)/api/thread_metadata_pages.c \

@@ -119,6 +119,10 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         retval = sm_internal_region_cache_partitioning( (cache_partition_t *) arg0 );
         break;
 
+      case SM_REGION_FLUSH:
+        retval = sm_internal_region_flush( (region_id_t) arg0 );
+        break;
+
       case SM_THREAD_DELETE:
         retval = sm_internal_thread_delete( arg0 );
         break;

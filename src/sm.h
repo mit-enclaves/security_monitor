@@ -151,4 +151,8 @@ api_result_t load_page_table_entry (enclave_id_t enclave_id,
 
 int handle_llc_changes(void);
 
+// LLC flushing helper
+
+void flush_llc_region(int region_id);
+
 #endif // SECURITY_MONITOR_H

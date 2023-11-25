@@ -294,6 +294,13 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  printm("Flush region 2\n");
+  result = sm_region_flush(region2_id);
+  if(result != MONITOR_OK) {
+    printm("sm_region_flush FAILED with error code %d\n", result);
+    test_completed();
+  }
+
   cache_partition_t new_partition;
 
   for(int i = 0; i < 64; i++) {
