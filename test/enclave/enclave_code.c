@@ -6,12 +6,12 @@
 #include "../sbi/console.h"
 #endif
 
-bool has_already_entered = false;
+bool first_entrance = true;
 
 #define MAILBOX_SIZE  (0x100)
 
 void enclave_entry() {
-  if(!has_already_entered) {
+  if(first_entrance) {
 #if (DEBUG_ENCLAVE == 1)
     printm("Hi from inside!\n");
 #endif
@@ -82,7 +82,7 @@ void enclave_entry() {
 #endif
 
     sm_mail_accept(0, OWNER_UNTRUSTED);
-    has_already_entered = true;
+    first_entrance = false;
   }
   else {
     char msg[MAILBOX_SIZE];

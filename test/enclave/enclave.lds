@@ -16,12 +16,17 @@ SECTIONS
   }
 
   .bss ALIGN(8)  : {
+    _bss_start = .;
     *(.bss)   /* uninitialized data */
     *(.bss.*)
+    *(.sbss)
+    *(.sbss.*)
+    _bss_end = ALIGN(8);
   }
   
   .data ALIGN(256)  : {
     KEEP(*(.data.stack))
+    PROVIDE( stack_top = . );
     *(.data.*)
     *(.data)  /* initialized data */
   }
