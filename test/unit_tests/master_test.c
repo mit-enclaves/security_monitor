@@ -20,6 +20,7 @@ extern uintptr_t enclave_end;
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
   volatile int *flag = (int *) SHARED_MEM_SYNC;
+  console_init();
 
   if(core_id != 0) {
     while(true) {

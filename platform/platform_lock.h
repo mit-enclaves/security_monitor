@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 typedef struct {
-  uint64_t lock_flag;
+  volatile uint64_t lock_flag;
   uint64_t _pad[7];
 } platform_lock_t;
 

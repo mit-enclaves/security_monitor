@@ -172,6 +172,7 @@ typedef struct sm_state_t {
   mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
   cache_partition_t llc_partitions;
   llc_sync_t llc_sync;
+  platform_lock_t console_lock;
   platform_lock_t untrusted_state_lock;
 } sm_state_t;
 
