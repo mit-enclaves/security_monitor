@@ -11,7 +11,9 @@ void flush_llc_region(int region_id){
         for(int i = 0; i < size_index_range; i++) {
             uintptr_t index = (size_index_range * stride) + i;
             uintptr_t addr = ZERO_DEVICE_OFFSET | start_addr | (index << LLC_INDEX_OFFSET);
+            platform_disable_L1();
             buff = *((uint64_t *) addr);
+            platform_enable_L1();
         }
         asm volatile ("fence" ::: "memory");
     }
