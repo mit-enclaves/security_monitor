@@ -26,16 +26,22 @@ api_result_t sm_internal_region_flush ( region_id_t id ) {
   }
 
   // Check that the region is not owned by the caller (only untrusted for now)
-  if(sm->regions->owner != OWNER_UNTRUSTED) {
+  if(sm->regions[id].owner != OWNER_UNTRUSTED) {
     unlock_region(id);
     return MONITOR_INVALID_STATE; 
   }
 
   // Set up LLC Sync datastructure
   while(!platform_lock_acquire(&sm->llc_sync.lock));
-  sm->llc_sync.has_started = true;
+  if(sm->llc_sync.busy == true) {
+    platform_lock_release(&sm->llc_sync.lock);
+    unlock_region(id);
+    return MONITOR_CONCURRENT_CALL;
+  }
   sm->llc_sync.waiting = 1;
-  sm->llc_sync.done = false;
+  sm->llc_sync.wait = true;
+  sm->llc_sync.left = 0;
+  sm->llc_sync.busy = true;
   platform_lock_release(&sm->llc_sync.lock);
   
   // Send IPI to all cores to interupt them
@@ -65,5 +71,28 @@ api_result_t sm_internal_region_flush ( region_id_t id ) {
 
   // Release lock and return
   unlock_region(id);
+
+  // Clean up the LLC Sync datastructure
+  while(!platform_lock_acquire(&sm->llc_sync.lock));
+  sm->llc_sync.waiting = 0;
+  sm->llc_sync.wait = false;
+  sm->llc_sync.left = 1;
+  asm volatile ("fence");
+  platform_lock_release(&sm->llc_sync.lock);
+
+  // Wait for everyone to have left
+  int left;
+  do {
+    while(!platform_lock_acquire(&sm->llc_sync.lock));
+    left = sm->llc_sync.left;
+    platform_lock_release(&sm->llc_sync.lock); 
+  } while(left < NUM_CORES);
+
+  // Release LLC Sync
+  while(!platform_lock_acquire(&sm->llc_sync.lock));
+  sm->llc_sync.busy = false;
+  asm volatile ("fence");
+  platform_lock_release(&sm->llc_sync.lock);
+
   return MONITOR_OK;
 }

@@ -7,7 +7,7 @@ int handle_llc_changes() {
     while(!platform_lock_acquire(&sm->llc_sync.lock));
 
     // Check if we have a pending LLC change
-    if(sm->llc_sync.has_started == false) {
+    if(sm->llc_sync.busy == false) {
         return 1;
     }
 
@@ -18,12 +18,15 @@ int handle_llc_changes() {
     platform_lock_release(&sm->llc_sync.lock);
 
     // If yes spin wait and wait for everything to be done
-    bool done;
+    bool wait;
     do {
         while(!platform_lock_acquire(&sm->llc_sync.lock));
-        done = sm->llc_sync.done;
+        wait = sm->llc_sync.wait;
+        if(!wait) {
+            sm->llc_sync.left++;
+        }
         platform_lock_release(&sm->llc_sync.lock); 
-    } while(!done);
+    } while(wait);
 
     // Once we are free return
     return 0;
