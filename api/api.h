@@ -243,6 +243,11 @@ region_state_t sm_region_state (region_id_t id);
 // waiting for the change of partition before returning.
 api_result_t sm_region_cache_partitioning ( cache_partition_t *part );
 
+// Flush the LLC slice that matches a region ID.
+//
+// Flush the LLC slice of the corresponding memory region
+api_result_t sm_region_flush ( region_id_t id );
+
 
 // APIs: SM Thread-related calls
 // -----------------------------

@@ -60,9 +60,15 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
 
   // Set up LLC Sync datastructure
   while(!platform_lock_acquire(&sm->llc_sync.lock));
-  sm->llc_sync.has_started = true;
+  if(sm->llc_sync.busy == true) {
+    platform_lock_release(&sm->llc_sync.lock);
+    unlock_untrusted_state();
+    return MONITOR_CONCURRENT_CALL;
+  }
   sm->llc_sync.waiting = 1;
-  sm->llc_sync.done = false;
+  sm->llc_sync.wait = true;
+  sm->llc_sync.left = 0;
+  sm->llc_sync.busy = true;
   platform_lock_release(&sm->llc_sync.lock);
   
   // Send IPI to all cores to interupt them
@@ -95,6 +101,11 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
 
   // If no enclave is running... 
   if(no_enclaves_running) {
+    // Flush the LLC regions
+    for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
+      flush_llc_region(rid);
+    };
+
     // Send intructions to change the partitioning starting at the highest modified region
     uint64_t *llcCtrl = (uint64_t *) LLC_CTRL_ADDR;
     for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
@@ -104,23 +115,32 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
       *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (base << LLC_CTRL_BASE_OFFSET) + (size << LLC_CTRL_SIZE_OFFSET);
       sm->llc_partitions.lgsizes[rid] = size;
     }
-
-    // Flush the LLC regions
-     
-    for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
-      // TODO : FLUSH THE LLC
-    };
   }
 
   // Clean up the LLC Sync datastructure
   while(!platform_lock_acquire(&sm->llc_sync.lock));
-  sm->llc_sync.has_started = false;
   sm->llc_sync.waiting = 0;
-  sm->llc_sync.done = true;
-  asm volatile ("fence.i");
+  sm->llc_sync.wait = false;
+  sm->llc_sync.left = 1;
+  asm volatile ("fence");
   platform_lock_release(&sm->llc_sync.lock);
 
   unlock_untrusted_state();
+  
+  // Wait for everyone to have left
+  int left;
+  do {
+    while(!platform_lock_acquire(&sm->llc_sync.lock));
+    left = sm->llc_sync.left;
+    platform_lock_release(&sm->llc_sync.lock); 
+  } while(left < NUM_CORES);
+
+  // Release LLC Sync
+  while(!platform_lock_acquire(&sm->llc_sync.lock));
+  sm->llc_sync.busy = false;
+  asm volatile ("fence");
+  platform_lock_release(&sm->llc_sync.lock);
+
   if(no_enclaves_running) {
     return MONITOR_OK;
   } else {

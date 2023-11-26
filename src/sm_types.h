@@ -154,9 +154,10 @@ typedef struct sm_region_t {
 } sm_region_t;
 
 typedef struct llc_sync_t {
-  volatile bool has_started;
   volatile uint64_t waiting;
-  volatile bool done;
+  volatile bool wait;
+  volatile uint64_t left;
+  volatile bool busy;
   platform_lock_t lock;
 } llc_sync_t;
 

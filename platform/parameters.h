@@ -52,6 +52,13 @@
 #define LLC_CTRL_BASE_OFFSET 4
 #define LLC_CTRL_SIZE_OFFSET 0
 
+// LLC
+#define LLC_INDEX_OFFSET 6
+#define LLC_NUM_WAYS 16
+
+// Zero-device for LLC flush
+#define ZERO_DEVICE_OFFSET 0x100000000
+
 #define REGION_SHIFT  (25)
 
 // MSPEC configuration
