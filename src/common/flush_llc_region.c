@@ -10,7 +10,6 @@ void flush_llc_region(int region_id){
         for(int i = 0; i < size_index_range; i++) {
             uintptr_t index = (size_index_range * stride) + i;
             uintptr_t addr = ZERO_DEVICE_OFFSET | start_addr | (index << LLC_INDEX_OFFSET);
-            printm("Flushing addr %llx\n", addr);
             register uintptr_t t0 asm ("t0") = addr;
             // Activate and deactivate L1 use near the load responsible for the flush.
             asm volatile(" \
