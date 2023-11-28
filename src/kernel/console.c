@@ -1,18 +1,20 @@
 #include <htif/htif.h>
+#include <sm.h>
 
-static volatile platform_lock_t putstring_lock;
+static inline platform_lock_t *get_console_lock(){
+  return &get_sm_state_ptr()->console_lock;
+}
 
 void console_init(){
-  platform_lock_release(&putstring_lock);
-  htif_init();
+  platform_lock_release(get_console_lock());
 }
 
 void putstring(const char* s)
 {
-  while(!platform_lock_acquire(&putstring_lock)) {};
+  while(!platform_lock_acquire(get_console_lock())) {};
   while (*s)
     htif_putchar(*s++);
-  platform_lock_release(&putstring_lock);
+  platform_lock_release(get_console_lock());
 }
 
 // See LICENSE for license details.
@@ -156,17 +158,22 @@ void printm(const char* s, ...)
 }
 
 void console_putchar(char c) {
+  while(!platform_lock_acquire(get_console_lock())) {};
   htif_putchar(c);
+  platform_lock_release(get_console_lock());
 }
 
 uint64_t console_getchar() {
+  while(!platform_lock_acquire(get_console_lock())) {};
   return htif_getchar();
+  platform_lock_release(get_console_lock());
 }
 
 void print_char(char c) {
+  while(!platform_lock_acquire(get_console_lock())) {};
   htif_putchar(c);
+  platform_lock_release(get_console_lock());
 }
-
 
 void print_str(char* s) {
   while (*s != 0) {

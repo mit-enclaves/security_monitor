@@ -11,6 +11,11 @@ bool first_entrance = true;
 #define MAILBOX_SIZE  (0x100)
 
 void enclave_entry() {
+
+#if (DEBUG_ENCLAVE == 1)
+  console_init();
+#endif
+  
   if(first_entrance) {
 #if (DEBUG_ENCLAVE == 1)
     printm("Hi from inside!\n");
