@@ -52,8 +52,8 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
   }
 
   // Identify the lowest region modified
-  // Check that the SM regions are not modified (pb with metadata region)
-  if(idx_first_mod <= 2) { // TODO fix this!
+  // Check that the first SM region is not modified (metadata regions are not touched during the change)
+  if(idx_first_mod <= 0) {
     unlock_untrusted_state();
     return MONITOR_INVALID_VALUE; 
   }
