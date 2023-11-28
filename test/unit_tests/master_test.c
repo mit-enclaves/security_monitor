@@ -309,7 +309,9 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
       new_partition.lgsizes[i] = 9;
     } else if( i == 1 ) {
       new_partition.lgsizes[i] = 7;
-    } else if( i <  16 ) {
+    } else if( i == 5 ) {
+      new_partition.lgsizes[i] = 7;
+    } else if( i <  10 ) {
       new_partition.lgsizes[i] = 4; 
     } else {
       new_partition.lgsizes[i] = 0; 
