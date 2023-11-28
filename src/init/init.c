@@ -54,9 +54,11 @@ void sm_init(uintptr_t fdt_boot_addr) {
         new_partition.lgsizes[i] = 9;
       } else if( i == 1 ) {
         new_partition.lgsizes[i] = 7;
-    } else if( i == 5 ) {
-      new_partition.lgsizes[i] = 7;
-      } else if( i <  10 ) {
+      } else if( i == 5 ) {
+        new_partition.lgsizes[i] = 7;
+      } else if( i == 6 ) {
+        new_partition.lgsizes[i] = 7;
+      } else if( i <  8 ) {
         new_partition.lgsizes[i] = 4; 
       } else {
         new_partition.lgsizes[i] = 0; 
