@@ -92,9 +92,9 @@ typedef enum {
 
 typedef enum {
   REGION_TYPE_SM = 0,
-  REGION_TYPE_UNTRUSTED = 0,
-  REGION_TYPE_ENCLAVE = 1,
-  REGION_TYPE_METADATA = 2,
+  REGION_TYPE_UNTRUSTED = 1,
+  REGION_TYPE_ENCLAVE = 2,
+  REGION_TYPE_METADATA = 3,
 } region_type_t;
 
 typedef struct {

@@ -35,7 +35,7 @@ api_result_t sm_internal_region_block ( region_id_t region_id ) {
     return MONITOR_INVALID_STATE;
   }
 
-  if ( region_metadata->type != REGION_TYPE_SM ) {
+  if ( region_metadata->type == REGION_TYPE_SM ) {
     unlock_regions(&locked_regions);
     return MONITOR_ACCESS_DENIED;
   }
