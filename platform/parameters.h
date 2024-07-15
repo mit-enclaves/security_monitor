@@ -11,7 +11,6 @@
 
 #define MAILBOX_SIZE  (0x100)
 #define NUM_UNTRUSTED_MAILBOXES (8)
-#define CLEAN_REGIONS_MEMSET   (false)
 
 // Stack Parameter
 #define STACK_SIZE          (0x1000)
@@ -27,11 +26,13 @@
 
 // Placement of SM in memory
 #define SM_ADDR         0x80000000 // Should be region aligned
-#define HANDLER_LEN         0x4000 // Should be a power of 2
-#define SM_LEN             0x20000
+#define HANDLER_LEN         0x8000 // Should be a power of 2
+#define SM_LEN             0x30000
 
-#define SM_STATE_ADDR   0x80030000
+#define SM_STATE_ADDR   0x80040000
 #define SM_STATE_LEN        0x3000
+
+#define SM_LAST_ADDRESS (SM_STATE_ADDR + SM_STATE_LEN)
 
 #define UNTRUSTED_ENTRY  0x82000000
 #define PAYLOAD_MAXLEN    0xC000000
@@ -40,18 +41,33 @@
 
 // Number of Cores
 #define NUM_CORES (2)
-#define MAX_HARTS NUM_CORES
 
 // Memory
 #define RAM_BASE        0x80000000
 #define RAM_SIZE        0x80000000
 
+// LLC partition controller
+#define LLC_CTRL_ADDR        0x200000000
+#define LLC_CTRL_ID_OFFSET   14
+#define LLC_CTRL_BASE_OFFSET 4
+#define LLC_CTRL_SIZE_OFFSET 0
+
+// LLC
+#define LLC_INDEX_OFFSET 6
+#define LLC_NUM_WAYS 16
+
+// Zero-device for LLC flush
+#define ZERO_DEVICE_OFFSET 0x100000000
+
 #define REGION_SHIFT  (25)
 
 // MSPEC configuration
-#define MSPEC_ALL    (0)
-#define MSPEC_NONMEM (1)
-#define MSPEC_NONE   (2)
+#define MSPEC_ALL    (0UL)
+#define MSPEC_NONMEM (1UL)
+#define MSPEC_NONE   (3UL)
+#define MSPEC_NOTRAINPRED (4UL)
+#define MSPEC_NOUSEPRED (8UL)
+#define MSPEC_NOUSEL1 (16UL)
 
 // SATP configuration
 #define SATP_MODE_SV39 (8ul)

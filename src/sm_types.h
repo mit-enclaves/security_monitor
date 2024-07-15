@@ -136,6 +136,10 @@ typedef struct sm_core_t {
   enclave_id_t owner;
   thread_id_t thread;
   uintptr_t hls_ptr;
+  
+  // Memory regions bit maps
+  uint64_t mmrbm;
+  uint64_t memrbm;
 
   platform_lock_t lock;
 } sm_core_t;
@@ -149,6 +153,14 @@ typedef struct sm_region_t {
   platform_lock_t lock;
 } sm_region_t;
 
+typedef struct llc_sync_t {
+  volatile uint64_t waiting;
+  volatile bool wait;
+  volatile uint64_t left;
+  volatile bool busy;
+  platform_lock_t lock;
+} llc_sync_t;
+
 #define BOOT_INIT_NOT_DONE (12345)
 #define BOOT_INIT_DONE     (98765)
 
@@ -158,6 +170,9 @@ typedef struct sm_state_t {
   sm_region_t regions[NUM_REGIONS];
   region_map_t untrusted_regions;
   mailbox_t untrusted_mailboxes[NUM_UNTRUSTED_MAILBOXES];
+  cache_partition_t llc_partitions;
+  llc_sync_t llc_sync;
+  platform_lock_t console_lock;
   platform_lock_t untrusted_state_lock;
 } sm_state_t;
 

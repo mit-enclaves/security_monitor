@@ -20,3 +20,5 @@ core
 *.bak
 *.txt
 *.log
+.vscode
+.bsclsp

@@ -16,7 +16,6 @@ api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new
   */
 
   region_map_t locked_regions = (const region_map_t){ 0 };
-  bool untrusted_locked = false;
 
   if ( !is_valid_region_id(region_id) ) {
     return MONITOR_INVALID_VALUE;
@@ -24,6 +23,7 @@ api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new
 
   sm_state_t * sm = get_sm_state_ptr();
   sm_region_t * region_metadata = &sm->regions[region_id];
+  int core_id = platform_get_core_id();
 
   // <TRANSACTION>
   if (!add_lock_region(region_id, &locked_regions) ) {
@@ -35,13 +35,18 @@ api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new
     return MONITOR_INVALID_STATE;
   }
 
-  if ( new_owner == OWNER_UNTRUSTED ) {
-    if ( !lock_untrusted_state() ) {
-      unlock_regions(&locked_regions);
-      return MONITOR_CONCURRENT_CALL;
-    }
-    untrusted_locked = true;
-  } else {
+  if ( !lock_untrusted_state() ) {
+    unlock_regions(&locked_regions);
+    return MONITOR_CONCURRENT_CALL;
+  }
+
+  if ( !lock_core(core_id) ) {
+    unlock_untrusted_state();
+    unlock_regions(&locked_regions);
+    return MONITOR_CONCURRENT_CALL;
+  }
+
+  if(new_owner != OWNER_UNTRUSTED) {
     api_result_t result = add_lock_region_iff_valid_enclave(new_owner, &locked_regions);
     if ( MONITOR_OK != result ) {
       unlock_regions(&locked_regions);
@@ -61,16 +66,15 @@ api_result_t sm_internal_region_assign ( region_id_t region_id, enclave_id_t new
 
   // Mark the newly gained region in the new owner's region map
   if ( new_owner == OWNER_UNTRUSTED ) {
-    platform_update_untrusted_regions(sm, region_id, true);
+    platform_update_untrusted_regions(sm, core_id, region_id, true);
   } else {
     enclave_metadata_t * enclave_metadata = (enclave_metadata_t *)(new_owner);
-    platform_update_enclave_regions(enclave_metadata, region_id, true);
+    platform_update_enclave_regions(sm, core_id, enclave_metadata, region_id, true);
   }
 
   // Release locks
-  if(untrusted_locked) {
-    unlock_untrusted_state();
-  }
+  unlock_core(core_id);
+  unlock_untrusted_state();
   unlock_regions(&locked_regions);
   // </TRANSACTION>
 

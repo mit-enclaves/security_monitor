@@ -87,12 +87,9 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
         retval = sm_internal_region_block( arg0 );
         break;
 
-      // TODO
-      /*
-      case SM_REGION_FLUSH:
-        retval = sm_region_flush();
+      case SM_REGION_UPDATE:
+        retval = sm_internal_region_update();
         break;
-      */
 
       case SM_REGION_FREE:
         retval = sm_internal_region_free( arg0 );
@@ -116,6 +113,14 @@ void ecall_from_s_trap(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc) {
 
       case SM_REGION_STATE:
         retval = sm_internal_region_state( (region_id_t) arg0 );
+        break;
+
+      case SM_REGION_CACHE_PART:
+        retval = sm_internal_region_cache_partitioning( (cache_partition_t *) arg0 );
+        break;
+
+      case SM_REGION_FLUSH:
+        retval = sm_internal_region_flush( (region_id_t) arg0 );
         break;
 
       case SM_THREAD_DELETE:

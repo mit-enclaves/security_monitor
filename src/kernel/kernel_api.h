@@ -13,7 +13,7 @@ void delegate_ecall_to_kernel(uintptr_t *regs, uintptr_t mcause, uintptr_t mepc)
 void illegal_instruction_trap_handler(uintptr_t* regs, uintptr_t mcause, uintptr_t mepc);
 
 void kernel_init(uintptr_t ftd_addr);
-void kernel_init_other_hart(uintptr_t hartid);
+void kernel_init_other_core(uintptr_t core_id);
 
 hls_t* hls_init(uintptr_t hart_id);
 void send_ipi(uintptr_t recipient, int event);

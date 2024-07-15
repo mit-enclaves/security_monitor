@@ -26,8 +26,6 @@ trap_table:
   .word (.bad_event-.t_tab_root)          // 14: (reserved)
   .word (.delegate_to_s-.t_tab_root)      // 15: store/AMO page fault
 
-// TODO: mcause > 15 would be problematic here, make sure the architecture won't let that happen
-
 .align 6 # Align to a cache line (64B) boundary
 interrupt_table:
 .i_tab_root:
@@ -44,8 +42,6 @@ interrupt_table:
   .word (.delegate_to_s-.i_tab_root)  //  9: supervisor external interrupt
   .word (.bad_event-.i_tab_root)      // 10: (reserved)
   .word (.bad_event-.i_tab_root)  // 11: machine external interrupt
-
-// TODO: mcause > 11 would be problematic here, make sure the architecture won't let that happen
 
 # Handler for events originating in untrusted software
 # ====================================================
@@ -142,8 +138,6 @@ trap_vector_from_untrusted:
   j .perform_mret
 
 .handle_m_soft_interrupt:
-  sd t1, 6*REGBYTES(sp) # Save t1 on the stack
-
   # First, clear the MIPI bit.
   ld t0, MENTRY_IPI_OFFSET(sp)
   sw x0, (t0)
@@ -152,6 +146,10 @@ trap_vector_from_untrusted:
   # Now, decode the cause(s).
   addi t0, sp, MENTRY_IPI_PENDING_OFFSET
   amoswap.w t0, x0, (t0)
+  call .save_regs_and_set_args
+  mv a0, t0
+  call untrusted_software_interrupt_handler
+  call .restore_regs
 
   and t1, t0, IPI_SOFT
   beqz t1, 1f

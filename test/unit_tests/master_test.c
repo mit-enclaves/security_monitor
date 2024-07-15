@@ -9,13 +9,31 @@ extern uintptr_t region3;
 extern uintptr_t enclave_start;
 extern uintptr_t enclave_end;
 
+#define SHARED_MEM_SYNC (0x90000000)
+
+#define STATE_0 1
+#define STATE_1 2
+#define STATE_2 3
+#define STATE_3 4
+
 #define EVBASE 0x0
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
+  volatile int *flag = (int *) SHARED_MEM_SYNC;
+  console_init();
 
   if(core_id != 0) {
-    while(true) {};
+    while(true) {
+      if(*flag == STATE_1) {
+       api_result_t res = sm_region_update();
+       if(res == MONITOR_OK) {
+        *flag = STATE_2;
+       }
+      }
+    };
   }
+
+  *flag = STATE_0;
 
   //uint64_t region1_id = addr_to_region_id((uintptr_t) &region1);
   uint64_t region2_id = addr_to_region_id((uintptr_t) &region2);
@@ -33,9 +51,12 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  *flag = STATE_1;
+
   printm("Region free\n");
 
-  result = sm_region_free(region3_id);
+  do { result = sm_region_free(region3_id); } 
+  while((result == MONITOR_INVALID_STATE) || (result == MONITOR_CONCURRENT_CALL));
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();
@@ -70,9 +91,12 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     test_completed();
   }
 
+  *flag = STATE_1;
+
   printm("Region free\n");
 
-  result = sm_region_free(region2_id);
+  do { result = sm_region_free(region2_id); } 
+  while((result == MONITOR_INVALID_STATE) || (result == MONITOR_CONCURRENT_CALL));
   if(result != MONITOR_OK) {
     printm("sm_region_free FAILED with error code %d \n\n", result);
     test_completed();
@@ -242,24 +266,59 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
   }
   printm("]\n");
 
-  printm("delete thread\n");
+  printm("Delete thread\n");
   result = sm_thread_delete(thread_id);
   if(result != MONITOR_OK) {
     printm("sm_thread_delete FAILED with error code %d\n", result);
     test_completed();
   }
 
-  printm("delete enclave\n");
+  printm("Delete enclave\n");
   result = sm_enclave_delete(enclave_id);
   if(result != MONITOR_OK) {
     printm("sm_enclave_delete FAILED with error code %d\n", result);
     test_completed();
   }
+  
+  printm("Region free\n");
 
-  printm("assign region 2\n");
+  result = sm_region_free(region2_id);
+  if(result != MONITOR_OK) {
+    printm("sm_region_free FAILED with error code %d \n\n", result);
+    test_completed();
+  }
+
+  printm("Assign region 2\n");
   result = sm_region_assign(region2_id, OWNER_UNTRUSTED);
   if(result != MONITOR_OK) {
     printm("sm_region_assign FAILED with error code %d\n", result);
+    test_completed();
+  }
+
+  printm("Flush region 2\n");
+  result = sm_region_flush(region2_id);
+  if(result != MONITOR_OK) {
+    printm("sm_region_flush FAILED with error code %d\n", result);
+    test_completed();
+  }
+
+  cache_partition_t new_partition;
+
+  for(int i = 0; i < 64; i++) {
+    if(i == 3) {
+      new_partition.lgsizes[i] = 9;
+    } else if( i == 1 ) {
+      new_partition.lgsizes[i] = 7;
+    } else if( i <  16 ) {
+      new_partition.lgsizes[i] = 4; 
+    } else {
+      new_partition.lgsizes[i] = 0; 
+    }
+  }
+  printm("Change LLC partitioning\n");
+  result = sm_region_cache_partitioning(&new_partition);
+  if(result != MONITOR_OK) {
+    printm("sm_region_cache_partitioning FAILED with error code %d\n", result);
     test_completed();
   }
 

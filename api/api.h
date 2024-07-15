@@ -49,7 +49,7 @@ api_result_t sm_enclave_delete (enclave_id_t enclave_id);
 //
 // `thread_id` must identify a hardware thread that was created but is not
 // executing on any core.
-api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs); // TODO rename the handles etc...
+api_result_t sm_enclave_enter (enclave_id_t enclave_id, thread_id_t thread_id, uintptr_t *regs);
 
 // Ends the currently running enclave thread and returns control to the OS.
 api_result_t sm_enclave_exit (void);
@@ -190,12 +190,13 @@ api_result_t sm_region_block (region_id_t id);
 // if it sees any return value other than monitor_ok.
 api_result_t sm_region_check_owned (region_id_t id);
 
-// Performs the TLB flushes needed to free a locked region.
+// Let a core update its memory protection mechanism to match the current state 
 //
-// System software must invoke this call instead of flushing the TLB directly,
-// as the monitor's state must be updated to reflect the fact that a TLB flush
-// has occurred.
-api_result_t sm_region_flush (void);
+// This is used after a region accessible by several core has been blocked. Each
+// core runing the security domained that use to own the region need to call this
+// function to update the hardware mechanism and revoke their accesses to the region.
+// If a some cores still have access to the region, it wont be possible to free it.
+api_result_t sm_region_update ();
 
 // Frees a DRAM region that was previously blocked.
 api_result_t sm_region_free (region_id_t id);
@@ -232,6 +233,20 @@ enclave_id_t sm_region_owner (region_id_t id);
 // Returns dram_region_locked if the given DRAM region is currently locked by
 // another API call.
 region_state_t sm_region_state (region_id_t id);
+
+// Updates the LLC partitioning.
+//
+// A new partitioning is considered correct if no region is set to zero,
+// the SM regions are not touched and the sum off all the LLC slice sizes
+// ammount to the size of the LLC.
+// No enclave shoudl be runnign and all other cores will be interrupted 
+// waiting for the change of partition before returning.
+api_result_t sm_region_cache_partitioning ( cache_partition_t *part );
+
+// Flush the LLC slice that matches a region ID.
+//
+// Flush the LLC slice of the corresponding memory region
+api_result_t sm_region_flush ( region_id_t id );
 
 
 // APIs: SM Thread-related calls

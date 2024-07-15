@@ -86,19 +86,23 @@ typedef enum {
 typedef enum {
   REGION_STATE_INVALID = 0,
   REGION_STATE_FREE = 1,
-  REGION_STATE_BLOCKED = 2,
-  REGION_STATE_OWNED = 3,
+  REGION_STATE_OWNED = 2,
+  REGION_STATE_BLOCKED = 3,
 } region_state_t;
 
 typedef enum {
-  REGION_TYPE_UNTRUSTED = 0,
-  REGION_TYPE_ENCLAVE = 1,
-  REGION_TYPE_METADATA = 2,
+  REGION_TYPE_SM = 0,
+  REGION_TYPE_UNTRUSTED = 1,
+  REGION_TYPE_ENCLAVE = 2,
+  REGION_TYPE_METADATA = 3,
 } region_type_t;
+
+typedef struct {
+  uint8_t lgsizes[64]; // TODO: fix hardcoding here...
+} cache_partition_t;
 
 // SM API Syscall codes
 // --------------------
-// TODO: change this to an enum type?
 #define SM_ENCLAVE_CREATE                   (1000)
 #define SM_ENCLAVE_DELETE                   (1001)
 #define SM_ENCLAVE_ENTER                    (1002)
@@ -120,16 +124,18 @@ typedef enum {
 #define SM_REGION_ASSIGN                    (1030)
 #define SM_REGION_BLOCK                     (1031)
 #define SM_REGION_CHECK_OWNED               (1032)
-#define SM_REGION_FLUSH                     (1033)
+#define SM_REGION_UPDATE                    (1033)
 #define SM_REGION_FREE                      (1034)
 #define SM_REGION_METADATA_CREATE           (1035)
 #define SM_REGION_METADATA_PAGES            (1036)
 #define SM_REGION_METADATA_START            (1037)
 #define SM_REGION_OWNER                     (1038)
 #define SM_REGION_STATE                     (1039)
+#define SM_REGION_CACHE_PART                (1040)
+#define SM_REGION_FLUSH                     (1041)
 
-#define SM_THREAD_DELETE                    (1040)
-#define SM_THREAD_LOAD                      (1041)
-#define SM_THREAD_METADATA_PAGES            (1042)
+#define SM_THREAD_DELETE                    (1050)
+#define SM_THREAD_LOAD                      (1051)
+#define SM_THREAD_METADATA_PAGES            (1052)
 
 #endif // API_TYPE_H

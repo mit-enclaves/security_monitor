@@ -2,6 +2,7 @@
 #include <api_untrusted.h>
 
 void test_entry(int core_id, uintptr_t fdt_addr) {
+  console_init();
 
   // Set up an untrusted API call
   uint8_t pk_buffer[32];

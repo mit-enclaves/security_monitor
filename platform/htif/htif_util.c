@@ -3,8 +3,7 @@
 
 // Code strongly inspired by riscv-pk github.com/riscv/riscv-pk/blob/master/machine/htif.c
 
-volatile int htif_console_buf;
-static platform_lock_t htif_lock;
+volatile int htif_console_buf = 0; // TODO WARNING this will end up in bss
 
 #define TOHOST(base_int)	(uint64_t *)(base_int + TOHOST_OFFSET)
 #define FROMHOST(base_int)	(uint64_t *)(base_int + FROMHOST_OFFSET)
@@ -41,26 +40,18 @@ static void __set_tohost(uintptr_t dev, uintptr_t cmd, uintptr_t data)
 
 
 uint64_t htif_getchar() {
-  while(!platform_lock_acquire(&htif_lock)) {};
     __check_fromhost();
     int ch = htif_console_buf;
     if (ch >= 0) {
       htif_console_buf = -1;
       __set_tohost(1, 0, 0);
     }
-  platform_lock_release(&htif_lock);
 
   return ch - 1;
 }
 
 void htif_putchar(uint8_t c) {
-  while(!platform_lock_acquire(&htif_lock)) {};
   __set_tohost(1, 1, c);
-  platform_lock_release(&htif_lock);
-}
-
-void htif_init() {
-  platform_lock_release(&htif_lock);
 }
 
 /*

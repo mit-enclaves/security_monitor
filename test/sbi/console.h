@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+void console_init(void);
+
 void print_char(char c);
 void print_str(char* s);
 void print_int(uint64_t n);
