@@ -8,6 +8,7 @@ int handle_llc_changes() {
 
     // Check if we have a pending LLC change
     if(sm->llc_sync.busy == false) {
+        platform_lock_release(&sm->llc_sync.lock); 
         return 1;
     }
 
