@@ -165,8 +165,9 @@ void console_putchar(char c) {
 
 uint64_t console_getchar() {
   while(!platform_lock_acquire(get_console_lock())) {};
-  return htif_getchar();
+  uint64_t res =  htif_getchar();
   platform_lock_release(get_console_lock());
+  return res;
 }
 
 void print_char(char c) {
