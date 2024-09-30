@@ -18,6 +18,9 @@ extern uintptr_t enclave_end;
 
 #define EVBASE 0x0
 
+#define riscv_perf_cntr_begin() asm volatile("csrwi 0x801, 1")
+#define riscv_perf_cntr_end() asm volatile("csrwi 0x801, 0")
+
 void test_entry(int core_id, uintptr_t fdt_addr) {
   volatile int *flag = (int *) SHARED_MEM_SYNC;
   console_init();
@@ -312,11 +315,14 @@ void test_entry(int core_id, uintptr_t fdt_addr) {
     } else if( i <  16 ) {
       new_partition.lgsizes[i] = 4; 
     } else {
-      new_partition.lgsizes[i] = 0; 
+      new_partition.lgsizes[i] = 1; 
     }
   }
   printm("Change LLC partitioning\n");
+
+  riscv_perf_cntr_begin();
   result = sm_region_cache_partitioning(&new_partition);
+  riscv_perf_cntr_end();
   if(result != MONITOR_OK) {
     printm("sm_region_cache_partitioning FAILED with error code %d\n", result);
     test_completed();

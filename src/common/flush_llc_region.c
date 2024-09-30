@@ -13,9 +13,7 @@ void flush_llc_region(int region_id){
             register uintptr_t t0 asm ("t0") = addr;
             // Activate and deactivate L1 use near the load responsible for the flush.
             asm volatile(" \
-            csrsi 0x7ca, 16; \n \
             ld t0, 0(t0); \n \
-            csrci 0x7ca, 16; \n\
             " : : "r" (t0));
         }
         asm volatile ("fence" ::: "memory");

@@ -1,5 +1,8 @@
 #include <sm.h>
 
+#define riscv_perf_cntr_begin() asm volatile("csrwi 0x801, 1")
+#define riscv_perf_cntr_end() asm volatile("csrwi 0x801, 0")
+
 typedef uint64_t bases_t[NUM_REGIONS];
 
 api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
@@ -102,16 +105,18 @@ api_result_t sm_internal_region_cache_partitioning ( cache_partition_t *part ) {
   // If no enclave is running... 
   if(no_enclaves_running) {
     // Flush the LLC regions
+    //riscv_perf_cntr_end();
     for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
       flush_llc_region(rid);
     };
+    //riscv_perf_cntr_begin();
 
     // Send intructions to change the partitioning starting at the highest modified region
     uint64_t *llcCtrl = (uint64_t *) LLC_CTRL_ADDR;
     for(int rid = idx_first_mod; rid < NUM_REGIONS; rid++) {
       uint64_t base = bases[rid];
       uint64_t size = copy.lgsizes[rid];
-      printm("Setting up LLC slice %d with base %x and size %x\n", rid, base, size);
+      //printm("Setting up LLC slice %d with base %x and size %x\n", rid, base, size);
       *llcCtrl = (rid << LLC_CTRL_ID_OFFSET) + (base << LLC_CTRL_BASE_OFFSET) + (size << LLC_CTRL_SIZE_OFFSET);
       sm->llc_partitions.lgsizes[rid] = size;
     }
